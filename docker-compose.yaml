@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  user-app:
+    build:
+      context: .
+      dockerfile: container/frontend/Dockerfile
+      args:
+        APP_DIR: user/vue
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+
+  admin-app:
+    build:
+      context: .
+      dockerfile: container/frontend/Dockerfile
+      args:
+        APP_DIR: admin/vue
+    ports:
+      - "8081:80"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+
+  # Development mode with hot reload
+  user-dev:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./user/vue:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    profiles:
+      - dev
+
+  admin-dev:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./admin/vue:/app
+    ports:
+      - "5174:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    profiles:
+      - dev
