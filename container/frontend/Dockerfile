@@ -3,7 +3,7 @@ FROM node:20-alpine AS build-user
 
 WORKDIR /app/user
 COPY user/vue/package*.json ./
-RUN npm ci
+RUN npm install
 COPY user/vue/ ./
 RUN npm run build
 
@@ -12,7 +12,7 @@ FROM node:20-alpine AS build-admin
 
 WORKDIR /app/admin
 COPY admin/vue/package*.json ./
-RUN npm ci
+RUN npm install
 COPY admin/vue/ ./
 RUN npm run build
 
