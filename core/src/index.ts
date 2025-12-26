@@ -10,7 +10,7 @@ export const name = '@vbwd/core-sdk';
 export * from './plugins';
 
 // API Client (Sprint 2)
-// export * from './api';
+export * from './api';
 
 // Authentication (Sprint 3)
 // export * from './auth';
