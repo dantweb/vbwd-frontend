@@ -1,10 +1,10 @@
 /**
- * VBWD Core SDK
- * Shared TypeScript library for VBWD user and admin applications
+ * VBWD View Component
+ * Shared Vue 3 component library for VBWD user and admin applications
  */
 
 export const version = '0.1.0';
-export const name = '@vbwd/core-sdk';
+export const name = '@vbwd/view-component';
 
 // Plugins (Sprint 1)
 export * from './plugins';
@@ -12,21 +12,26 @@ export * from './plugins';
 // API Client (Sprint 2)
 export * from './api';
 
+// Events (Sprint 2.4)
+export * from './events';
+
+// Components (Sprint 5)
+export * from './components';
+
+// Stores (Sprint 5-01)
+export * from './stores';
+
+// Guards (Sprint 5-01)
+export * from './guards';
+
+// Composables (Sprint 5-01)
+export * from './composables';
+
 // Authentication (Sprint 3)
 // export * from './auth';
 
-// Events & Validation (Sprint 4)
-// export * from './events';
+// Validation (Sprint 4)
 // export * from './validation';
-
-// Components (Sprint 5)
-// export * from './components';
-
-// Composables (Sprint 6)
-// export * from './composables';
-
-// Access Control (Sprint 7)
-// export * from './access-control';
 
 // Types
 // export * from './types';

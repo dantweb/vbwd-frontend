@@ -28,9 +28,6 @@
           {{ loading ? 'Logging in...' : 'Login' }}
         </button>
       </form>
-      <p class="dev-note">
-        Dev mode: Use token "dev-admin-token" in API calls
-      </p>
     </div>
   </div>
 </template>
@@ -127,13 +124,6 @@ h1 {
 .error {
   color: #dc3545;
   margin-bottom: 15px;
-  text-align: center;
-}
-
-.dev-note {
-  margin-top: 20px;
-  font-size: 12px;
-  color: #999;
   text-align: center;
 }
 </style>
