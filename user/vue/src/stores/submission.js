@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { ApiClient } from '@vbwd/core-sdk'
+
+// Create API client instance
+const api = new ApiClient({
+  baseURL: import.meta.env.VITE_API_URL || '/api'
+})
 
 export const useSubmissionStore = defineStore('submission', {
   state: () => ({
@@ -15,27 +20,25 @@ export const useSubmissionStore = defineStore('submission', {
       this.error = null
 
       try {
-        const response = await axios.post('/api/user/submit', data)
-
-        // Expecting 202 Accepted
-        if (response.status === 202) {
-          this.submissionId = response.data.submission_id
-          this.status = 'submitted'
-          return response.data
-        }
+        const response = await api.post('/user/submit', data)
+        this.submissionId = response.submission_id
+        this.status = 'submitted'
+        return response
       } catch (error) {
-        this.error = error.response?.data?.message || error.message
+        this.error = error.message || 'Submission failed'
         throw error
       } finally {
         this.loading = false
       }
     },
 
-    async getStatus(submissionId) {
+    async getStatus() {
+      if (!this.submissionId) return
+
       try {
-        const response = await axios.get(`/api/user/status/${submissionId}`)
-        this.status = response.data.status
-        return response.data
+        const response = await api.get(`/user/status/${this.submissionId}`)
+        this.status = response.status
+        return response
       } catch (error) {
         this.error = error.message
         throw error
@@ -50,3 +53,6 @@ export const useSubmissionStore = defineStore('submission', {
     }
   }
 })
+
+// Export api for testing
+export { api }

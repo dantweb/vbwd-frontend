@@ -1,10 +1,16 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { ApiClient } from '@vbwd/core-sdk'
+
+// Create API client instance
+const api = new ApiClient({
+  baseURL: import.meta.env.VITE_API_URL || '/api'
+})
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('admin_token') || null,
-    user: null
+    user: null,
+    error: null
   }),
 
   getters: {
@@ -12,21 +18,23 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(username, password) {
-      try {
-        const response = await axios.post('/api/admin/login', {
-          username,
-          password
-        })
+    async login(email, password) {
+      this.error = null
 
-        this.token = response.data.token
+      try {
+        const response = await api.post('/auth/login', { email, password })
+        this.token = response.token
+        this.user = response.user
+
+        // Set token in API client for future requests
+        api.setToken(this.token)
+
+        // Persist token
         localStorage.setItem('admin_token', this.token)
 
-        // Set default auth header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-
-        return true
+        return response
       } catch (error) {
+        this.error = error.message || 'Login failed'
         throw error
       }
     },
@@ -34,14 +42,20 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.token = null
       this.user = null
+      this.error = null
+      api.clearToken()
       localStorage.removeItem('admin_token')
-      delete axios.defaults.headers.common['Authorization']
     },
 
     initAuth() {
-      if (this.token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      const token = localStorage.getItem('admin_token')
+      if (token) {
+        this.token = token
+        api.setToken(token)
       }
     }
   }
 })
+
+// Export api for testing
+export { api }
