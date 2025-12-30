@@ -1,4 +1,4 @@
-.PHONY: up down build dev logs clean install test lint
+.PHONY: up down build dev logs clean install test lint test-e2e test-e2e-ui test-e2e-headed test-e2e-debug test-e2e-file test-e2e-seed test-e2e-report playwright-install
 
 # Start production containers
 up:
@@ -44,3 +44,41 @@ test:
 lint:
 	cd user/vue && npm run lint
 	cd admin/vue && npm run lint
+
+# ============================================
+# Playwright E2E Tests (user app)
+# ============================================
+
+# Run all E2E tests (headless)
+# Set VITE_BACKEND_URL for Linux (outside Docker)
+test-e2e:
+	cd user && VITE_BACKEND_URL=http://localhost:5000 npx playwright test
+
+# Run E2E tests with Playwright UI mode
+test-e2e-ui:
+	cd user && VITE_BACKEND_URL=http://localhost:5000 npx playwright test --ui
+
+# Run E2E tests in headed browser (visible)
+test-e2e-headed:
+	cd user && VITE_BACKEND_URL=http://localhost:5000 npx playwright test --headed
+
+# Run E2E tests in debug mode
+test-e2e-debug:
+	cd user && VITE_BACKEND_URL=http://localhost:5000 npx playwright test --debug
+
+# Run specific E2E test file
+# Usage: make test-e2e-file FILE=auth.spec.ts
+test-e2e-file:
+	cd user && VITE_BACKEND_URL=http://localhost:5000 npx playwright test $(FILE)
+
+# Run E2E tests with test data seeding
+test-e2e-seed:
+	cd user && VITE_BACKEND_URL=http://localhost:5000 TEST_DATA_SEED=true npx playwright test
+
+# Show Playwright test report
+test-e2e-report:
+	cd user && npx playwright show-report
+
+# Install Playwright browsers
+playwright-install:
+	cd user && npx playwright install

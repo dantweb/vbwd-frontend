@@ -10,6 +10,6 @@
     - generic [ref=e11]:
       - generic [ref=e12]: Password
       - textbox "Password" [ref=e13]: TestPass123@
-    - generic [ref=e14]: Internal Server Error
+    - generic [ref=e14]: Not found
     - button "Login" [ref=e15] [cursor=pointer]
 ```
