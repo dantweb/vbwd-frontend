@@ -3,22 +3,27 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
 export default defineConfig({
+  root: './vue',
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'vue/src')
     }
   },
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_BACKEND_URL || 'http://host.docker.internal:5000',
         changeOrigin: true
       },
       '/socket.io': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_BACKEND_URL || 'http://host.docker.internal:5000',
         ws: true
       }
     }
+  },
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true
   }
 })

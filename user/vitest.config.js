@@ -7,14 +7,16 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    include: ['vue/tests/unit/**/*.spec.{js,ts}'],
+    exclude: ['vue/tests/e2e/**'],
     coverage: {
       reporter: ['text', 'html'],
-      exclude: ['node_modules/', 'tests/']
+      exclude: ['node_modules/', 'vue/tests/']
     }
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./vue/src', import.meta.url))
     }
   }
 })

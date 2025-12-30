@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ApiClient } from '@vbwd/core-sdk'
+import { ApiClient } from '@vbwd/view-component'
 
 // Create API client instance
 const api = new ApiClient({

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useSubmissionStore, api } from '@/stores/submission'
 
 // Mock the API client
-vi.mock('@vbwd/core-sdk', () => ({
+vi.mock('@vbwd/view-component', () => ({
   ApiClient: vi.fn().mockImplementation(() => ({
     post: vi.fn(),
     get: vi.fn(),

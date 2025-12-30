@@ -1,6 +1,6 @@
-# VBWD Core SDK
+# VBWD View Component
 
-Shared TypeScript library for VBWD user and admin applications.
+Shared Vue 3 component library and TypeScript SDK for VBWD user and admin applications.
 
 ## Features
 
@@ -16,13 +16,13 @@ Shared TypeScript library for VBWD user and admin applications.
 ## Installation
 
 ```bash
-npm install @vbwd/core-sdk
+npm install @vbwd/view-component
 ```
 
 ## Usage
 
 ```typescript
-import { version, name } from '@vbwd/core-sdk';
+import { version, name } from '@vbwd/view-component';
 
 console.log(`${name} v${version}`);
 ```

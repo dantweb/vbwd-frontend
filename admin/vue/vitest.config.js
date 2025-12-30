@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    include: ['tests/unit/**/*.spec.{js,ts}'],
+    exclude: ['tests/e2e/**'],
     coverage: {
       reporter: ['text', 'html'],
       exclude: ['node_modules/', 'tests/']

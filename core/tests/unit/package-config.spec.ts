@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import pkg from '../../package.json';
 
 describe('Package Configuration', () => {
-  it('should be named @vbwd/core-sdk', () => {
-    expect(pkg.name).toBe('@vbwd/core-sdk');
+  it('should be named @vbwd/view-component', () => {
+    expect(pkg.name).toBe('@vbwd/view-component');
   });
 
   it('should be an ES module', () => {

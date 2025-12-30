@@ -10,6 +10,6 @@ describe('Core SDK Entry Point', () => {
 
   it('should export name', () => {
     expect(name).toBeDefined();
-    expect(name).toBe('@vbwd/core-sdk');
+    expect(name).toBe('@vbwd/view-component');
   });
 });
