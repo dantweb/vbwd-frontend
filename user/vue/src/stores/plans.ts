@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '@/api';
 
 export interface Plan {
   id: string;
@@ -8,11 +8,6 @@ export interface Plan {
   features: string[];
   popular: boolean;
 }
-
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
 
 export const usePlansStore = defineStore('plans', {
   state: () => ({
@@ -70,6 +65,3 @@ export const usePlansStore = defineStore('plans', {
     }
   }
 });
-
-// Export api for testing
-export { api };

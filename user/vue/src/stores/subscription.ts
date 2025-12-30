@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '@/api';
 
 export interface Subscription {
   id: string;
@@ -13,11 +13,6 @@ export interface Usage {
   apiCalls: { used: number; limit: number };
   storage: { used: number; limit: number; unit: string };
 }
-
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
 
 export const useSubscriptionStore = defineStore('subscription', {
   state: () => ({
@@ -110,6 +105,3 @@ export const useSubscriptionStore = defineStore('subscription', {
     }
   }
 });
-
-// Export api for testing
-export { api };

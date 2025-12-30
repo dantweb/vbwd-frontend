@@ -126,6 +126,7 @@ make test-e2e-report
 **Linux (outside Docker):**
 ```bash
 VITE_BACKEND_URL=http://localhost:5000 make test-e2e
+vbwd-frontend/user && VITE_BACKEND_URL=http://localhost:5000 npx playwright test --headed
 ```
 
 ### Linting

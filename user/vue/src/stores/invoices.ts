@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '@/api';
 
 export interface Invoice {
   id: string;
@@ -8,11 +8,6 @@ export interface Invoice {
   amount: string;
   status: 'paid' | 'pending' | 'overdue';
 }
-
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
 
 export const useInvoicesStore = defineStore('invoices', {
   state: () => ({
@@ -60,6 +55,3 @@ export const useInvoicesStore = defineStore('invoices', {
     }
   }
 });
-
-// Export api for testing
-export { api };

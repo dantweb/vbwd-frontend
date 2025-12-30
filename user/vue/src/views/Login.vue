@@ -37,12 +37,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '@/api';
 
 const router = useRouter();
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
 
 const email = ref('');
 const password = ref('');

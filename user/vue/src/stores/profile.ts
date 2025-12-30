@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '@/api';
 
 export interface Profile {
   id: string;
@@ -7,10 +7,23 @@ export interface Profile {
   email: string;
 }
 
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
+// Backend response types
+interface BackendUser {
+  id: string;
+  email: string;
+  status: string;
+  role: string;
+}
+
+interface BackendDetails {
+  first_name?: string;
+  last_name?: string;
+}
+
+interface BackendProfileResponse {
+  user: BackendUser;
+  details: BackendDetails | null;
+}
 
 export const useProfileStore = defineStore('profile', {
   state: () => ({
@@ -25,9 +38,20 @@ export const useProfileStore = defineStore('profile', {
       this.error = null;
 
       try {
-        const response = await api.get('/user/profile');
-        this.profile = response as Profile;
-        return response;
+        const response = await api.get('/user/profile') as BackendProfileResponse;
+
+        // Transform backend response to frontend Profile format
+        const firstName = response.details?.first_name || '';
+        const lastName = response.details?.last_name || '';
+        const name = [firstName, lastName].filter(Boolean).join(' ') || response.user.email;
+
+        this.profile = {
+          id: response.user.id,
+          email: response.user.email,
+          name: name
+        };
+
+        return this.profile;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to fetch profile';
         throw error;
@@ -41,9 +65,22 @@ export const useProfileStore = defineStore('profile', {
       this.error = null;
 
       try {
-        const response = await api.put('/user/details', data);
-        this.profile = response as Profile;
-        return response;
+        // Transform frontend data to backend format
+        const backendData: { first_name?: string; last_name?: string } = {};
+        if (data.name) {
+          const nameParts = data.name.split(' ');
+          backendData.first_name = nameParts[0] || '';
+          backendData.last_name = nameParts.slice(1).join(' ') || '';
+        }
+
+        await api.put('/user/details', backendData);
+
+        // Update local profile
+        if (this.profile && data.name) {
+          this.profile.name = data.name;
+        }
+
+        return this.profile;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to update profile';
         throw error;
@@ -77,6 +114,3 @@ export const useProfileStore = defineStore('profile', {
     }
   }
 });
-
-// Export api for testing
-export { api };
