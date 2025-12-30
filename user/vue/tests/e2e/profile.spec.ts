@@ -29,9 +29,19 @@ test.describe('Profile Management', () => {
   test('can change password', async ({ page }) => {
     await page.goto('/profile');
 
+    // Change to new password
     await page.fill('[data-testid="current-password"]', 'TestPass123@');
     await page.fill('[data-testid="new-password"]', 'NewTestPass456@');
     await page.fill('[data-testid="confirm-password"]', 'NewTestPass456@');
+    await page.click('[data-testid="change-password"]');
+
+    await expect(page.locator('[data-testid="success-toast"]')).toBeVisible();
+
+    // Wait for toast to disappear, then change back to original
+    await page.waitForTimeout(3500);
+    await page.fill('[data-testid="current-password"]', 'NewTestPass456@');
+    await page.fill('[data-testid="new-password"]', 'TestPass123@');
+    await page.fill('[data-testid="confirm-password"]', 'TestPass123@');
     await page.click('[data-testid="change-password"]');
 
     await expect(page.locator('[data-testid="success-toast"]')).toBeVisible();
