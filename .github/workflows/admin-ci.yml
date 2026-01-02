@@ -1,5 +1,8 @@
 name: Admin App CI
 
+# Mirrors bin/pre-commit-check.sh --admin --unit --e2e
+# For local testing: ./bin/pre-commit-check.sh --admin --unit
+
 on:
   push:
     branches: ['*']
@@ -14,9 +17,14 @@ on:
       - 'core/**'
       - '.github/workflows/admin-ci.yml'
 
+env:
+  NODE_VERSION: '20'
+
 jobs:
-  lint:
-    name: Lint & Type Check
+  # Style checks (ESLint + TypeScript)
+  # Equivalent to: ./bin/pre-commit-check.sh --admin (style only)
+  style:
+    name: Style (ESLint + TypeScript)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,26 +37,33 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: admin/vue/package-lock.json
 
-      - name: Install dependencies
+      - name: Install core dependencies
+        working-directory: core
+        run: npm ci
+
+      - name: Build core
+        working-directory: core
+        run: npm run build --if-present
+
+      - name: Install admin dependencies
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint --if-present
+        run: npm run lint
 
-      - name: Check TypeScript
-        run: npm run type-check --if-present
+      - name: Run TypeScript check
+        run: npx vue-tsc --noEmit
 
-      - name: Check formatting
-        run: npm run format:check --if-present
-
-  build:
-    name: Build Admin App
+  # Unit tests
+  # Equivalent to: ./bin/pre-commit-check.sh --admin --unit --no-style
+  unit:
+    name: Unit Tests (Vitest)
     runs-on: ubuntu-latest
-    needs: [lint]
+    needs: [style]
     defaults:
       run:
         working-directory: admin/vue
@@ -60,11 +75,61 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: admin/vue/package-lock.json
 
-      - name: Install dependencies
+      - name: Install core dependencies
+        working-directory: core
+        run: npm ci
+
+      - name: Build core
+        working-directory: core
+        run: npm run build --if-present
+
+      - name: Install admin dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npx vitest run tests/unit/ --reporter=verbose
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-unit-test-results
+          path: admin/vue/coverage/
+          if-no-files-found: ignore
+
+  # Build check
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [style]
+    defaults:
+      run:
+        working-directory: admin/vue
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: admin/vue/package-lock.json
+
+      - name: Install core dependencies
+        working-directory: core
+        run: npm ci
+
+      - name: Build core
+        working-directory: core
+        run: npm run build --if-present
+
+      - name: Install admin dependencies
         run: npm ci
 
       - name: Build application
@@ -76,7 +141,9 @@ jobs:
           name: admin-dist
           path: admin/vue/dist/
 
-  test-e2e:
+  # E2E tests (Playwright)
+  # Equivalent to: ./bin/pre-commit-check.sh --admin --e2e --no-style
+  e2e:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
     needs: [build]
@@ -91,72 +158,67 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: admin/vue/package-lock.json
 
-      - name: Install dependencies
+      - name: Install core dependencies
+        working-directory: core
+        run: npm ci
+
+      - name: Build core
+        working-directory: core
+        run: npm run build --if-present
+
+      - name: Install admin dependencies
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Build Core SDK
-        working-directory: core
-        run: |
-          npm ci
-          npm run build
-
-      - name: Start backend services
-        run: |
-          cd ../../../vbwd-backend
-          docker-compose up -d postgres python
-          docker-compose exec -T python flask db upgrade
-          echo "Waiting for backend to be ready..."
-          timeout 60 bash -c 'until curl -sf http://localhost:5001/health; do sleep 2; done'
-
-      - name: Start admin app
-        run: |
-          npm run preview &
-          echo "Waiting for admin app to be ready..."
-          timeout 60 bash -c 'until curl -sf http://localhost:4173; do sleep 2; done'
+        run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run test:e2e --if-present
+        run: npx playwright test
+        env:
+          CI: true
 
-      - name: Upload E2E test results
+      - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: admin-e2e-results
+          name: admin-playwright-report
           path: |
-            admin/vue/test-results/
             admin/vue/playwright-report/
+            admin/vue/test-results/
+          if-no-files-found: ignore
 
-      - name: Stop services
-        if: always()
-        run: |
-          cd ../../../vbwd-backend
-          docker-compose down
-
+  # Summary job
   summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [lint, build, test-e2e]
+    needs: [style, unit, build, e2e]
     if: always()
 
     steps:
-      - name: Check job results
+      - name: Generate summary
         run: |
           echo "## Admin App CI Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Lint & Type Check: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Build: ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- E2E Tests: ${{ needs.test-e2e.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Style (ESLint + TS) | ${{ needs.style.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.unit.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests | ${{ needs.e2e.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Equivalent to: \`./bin/pre-commit-check.sh --admin --unit --e2e\`*" >> $GITHUB_STEP_SUMMARY
 
-      - name: Fail if any job failed
+      - name: Check results
         if: |
-          needs.lint.result == 'failure' ||
+          needs.style.result == 'failure' ||
+          needs.unit.result == 'failure' ||
           needs.build.result == 'failure' ||
-          needs.test-e2e.result == 'failure'
-        run: exit 1
+          needs.e2e.result == 'failure'
+        run: |
+          echo "One or more checks failed"
+          exit 1
