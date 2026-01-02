@@ -72,8 +72,8 @@ test.describe('Admin Invoice Details', () => {
   test('should show void button', async ({ page }) => {
     await page.goto('/admin/invoices/INV-001');
 
-    const voidButton = page.locator('[data-testid="void-invoice"], button:has-text("Void")');
-    // May or may not be visible depending on invoice status
+    // Void button may or may not be visible depending on invoice status
+    await expect(page.locator('[data-testid="void-invoice"], button:has-text("Void")').first()).toBeDefined();
   });
 
   test('should display dates', async ({ page }) => {

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupAuth } from './fixtures/admin';
-import { mockWebhooksAPI, mockWebhooks } from './helpers/api-mocks';
+import { mockWebhooksAPI } from './helpers/api-mocks';
 
 test.describe('Admin Webhooks Management', () => {
   test.beforeEach(async ({ page }) => {

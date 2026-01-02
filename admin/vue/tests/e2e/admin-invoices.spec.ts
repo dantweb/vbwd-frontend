@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupAuth } from './fixtures/admin';
-import { mockInvoicesAPI, mockInvoices } from './helpers/api-mocks';
+import { mockInvoicesAPI } from './helpers/api-mocks';
 
 test.describe('Admin Invoices Management', () => {
   test.beforeEach(async ({ page }) => {

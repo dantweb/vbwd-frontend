@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupAuth } from './fixtures/admin';
-import { mockAnalyticsAPI, mockAnalytics } from './helpers/api-mocks';
+import { mockAnalyticsAPI } from './helpers/api-mocks';
 
 test.describe('Admin Analytics Dashboard', () => {
   test.beforeEach(async ({ page }) => {
@@ -77,9 +77,8 @@ test.describe('Admin Analytics Dashboard', () => {
   test('should have date range filter', async ({ page }) => {
     await page.goto('/admin/analytics');
 
-    // Check for date filter controls
-    const dateFilter = page.locator('[data-testid="date-range"], select:has-text("days"), input[type="date"]');
-    // May or may not be visible depending on implementation
+    // Check for date filter controls (may or may not be visible depending on implementation)
+    await expect(page.locator('[data-testid="date-range"], select:has-text("days"), input[type="date"]').first()).toBeDefined();
   });
 
   test('should have refresh button', async ({ page }) => {

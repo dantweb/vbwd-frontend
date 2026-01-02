@@ -84,7 +84,7 @@
           @click="navigateToPlan(plan.id)"
         >
           <td>{{ plan.name }}</td>
-          <td>{{ formatPrice(plan.price_float, plan.price?.currency_code) }}</td>
+          <td>{{ formatPrice(plan.price_float, typeof plan.price === 'object' ? plan.price?.currency_code : undefined) }}</td>
           <td>{{ plan.billing_period }}</td>
           <td>{{ plan.subscriber_count ?? 0 }}</td>
           <td>

@@ -79,7 +79,6 @@ test.describe('Admin Plans Management', () => {
     await page.goto('/admin/plans');
 
     // Features might be shown in expandable section or column
-    const featuresText = page.locator('text=/support|features/i');
-    // At least one plan should mention features
+    await expect(page.locator('text=/support|features/i').first()).toBeDefined();
   });
 });

@@ -1,13 +1,21 @@
 import { defineStore } from 'pinia';
 import { api } from '../api';
 
+export interface AdminPlanPrice {
+  price_decimal: string;
+  price_float: number;
+  currency_code?: string;
+  currency_symbol?: string;
+}
+
 export interface AdminPlan {
   id: string;
   name: string;
-  price: number;
+  price?: AdminPlanPrice | number;
+  price_float?: number;
   currency?: string;
-  billing_period: 'monthly' | 'yearly';
-  features?: string[];
+  billing_period: 'monthly' | 'yearly' | 'quarterly' | 'weekly' | 'one_time';
+  features?: string[] | Record<string, unknown>;
   limits?: Record<string, number>;
   is_active: boolean;
   subscriber_count?: number;
@@ -18,7 +26,7 @@ export interface CreatePlanData {
   name: string;
   price: number;
   billing_period: string;
-  features?: string[];
+  features?: string[] | Record<string, unknown>;
   limits?: Record<string, number>;
 }
 

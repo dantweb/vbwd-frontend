@@ -28,6 +28,7 @@ export const defaultAdminUser: AdminUser = {
  * Extended test fixture with authenticated admin page
  */
 export const test = base.extend<AuthenticatedFixtures>({
+  // eslint-disable-next-line no-empty-pattern
   adminUser: async ({}, use) => {
     await use(defaultAdminUser);
   },
@@ -59,7 +60,7 @@ export { expect } from '@playwright/test';
  * Helper to set up authentication for a page
  */
 export async function setupAuth(page: Page, user: AdminUser = defaultAdminUser): Promise<void> {
-  await page.addInitScript((userData) => {
+  await page.addInitScript((_userData) => {
     localStorage.setItem('admin_token', 'test-admin-token');
   }, user);
 

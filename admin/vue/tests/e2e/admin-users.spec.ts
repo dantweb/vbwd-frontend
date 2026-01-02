@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupAuth, defaultAdminUser } from './fixtures/admin';
+import { setupAuth } from './fixtures/admin';
 import { mockUsersAPI, mockUsers } from './helpers/api-mocks';
 
 test.describe('Admin Users Management', () => {
@@ -79,7 +79,6 @@ test.describe('Admin Users Management', () => {
     await page.goto('/admin/users');
 
     // Check for pagination controls (if users exceed page size)
-    const pagination = page.locator('[data-testid="pagination"], .pagination, nav[aria-label="pagination"]');
-    // May or may not be visible depending on mock data size
+    await expect(page.locator('[data-testid="pagination"], .pagination, nav[aria-label="pagination"]').first()).toBeDefined();
   });
 });

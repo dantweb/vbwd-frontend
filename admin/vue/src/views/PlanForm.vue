@@ -161,8 +161,8 @@ const submitting = ref(false);
 const formData = ref({
   name: '',
   price: 0,
-  billing_period: '' as 'monthly' | 'yearly' | '',
-  features: [] as string[]
+  billing_period: '' as string,
+  features: [] as string[] | Record<string, unknown>
 });
 
 const featuresText = computed({
@@ -211,9 +211,19 @@ async function fetchPlan(): Promise<void> {
   try {
     const response = await planStore.fetchPlan(planId.value);
     if (response) {
+      // Extract price as number (handle both price_float and price object)
+      let priceValue = 0;
+      if (typeof response.price_float === 'number') {
+        priceValue = response.price_float;
+      } else if (typeof response.price === 'number') {
+        priceValue = response.price;
+      } else if (response.price && typeof response.price === 'object' && 'price_float' in response.price) {
+        priceValue = (response.price as { price_float: number }).price_float;
+      }
+
       formData.value = {
         name: response.name || '',
-        price: response.price_float ?? response.price ?? 0,
+        price: priceValue,
         billing_period: response.billing_period || '',
         features: response.features || []
       };
