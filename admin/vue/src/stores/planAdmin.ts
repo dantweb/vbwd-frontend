@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '../api';
 
 export interface AdminPlan {
   id: string;
@@ -21,11 +21,6 @@ export interface CreatePlanData {
   features?: string[];
   limits?: Record<string, number>;
 }
-
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
 
 export const usePlanAdminStore = defineStore('planAdmin', {
   state: () => ({
@@ -49,6 +44,22 @@ export const usePlanAdminStore = defineStore('planAdmin', {
         return response.plans;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to fetch plans';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchPlan(planId: string): Promise<AdminPlan> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.get(`/admin/tarif-plans/${planId}`) as { plan: AdminPlan };
+        this.selectedPlan = response.plan;
+        return response.plan;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to fetch plan';
         throw error;
       } finally {
         this.loading = false;
@@ -118,6 +129,3 @@ export const usePlanAdminStore = defineStore('planAdmin', {
     }
   }
 });
-
-// Export api for testing
-export { api };

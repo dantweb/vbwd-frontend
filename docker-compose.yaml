@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   user-app:
     build:
@@ -11,6 +9,8 @@ services:
       - "8080:80"
     environment:
       - VITE_API_URL=/api/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   admin-app:
     build:
@@ -22,6 +22,8 @@ services:
       - "8081:80"
     environment:
       - VITE_API_URL=/api/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Development mode with hot reload
   user-dev:

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '../api';
 
 export interface MetricPoint {
   date: string;
@@ -31,12 +31,8 @@ export interface ActivityItem {
 export interface DateRange {
   start?: string;
   end?: string;
+  [key: string]: string | undefined;
 }
-
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
 
 export const useAnalyticsStore = defineStore('analytics', {
   state: () => ({
@@ -169,6 +165,3 @@ export const useAnalyticsStore = defineStore('analytics', {
     }
   }
 });
-
-// Export api for testing
-export { api };

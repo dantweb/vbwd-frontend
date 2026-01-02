@@ -1,15 +1,30 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { useUsersStore } from '@/stores/users';
+import { api } from '@/api';
 
-describe('UserAdminStore', () => {
+// Mock the API module
+vi.mock('@/api', () => ({
+  api: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    setToken: vi.fn(),
+    clearToken: vi.fn()
+  },
+  initializeApi: vi.fn(),
+  clearApiAuth: vi.fn()
+}));
+
+describe('UsersStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
   });
 
-  it('initializes with empty state', async () => {
-    const { useUserAdminStore } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+  it('initializes with empty state', () => {
+    const store = useUsersStore();
 
     expect(store.users).toEqual([]);
     expect(store.selectedUser).toBeNull();
@@ -19,15 +34,14 @@ describe('UserAdminStore', () => {
   });
 
   it('fetches users list with pagination', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
     const mockUsers = [
       { id: '1', email: 'user1@test.com', name: 'User 1', is_active: true, roles: ['user'] },
       { id: '2', email: 'user2@test.com', name: 'User 2', is_active: true, roles: ['admin'] }
     ];
 
-    api.get = vi.fn().mockResolvedValue({
+    vi.mocked(api.get).mockResolvedValue({
       users: mockUsers,
       total: 100,
       page: 1,
@@ -44,10 +58,9 @@ describe('UserAdminStore', () => {
   });
 
   it('fetches users with search filter', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.get = vi.fn().mockResolvedValue({ users: [], total: 0 });
+    vi.mocked(api.get).mockResolvedValue({ users: [], total: 0, page: 1, per_page: 20 });
 
     await store.fetchUsers({ page: 1, per_page: 20, search: 'test@', status: 'active' });
 
@@ -57,8 +70,7 @@ describe('UserAdminStore', () => {
   });
 
   it('fetches single user details', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
     const mockUser = {
       id: '1',
@@ -70,7 +82,7 @@ describe('UserAdminStore', () => {
       stats: { total_payments: 100 }
     };
 
-    api.get = vi.fn().mockResolvedValue({ user: mockUser });
+    vi.mocked(api.get).mockResolvedValue({ user: mockUser });
 
     await store.fetchUser('1');
 
@@ -79,10 +91,9 @@ describe('UserAdminStore', () => {
   });
 
   it('updates user information', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.put = vi.fn().mockResolvedValue({ message: 'User updated' });
+    vi.mocked(api.put).mockResolvedValue({ message: 'User updated' });
 
     await store.updateUser('1', { name: 'New Name' });
 
@@ -90,10 +101,9 @@ describe('UserAdminStore', () => {
   });
 
   it('suspends user with reason', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.post = vi.fn().mockResolvedValue({ message: 'User suspended' });
+    vi.mocked(api.post).mockResolvedValue({ message: 'User suspended' });
 
     await store.suspendUser('1', 'Violation of terms');
 
@@ -101,10 +111,9 @@ describe('UserAdminStore', () => {
   });
 
   it('activates suspended user', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.post = vi.fn().mockResolvedValue({ message: 'User activated' });
+    vi.mocked(api.post).mockResolvedValue({ message: 'User activated' });
 
     await store.activateUser('1');
 
@@ -112,10 +121,9 @@ describe('UserAdminStore', () => {
   });
 
   it('updates user roles', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.put = vi.fn().mockResolvedValue({ message: 'Roles updated' });
+    vi.mocked(api.put).mockResolvedValue({ message: 'Roles updated' });
 
     await store.updateUserRoles('1', ['admin', 'user']);
 
@@ -123,10 +131,9 @@ describe('UserAdminStore', () => {
   });
 
   it('impersonates user', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.post = vi.fn().mockResolvedValue({ token: 'impersonation_token', expires_in: 3600 });
+    vi.mocked(api.post).mockResolvedValue({ token: 'impersonation_token', expires_in: 3600 });
 
     const result = await store.impersonateUser('1');
 
@@ -135,18 +142,16 @@ describe('UserAdminStore', () => {
   });
 
   it('handles fetch error gracefully', async () => {
-    const { useUserAdminStore, api } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+    const store = useUsersStore();
 
-    api.get = vi.fn().mockRejectedValue(new Error('Network error'));
+    vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
 
     await expect(store.fetchUsers({ page: 1, per_page: 20 })).rejects.toThrow();
     expect(store.error).toBe('Network error');
   });
 
-  it('resets store state', async () => {
-    const { useUserAdminStore } = await import('../../../src/stores/userAdmin');
-    const store = useUserAdminStore();
+  it('resets store state', () => {
+    const store = useUsersStore();
     store.users = [{ id: '1', email: 'test@test.com', name: 'Test', is_active: true, roles: [] }];
     store.selectedUser = { id: '1', email: 'test@test.com', name: 'Test', is_active: true, roles: [] };
     store.error = 'Some error';
@@ -156,5 +161,30 @@ describe('UserAdminStore', () => {
     expect(store.users).toEqual([]);
     expect(store.selectedUser).toBeNull();
     expect(store.error).toBeNull();
+  });
+
+  it('computes hasUsers correctly', async () => {
+    const store = useUsersStore();
+
+    expect(store.hasUsers).toBe(false);
+
+    vi.mocked(api.get).mockResolvedValue({
+      users: [{ id: '1', email: 'user@test.com', name: 'User', is_active: true, roles: [] }],
+      total: 1,
+      page: 1,
+      per_page: 20
+    });
+
+    await store.fetchUsers({ page: 1, per_page: 20 });
+
+    expect(store.hasUsers).toBe(true);
+  });
+
+  it('computes totalPages correctly', () => {
+    const store = useUsersStore();
+    store.total = 100;
+    store.perPage = 20;
+
+    expect(store.totalPages).toBe(5);
   });
 });

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { ApiClient } from '@vbwd/view-component';
+import { api } from '@/api';
 
-export interface AdminUser {
+export interface User {
   id: string;
   email: string;
   name: string;
@@ -11,7 +11,7 @@ export interface AdminUser {
   created_at?: string;
 }
 
-export interface UserDetail extends AdminUser {
+export interface UserDetail extends User {
   subscription?: {
     plan: string | null;
     status: string | null;
@@ -30,22 +30,31 @@ export interface FetchUsersParams {
   status?: string;
 }
 
-// Create API client instance
-const api = new ApiClient({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
-});
+export interface FetchUsersResponse {
+  users: User[];
+  total: number;
+  page: number;
+  per_page: number;
+}
 
-export const useUserAdminStore = defineStore('userAdmin', {
+export const useUsersStore = defineStore('users', {
   state: () => ({
-    users: [] as AdminUser[],
+    users: [] as User[],
     selectedUser: null as UserDetail | null,
     total: 0,
+    page: 1,
+    perPage: 20,
     loading: false,
     error: null as string | null
   }),
 
+  getters: {
+    hasUsers: (state): boolean => state.users.length > 0,
+    totalPages: (state): number => Math.ceil(state.total / state.perPage)
+  },
+
   actions: {
-    async fetchUsers(params: FetchUsersParams) {
+    async fetchUsers(params: FetchUsersParams): Promise<FetchUsersResponse> {
       this.loading = true;
       this.error = null;
 
@@ -57,10 +66,12 @@ export const useUserAdminStore = defineStore('userAdmin', {
             search: params.search || '',
             status: params.status || ''
           }
-        }) as { users: AdminUser[]; total: number; page: number; per_page: number };
+        }) as FetchUsersResponse;
 
         this.users = response.users;
         this.total = response.total;
+        this.page = response.page;
+        this.perPage = response.per_page;
         return response;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to fetch users';
@@ -70,7 +81,7 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    async fetchUser(userId: string) {
+    async fetchUser(userId: string): Promise<UserDetail> {
       this.loading = true;
       this.error = null;
 
@@ -86,13 +97,23 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    async updateUser(userId: string, data: Partial<AdminUser>) {
+    async updateUser(userId: string, data: Partial<User>): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await api.put(`/admin/users/${userId}`, data);
-        return response;
+        await api.put(`/admin/users/${userId}`, data);
+
+        // Update local state if this is the selected user
+        if (this.selectedUser?.id === userId) {
+          this.selectedUser = { ...this.selectedUser, ...data };
+        }
+
+        // Update in list if present
+        const index = this.users.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          this.users[index] = { ...this.users[index], ...data };
+        }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to update user';
         throw error;
@@ -101,13 +122,21 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    async suspendUser(userId: string, reason: string) {
+    async suspendUser(userId: string, reason: string): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await api.post(`/admin/users/${userId}/suspend`, { reason });
-        return response;
+        await api.post(`/admin/users/${userId}/suspend`, { reason });
+
+        // Update local state
+        if (this.selectedUser?.id === userId) {
+          this.selectedUser.is_active = false;
+        }
+        const index = this.users.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          this.users[index].is_active = false;
+        }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to suspend user';
         throw error;
@@ -116,13 +145,21 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    async activateUser(userId: string) {
+    async activateUser(userId: string): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await api.post(`/admin/users/${userId}/activate`);
-        return response;
+        await api.post(`/admin/users/${userId}/activate`);
+
+        // Update local state
+        if (this.selectedUser?.id === userId) {
+          this.selectedUser.is_active = true;
+        }
+        const index = this.users.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          this.users[index].is_active = true;
+        }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to activate user';
         throw error;
@@ -131,13 +168,21 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    async updateUserRoles(userId: string, roles: string[]) {
+    async updateUserRoles(userId: string, roles: string[]): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await api.put(`/admin/users/${userId}/roles`, { roles });
-        return response;
+        await api.put(`/admin/users/${userId}/roles`, { roles });
+
+        // Update local state
+        if (this.selectedUser?.id === userId) {
+          this.selectedUser.roles = roles;
+        }
+        const index = this.users.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          this.users[index].roles = roles;
+        }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to update roles';
         throw error;
@@ -146,7 +191,7 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    async impersonateUser(userId: string) {
+    async impersonateUser(userId: string): Promise<{ token: string; expires_in: number }> {
       this.loading = true;
       this.error = null;
 
@@ -161,15 +206,17 @@ export const useUserAdminStore = defineStore('userAdmin', {
       }
     },
 
-    reset() {
+    clearSelectedUser(): void {
+      this.selectedUser = null;
+    },
+
+    reset(): void {
       this.users = [];
       this.selectedUser = null;
       this.total = 0;
+      this.page = 1;
       this.error = null;
       this.loading = false;
     }
   }
 });
-
-// Export api for testing
-export { api };

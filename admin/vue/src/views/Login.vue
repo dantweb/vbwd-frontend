@@ -11,7 +11,7 @@
             type="text"
             required
             class="input"
-          />
+          >
         </div>
         <div class="form-group">
           <label for="password">Password</label>
@@ -21,10 +21,19 @@
             type="password"
             required
             class="input"
-          />
+          >
         </div>
-        <p v-if="error" class="error">{{ error }}</p>
-        <button type="submit" :disabled="loading" class="btn-primary">
+        <p
+          v-if="error"
+          class="error"
+        >
+          {{ error }}
+        </p>
+        <button
+          type="submit"
+          :disabled="loading"
+          class="btn-primary"
+        >
           {{ loading ? 'Logging in...' : 'Login' }}
         </button>
       </form>
@@ -32,30 +41,38 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
-const authStore = useAuthStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
-const username = ref('')
-const password = ref('')
-const error = ref('')
-const loading = ref(false)
+const username = ref('');
+const password = ref('');
+const error = ref('');
+const loading = ref(false);
 
-async function handleLogin() {
-  error.value = ''
-  loading.value = true
+async function handleLogin(): Promise<void> {
+  error.value = '';
+  loading.value = true;
 
   try {
-    await authStore.login(username.value, password.value)
-    router.push('/admin/')
+    await authStore.login(username.value, password.value);
+
+    // Check if user has admin role
+    if (!authStore.isAdmin) {
+      authStore.logout();
+      router.push('/admin/forbidden');
+      return;
+    }
+
+    router.push('/admin/dashboard');
   } catch (e) {
-    error.value = 'Invalid credentials'
+    error.value = 'Invalid credentials';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>

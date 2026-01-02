@@ -1,5 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { useAnalyticsStore, type DashboardData } from '@/stores/analytics';
+import { api } from '@/api';
+
+// Mock the API module
+vi.mock('@/api', () => ({
+  api: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    setToken: vi.fn(),
+    clearToken: vi.fn()
+  },
+  initializeApi: vi.fn(),
+  clearApiAuth: vi.fn()
+}));
 
 describe('AnalyticsStore', () => {
   beforeEach(() => {
@@ -7,8 +23,7 @@ describe('AnalyticsStore', () => {
     vi.clearAllMocks();
   });
 
-  it('initializes with empty state', async () => {
-    const { useAnalyticsStore } = await import('../../../src/stores/analytics');
+  it('initializes with empty state', () => {
     const store = useAnalyticsStore();
 
     expect(store.dashboard).toBeNull();
@@ -18,10 +33,9 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches dashboard summary', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
-    const mockDashboard = {
+    const mockDashboard: DashboardData = {
       mrr: { total: 5000, change_percent: 10 },
       revenue: { total: 15000, data: [] },
       churn: { total: 2.5 },
@@ -30,7 +44,7 @@ describe('AnalyticsStore', () => {
       arpu: { total: 45 }
     };
 
-    api.get = vi.fn().mockResolvedValue(mockDashboard);
+    vi.mocked(api.get).mockResolvedValue(mockDashboard);
 
     await store.fetchDashboard();
 
@@ -39,10 +53,9 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches dashboard with date range', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
-    api.get = vi.fn().mockResolvedValue({});
+    vi.mocked(api.get).mockResolvedValue({});
 
     await store.fetchDashboard({ start: '2025-01-01', end: '2025-01-31' });
 
@@ -52,11 +65,10 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches MRR data', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
     const mockMrr = { total: 5000, change_percent: 10 };
-    api.get = vi.fn().mockResolvedValue(mockMrr);
+    vi.mocked(api.get).mockResolvedValue(mockMrr);
 
     const result = await store.fetchMRR();
 
@@ -65,7 +77,6 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches revenue data', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
     const mockRevenue = {
@@ -75,7 +86,7 @@ describe('AnalyticsStore', () => {
       ],
       total: 2500
     };
-    api.get = vi.fn().mockResolvedValue(mockRevenue);
+    vi.mocked(api.get).mockResolvedValue(mockRevenue);
 
     const result = await store.fetchRevenue('2025-01-01', '2025-01-31');
 
@@ -86,11 +97,10 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches churn rate', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
     const mockChurn = { total: 2.5 };
-    api.get = vi.fn().mockResolvedValue(mockChurn);
+    vi.mocked(api.get).mockResolvedValue(mockChurn);
 
     const result = await store.fetchChurn('2025-01-01', '2025-01-31');
 
@@ -101,14 +111,13 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches user growth', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
     const mockGrowth = {
       data: [{ date: '2025-01-01', value: 10 }],
       total: 50
     };
-    api.get = vi.fn().mockResolvedValue(mockGrowth);
+    vi.mocked(api.get).mockResolvedValue(mockGrowth);
 
     const result = await store.fetchUserGrowth('2025-01-01', '2025-01-31');
 
@@ -119,11 +128,10 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches plan distribution', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
     const mockDistribution = { Free: 100, Pro: 50, Enterprise: 10 };
-    api.get = vi.fn().mockResolvedValue(mockDistribution);
+    vi.mocked(api.get).mockResolvedValue(mockDistribution);
 
     await store.fetchPlanDistribution();
 
@@ -132,14 +140,13 @@ describe('AnalyticsStore', () => {
   });
 
   it('fetches recent activity', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
     const mockActivity = [
       { type: 'signup', user: 'user@test.com', timestamp: '2025-01-01T10:00:00Z' },
       { type: 'subscription', user: 'user2@test.com', timestamp: '2025-01-01T11:00:00Z' }
     ];
-    api.get = vi.fn().mockResolvedValue({ activity: mockActivity });
+    vi.mocked(api.get).mockResolvedValue({ activity: mockActivity });
 
     const result = await store.fetchRecentActivity();
 
@@ -148,17 +155,15 @@ describe('AnalyticsStore', () => {
   });
 
   it('handles fetch error gracefully', async () => {
-    const { useAnalyticsStore, api } = await import('../../../src/stores/analytics');
     const store = useAnalyticsStore();
 
-    api.get = vi.fn().mockRejectedValue(new Error('Network error'));
+    vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
 
     await expect(store.fetchDashboard()).rejects.toThrow();
     expect(store.error).toBe('Network error');
   });
 
-  it('resets store state', async () => {
-    const { useAnalyticsStore } = await import('../../../src/stores/analytics');
+  it('resets store state', () => {
     const store = useAnalyticsStore();
     store.dashboard = { mrr: { total: 5000 } };
     store.error = 'Some error';

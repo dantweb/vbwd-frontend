@@ -2,61 +2,133 @@
   <div class="dashboard">
     <h1>Dashboard</h1>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Total Submissions</h3>
-        <div class="stat-value">{{ stats.total }}</div>
-      </div>
-      <div class="stat-card pending">
-        <h3>Pending</h3>
-        <div class="stat-value">{{ stats.pending }}</div>
-      </div>
-      <div class="stat-card processing">
-        <h3>Processing</h3>
-        <div class="stat-value">{{ stats.processing }}</div>
-      </div>
-      <div class="stat-card completed">
-        <h3>Completed</h3>
-        <div class="stat-value">{{ stats.completed }}</div>
-      </div>
-      <div class="stat-card failed">
-        <h3>Failed</h3>
-        <div class="stat-value">{{ stats.failed }}</div>
-      </div>
+    <div
+      v-if="analyticsStore.loading"
+      class="loading"
+    >
+      Loading...
+    </div>
+    <div
+      v-else-if="analyticsStore.error"
+      class="error"
+    >
+      {{ analyticsStore.error }}
     </div>
 
-    <div class="recent-section">
-      <h2>Recent Submissions</h2>
-      <router-link to="/admin/submissions" class="view-all">View All</router-link>
+    <div
+      v-else
+      class="stats-grid"
+    >
+      <div class="stat-card">
+        <h3>Monthly Recurring Revenue</h3>
+        <div class="stat-value">
+          ${{ formatNumber(dashboard?.mrr?.total || 0) }}
+        </div>
+        <div
+          v-if="dashboard?.mrr?.change_percent"
+          class="stat-change"
+          :class="changeClass(dashboard.mrr.change_percent)"
+        >
+          {{ formatPercent(dashboard.mrr.change_percent) }}
+        </div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Revenue</h3>
+        <div class="stat-value">
+          ${{ formatNumber(dashboard?.revenue?.total || 0) }}
+        </div>
+        <div
+          v-if="dashboard?.revenue?.change_percent"
+          class="stat-change"
+          :class="changeClass(dashboard.revenue.change_percent)"
+        >
+          {{ formatPercent(dashboard.revenue.change_percent) }}
+        </div>
+      </div>
+      <div class="stat-card">
+        <h3>User Growth</h3>
+        <div class="stat-value">
+          {{ formatNumber(dashboard?.user_growth?.total || 0) }}
+        </div>
+        <div
+          v-if="dashboard?.user_growth?.change_percent"
+          class="stat-change"
+          :class="changeClass(dashboard.user_growth.change_percent)"
+        >
+          {{ formatPercent(dashboard.user_growth.change_percent) }}
+        </div>
+      </div>
+      <div class="stat-card">
+        <h3>Churn Rate</h3>
+        <div class="stat-value">
+          {{ formatPercent(dashboard?.churn?.total || 0) }}
+        </div>
+        <div
+          v-if="dashboard?.churn?.change_percent"
+          class="stat-change"
+          :class="changeClass(-dashboard.churn.change_percent)"
+        >
+          {{ formatPercent(dashboard.churn.change_percent) }}
+        </div>
+      </div>
+      <div class="stat-card">
+        <h3>ARPU</h3>
+        <div class="stat-value">
+          ${{ formatNumber(dashboard?.arpu?.total || 0) }}
+        </div>
+        <div
+          v-if="dashboard?.arpu?.change_percent"
+          class="stat-change"
+          :class="changeClass(dashboard.arpu.change_percent)"
+        >
+          {{ formatPercent(dashboard.arpu.change_percent) }}
+        </div>
+      </div>
+      <div class="stat-card">
+        <h3>Conversion Rate</h3>
+        <div class="stat-value">
+          {{ formatPercent(dashboard?.conversion?.total || 0) }}
+        </div>
+        <div
+          v-if="dashboard?.conversion?.change_percent"
+          class="stat-change"
+          :class="changeClass(dashboard.conversion.change_percent)"
+        >
+          {{ formatPercent(dashboard.conversion.change_percent) }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+<script setup lang="ts">
+import { computed, onMounted } from 'vue'
+import { useAnalyticsStore } from '../stores/analytics'
 
-const stats = ref({
-  total: 0,
-  pending: 0,
-  processing: 0,
-  completed: 0,
-  failed: 0
-})
+const analyticsStore = useAnalyticsStore()
+
+const dashboard = computed(() => analyticsStore.dashboard)
+
+function formatNumber(value: number): string {
+  return value.toLocaleString('en-US', { maximumFractionDigits: 2 })
+}
+
+function formatPercent(value: number): string {
+  const sign = value >= 0 ? '+' : ''
+  return `${sign}${value.toFixed(1)}%`
+}
+
+function changeClass(value: number): string {
+  if (value > 0) return 'positive'
+  if (value < 0) return 'negative'
+  return 'neutral'
+}
 
 onMounted(async () => {
   try {
-    // In a real app, you'd have a stats endpoint
-    const response = await axios.get('/api/admin/submissions?per_page=100')
-    const submissions = response.data.data
-
-    stats.value.total = response.data.pagination.total
-    stats.value.pending = submissions.filter(s => s.status === 'pending').length
-    stats.value.processing = submissions.filter(s => s.status === 'processing').length
-    stats.value.completed = submissions.filter(s => s.status === 'completed').length
-    stats.value.failed = submissions.filter(s => s.status === 'failed').length
+    await analyticsStore.fetchDashboard()
   } catch (error) {
-    console.error('Failed to load stats:', error)
+    console.error('Failed to load dashboard:', error)
   }
 })
 </script>
@@ -66,9 +138,18 @@ onMounted(async () => {
   margin-bottom: 30px;
 }
 
+.loading, .error {
+  padding: 20px;
+  text-align: center;
+}
+
+.error {
+  color: #dc3545;
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin-bottom: 40px;
 }
@@ -87,28 +168,17 @@ onMounted(async () => {
 }
 
 .stat-value {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: bold;
   color: #333;
 }
 
-.stat-card.pending .stat-value { color: #ffc107; }
-.stat-card.processing .stat-value { color: #17a2b8; }
-.stat-card.completed .stat-value { color: #28a745; }
-.stat-card.failed .stat-value { color: #dc3545; }
-
-.recent-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.stat-change {
+  font-size: 12px;
+  margin-top: 5px;
 }
 
-.view-all {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.view-all:hover {
-  text-decoration: underline;
-}
+.stat-change.positive { color: #28a745; }
+.stat-change.negative { color: #dc3545; }
+.stat-change.neutral { color: #6c757d; }
 </style>
