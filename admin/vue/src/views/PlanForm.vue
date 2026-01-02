@@ -166,9 +166,41 @@ const formData = ref({
 });
 
 const featuresText = computed({
-  get: () => formData.value.features.join('\n'),
+  get: () => {
+    const features = formData.value.features;
+    // Handle features as object (from API) or array
+    if (Array.isArray(features)) {
+      return features.join('\n');
+    } else if (features && typeof features === 'object') {
+      // Convert object to "key: value" lines
+      return Object.entries(features)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+    }
+    return '';
+  },
   set: (value: string) => {
-    formData.value.features = value.split('\n').filter(f => f.trim());
+    const lines = value.split('\n').filter(f => f.trim());
+    // Check if input looks like "key: value" format
+    const hasKeyValue = lines.some(line => line.includes(':'));
+    if (hasKeyValue) {
+      // Parse as object
+      const obj: Record<string, string | number | boolean> = {};
+      lines.forEach(line => {
+        const [key, ...rest] = line.split(':');
+        if (key && rest.length) {
+          const val = rest.join(':').trim();
+          // Try to parse as number or boolean
+          if (val === 'true') obj[key.trim()] = true;
+          else if (val === 'false') obj[key.trim()] = false;
+          else if (!isNaN(Number(val))) obj[key.trim()] = Number(val);
+          else obj[key.trim()] = val;
+        }
+      });
+      formData.value.features = obj as unknown as string[];
+    } else {
+      formData.value.features = lines;
+    }
   }
 });
 
@@ -181,7 +213,7 @@ async function fetchPlan(): Promise<void> {
     if (response) {
       formData.value = {
         name: response.name || '',
-        price: response.price || 0,
+        price: response.price_float ?? response.price ?? 0,
         billing_period: response.billing_period || '',
         features: response.features || []
       };

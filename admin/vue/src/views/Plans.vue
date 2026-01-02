@@ -84,7 +84,7 @@
           @click="navigateToPlan(plan.id)"
         >
           <td>{{ plan.name }}</td>
-          <td>{{ formatPrice(plan.price, plan.currency) }}</td>
+          <td>{{ formatPrice(plan.price_float, plan.price?.currency_code) }}</td>
           <td>{{ plan.billing_period }}</td>
           <td>{{ plan.subscriber_count ?? 0 }}</td>
           <td>
@@ -146,7 +146,7 @@ function navigateToCreate(): void {
 }
 
 function navigateToPlan(planId: string): void {
-  router.push(`/admin/plans/${planId}`);
+  router.push(`/admin/plans/${planId}/edit`);
 }
 
 async function handleArchive(planId: string): Promise<void> {
@@ -158,9 +158,10 @@ async function handleArchive(planId: string): Promise<void> {
   }
 }
 
-function formatPrice(price: number, currency?: string): string {
-  const currencySymbol = currency === 'USD' ? '$' : currency || '';
+function formatPrice(price: number | undefined, currency?: string): string {
+  if (price === undefined || price === null) return 'N/A';
   if (price === 0) return 'Free';
+  const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency || '€';
   return `${currencySymbol}${price.toFixed(2)}`;
 }
 

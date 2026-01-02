@@ -8,7 +8,7 @@
         </template>
       </AdminTopbar>
       <main class="admin-content">
-        <slot />
+        <router-view />
       </main>
     </div>
   </div>
