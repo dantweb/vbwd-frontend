@@ -1,0 +1,123 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - heading "VBWD Admin" [level=2] [ref=e6]
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /admin/dashboard
+      - link "Users" [ref=e9] [cursor=pointer]:
+        - /url: /admin/users
+      - link "Plans" [ref=e10] [cursor=pointer]:
+        - /url: /admin/plans
+      - link "Subscriptions" [ref=e11] [cursor=pointer]:
+        - /url: /admin/subscriptions
+      - link "Invoices" [active] [ref=e12] [cursor=pointer]:
+        - /url: /admin/invoices
+      - link "Analytics" [ref=e13] [cursor=pointer]:
+        - /url: /admin/analytics
+      - link "Webhooks" [ref=e14] [cursor=pointer]:
+        - /url: /admin/webhooks
+      - link "Settings" [ref=e15] [cursor=pointer]:
+        - /url: /admin/settings
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: admin@example.com
+        - generic [ref=e19]: Administrator
+      - button "Logout" [ref=e20] [cursor=pointer]
+  - generic [ref=e21]:
+    - banner [ref=e22]:
+      - heading "Invoices" [level=1] [ref=e24]
+    - main [ref=e25]:
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - heading "Invoices" [level=2] [ref=e28]
+          - generic [ref=e29]: 10 total
+        - combobox [ref=e31]:
+          - option "All Status" [selected]
+          - option "Draft"
+          - option "Open"
+          - option "Paid"
+          - option "Void"
+          - option "Uncollectible"
+        - table [ref=e32]:
+          - rowgroup [ref=e33]:
+            - 'row "Invoice # Customer Amount Status Date" [ref=e34]':
+              - 'columnheader "Invoice #" [ref=e35]'
+              - columnheader "Customer" [ref=e36]
+              - columnheader "Amount" [ref=e37]
+              - columnheader "Status" [ref=e38]
+              - columnheader "Date" [ref=e39]
+          - rowgroup [ref=e40]:
+            - row "INV-DEMO-0010 €29.99 Paid -" [ref=e41] [cursor=pointer]:
+              - cell "INV-DEMO-0010" [ref=e42]
+              - cell [ref=e43]
+              - cell "€29.99" [ref=e44]
+              - cell "Paid" [ref=e45]:
+                - generic [ref=e46]: Paid
+              - cell "-" [ref=e47]
+            - row "INV-DEMO-0009 €29.99 Paid -" [ref=e48] [cursor=pointer]:
+              - cell "INV-DEMO-0009" [ref=e49]
+              - cell [ref=e50]
+              - cell "€29.99" [ref=e51]
+              - cell "Paid" [ref=e52]:
+                - generic [ref=e53]: Paid
+              - cell "-" [ref=e54]
+            - row "INV-DEMO-0008 €9.99 pending -" [ref=e55] [cursor=pointer]:
+              - cell "INV-DEMO-0008" [ref=e56]
+              - cell [ref=e57]
+              - cell "€9.99" [ref=e58]
+              - cell "pending" [ref=e59]:
+                - generic [ref=e60]: pending
+              - cell "-" [ref=e61]
+            - row "INV-DEMO-0007 €29.99 failed -" [ref=e62] [cursor=pointer]:
+              - cell "INV-DEMO-0007" [ref=e63]
+              - cell [ref=e64]
+              - cell "€29.99" [ref=e65]
+              - cell "failed" [ref=e66]:
+                - generic [ref=e67]: failed
+              - cell "-" [ref=e68]
+            - row "INV-DEMO-0006 €29.99 refunded -" [ref=e69] [cursor=pointer]:
+              - cell "INV-DEMO-0006" [ref=e70]
+              - cell [ref=e71]
+              - cell "€29.99" [ref=e72]
+              - cell "refunded" [ref=e73]:
+                - generic [ref=e74]: refunded
+              - cell "-" [ref=e75]
+            - row "INV-DEMO-0005 €29.99 cancelled -" [ref=e76] [cursor=pointer]:
+              - cell "INV-DEMO-0005" [ref=e77]
+              - cell [ref=e78]
+              - cell "€29.99" [ref=e79]
+              - cell "cancelled" [ref=e80]:
+                - generic [ref=e81]: cancelled
+              - cell "-" [ref=e82]
+            - row "INV-DEMO-0004 €9.99 Paid -" [ref=e83] [cursor=pointer]:
+              - cell "INV-DEMO-0004" [ref=e84]
+              - cell [ref=e85]
+              - cell "€9.99" [ref=e86]
+              - cell "Paid" [ref=e87]:
+                - generic [ref=e88]: Paid
+              - cell "-" [ref=e89]
+            - row "INV-DEMO-0003 €29.99 pending -" [ref=e90] [cursor=pointer]:
+              - cell "INV-DEMO-0003" [ref=e91]
+              - cell [ref=e92]
+              - cell "€29.99" [ref=e93]
+              - cell "pending" [ref=e94]:
+                - generic [ref=e95]: pending
+              - cell "-" [ref=e96]
+            - row "INV-DEMO-0002 €29.99 Paid -" [ref=e97] [cursor=pointer]:
+              - cell "INV-DEMO-0002" [ref=e98]
+              - cell [ref=e99]
+              - cell "€29.99" [ref=e100]
+              - cell "Paid" [ref=e101]:
+                - generic [ref=e102]: Paid
+              - cell "-" [ref=e103]
+            - row "INV-DEMO-0001 €29.99 Paid -" [ref=e104] [cursor=pointer]:
+              - cell "INV-DEMO-0001" [ref=e105]
+              - cell [ref=e106]
+              - cell "€29.99" [ref=e107]
+              - cell "Paid" [ref=e108]:
+                - generic [ref=e109]: Paid
+              - cell "-" [ref=e110]
+```

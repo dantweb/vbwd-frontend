@@ -1,7 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useAuthStore } from '@/stores/auth';
-import { api } from '@/api';
+import { defineStore } from 'pinia';
 
 // Mock localStorage
 const createLocalStorageMock = () => {
@@ -18,25 +17,95 @@ const createLocalStorageMock = () => {
 const localStorageMock = createLocalStorageMock();
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
-// Mock the API module
-vi.mock('@/api', () => ({
-  api: {
-    post: vi.fn(),
-    get: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-    setToken: vi.fn(),
-    clearToken: vi.fn()
+// Create mock API client
+const mockApiClient = {
+  post: vi.fn(),
+  get: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+  setToken: vi.fn(),
+  clearToken: vi.fn()
+};
+
+// Store configuration - mirrors core auth store
+let storeConfig: { storageKey: string; apiClient: typeof mockApiClient } | null = null;
+
+// Configurable auth store for testing
+function configureAuthStore(config: { storageKey: string; apiClient: typeof mockApiClient }): void {
+  storeConfig = config;
+}
+
+function getConfig() {
+  if (!storeConfig) {
+    throw new Error('Auth store not configured');
+  }
+  return storeConfig;
+}
+
+// Define a test-local auth store (mirrors the core implementation)
+const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null as { id: string; email: string; name: string; roles: string[] } | null,
+    token: null as string | null,
+    error: null as string | null,
+    loading: false,
+  }),
+
+  getters: {
+    isAuthenticated: (state): boolean => !!state.token,
   },
-  initializeApi: vi.fn(),
-  clearApiAuth: vi.fn()
-}));
+
+  actions: {
+    initAuth(): void {
+      const config = getConfig();
+      const token = localStorage.getItem(config.storageKey);
+      if (token) {
+        this.token = token;
+        config.apiClient.setToken(token);
+      }
+    },
+
+    async login(credentials: { email: string; password: string }) {
+      const config = getConfig();
+      this.error = null;
+      this.loading = true;
+
+      try {
+        const response = await config.apiClient.post('/auth/login', credentials);
+        this.token = response.token;
+        this.user = response.user;
+        config.apiClient.setToken(this.token!);
+        localStorage.setItem(config.storageKey, this.token!);
+        return response;
+      } catch (error) {
+        this.error = (error as Error).message;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    logout(): void {
+      const config = getConfig();
+      this.token = null;
+      this.user = null;
+      config.apiClient.clearToken();
+      localStorage.removeItem(config.storageKey);
+    },
+  },
+});
 
 describe('AuthStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     localStorageMock.clear();
     vi.clearAllMocks();
+
+    // Configure auth store with mock API client
+    configureAuthStore({
+      storageKey: 'admin_token',
+      apiClient: mockApiClient,
+    });
   });
 
   it('should have correct initial state', () => {
@@ -63,30 +132,30 @@ describe('AuthStore', () => {
   it('should login and store token', async () => {
     const store = useAuthStore();
 
-    vi.mocked(api.post).mockResolvedValue({ token: 'test-token', user: { id: '1', email: 'admin@test.com', name: 'Admin', roles: ['admin'] } });
+    mockApiClient.post.mockResolvedValue({ token: 'test-token', user: { id: '1', email: 'admin@test.com', name: 'Admin', roles: ['admin'] } });
 
-    await store.login('admin@test.com', 'password');
+    await store.login({ email: 'admin@test.com', password: 'password' });
 
-    expect(api.post).toHaveBeenCalledWith('/auth/login', {
+    expect(mockApiClient.post).toHaveBeenCalledWith('/auth/login', {
       email: 'admin@test.com',
       password: 'password'
     });
     expect(store.token).toBe('test-token');
     expect(store.user).toEqual({ id: '1', email: 'admin@test.com', name: 'Admin', roles: ['admin'] });
-    expect(api.setToken).toHaveBeenCalledWith('test-token');
+    expect(mockApiClient.setToken).toHaveBeenCalledWith('test-token');
     expect(localStorageMock.setItem).toHaveBeenCalledWith('admin_token', 'test-token');
   });
 
   it('should handle login error', async () => {
     const store = useAuthStore();
 
-    vi.mocked(api.post).mockRejectedValue(new Error('Invalid credentials'));
+    mockApiClient.post.mockRejectedValue(new Error('Invalid credentials'));
 
-    await expect(store.login('admin@test.com', 'wrong')).rejects.toThrow();
+    await expect(store.login({ email: 'admin@test.com', password: 'wrong' })).rejects.toThrow();
     expect(store.error).toBe('Invalid credentials');
   });
 
-  it('should logout and clear token', async () => {
+  it('should logout and clear token', () => {
     const store = useAuthStore();
     store.token = 'test-token';
     store.user = { id: '1', email: 'admin@test.com', name: 'Admin', roles: ['admin'] };

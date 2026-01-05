@@ -12,7 +12,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix"
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix",
+    "plugin": "npx tsx bin/plugin-manager.ts"
   },
   "dependencies": {
     "@vbwd/view-component": "file:../core",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
+    "tsx": "^4.7.0",
     "@vitejs/plugin-vue": "^4.5.2",
     "@vue/test-utils": "^2.4.0",
     "happy-dom": "^12.0.0",

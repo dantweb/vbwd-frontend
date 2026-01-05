@@ -30,6 +30,23 @@ export interface FetchUsersParams {
   status?: string;
 }
 
+export interface CreateUserData {
+  email: string;
+  password: string;
+  status?: string;
+  role?: string;
+  details?: {
+    first_name?: string;
+    last_name?: string;
+    address_line_1?: string;
+    address_line_2?: string;
+    city?: string;
+    postal_code?: string;
+    country?: string;
+    phone?: string;
+  };
+}
+
 export interface FetchUsersResponse {
   users: User[];
   total: number;
@@ -91,6 +108,24 @@ export const useUsersStore = defineStore('users', {
         return response.user;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to fetch user';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async createUser(data: CreateUserData): Promise<User> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.post('/admin/users/', data) as User;
+        // Add to local list
+        this.users.unshift(response);
+        this.total += 1;
+        return response;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to create user';
         throw error;
       } finally {
         this.loading = false;

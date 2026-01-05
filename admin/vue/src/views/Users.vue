@@ -1,11 +1,20 @@
 <template>
   <div class="users-view">
     <div class="users-header">
-      <h2>Users</h2>
-      <span
-        v-if="!loading && !error"
-        class="total-count"
-      >{{ total }} total</span>
+      <div class="header-left">
+        <h2>Users</h2>
+        <span
+          v-if="!loading && !error"
+          class="total-count"
+        >{{ total }} total</span>
+      </div>
+      <button
+        data-testid="create-user-button"
+        class="create-btn"
+        @click="navigateToCreate"
+      >
+        Create User
+      </button>
     </div>
 
     <div class="users-filters">
@@ -197,6 +206,10 @@ function navigateToUser(userId: string): void {
   router.push(`/admin/users/${userId}`);
 }
 
+function navigateToCreate(): void {
+  router.push('/admin/users/create');
+}
+
 function formatDate(dateString?: string): string {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString();
@@ -221,6 +234,12 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .users-header h2 {
   margin: 0;
   color: #2c3e50;
@@ -229,6 +248,21 @@ onMounted(() => {
 .total-count {
   color: #666;
   font-size: 0.9rem;
+}
+
+.create-btn {
+  padding: 10px 20px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.create-btn:hover {
+  background: #1e8449;
 }
 
 .users-filters {

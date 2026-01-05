@@ -59,7 +59,7 @@ async function handleLogin(): Promise<void> {
   loading.value = true;
 
   try {
-    await authStore.login(username.value, password.value);
+    await authStore.login({ email: username.value, password: password.value });
 
     // Check if user has admin role
     if (!authStore.isAdmin) {

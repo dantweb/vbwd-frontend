@@ -34,7 +34,7 @@ export function createAuthGuard(options: AuthGuardOptions = {}) {
     const auth = useAuthStore();
 
     // Check if route requires authentication
-    if (to.meta.requiresAuth && !auth.isAuthenticated.value) {
+    if (to.meta.requiresAuth && !auth.isAuthenticated) {
       next({
         name: opts.loginRoute,
         query: { redirect: to.fullPath },
@@ -43,7 +43,7 @@ export function createAuthGuard(options: AuthGuardOptions = {}) {
     }
 
     // Check if route is for guests only (e.g., login page)
-    if (to.meta.requiresGuest && auth.isAuthenticated.value) {
+    if (to.meta.requiresGuest && auth.isAuthenticated) {
       next({ name: opts.dashboardRoute });
       return;
     }

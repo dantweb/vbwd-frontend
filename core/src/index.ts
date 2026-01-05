@@ -27,6 +27,9 @@ export * from './guards';
 // Composables (Sprint 5-01)
 export * from './composables';
 
+// CLI Plugin Manager
+export * from './cli';
+
 // Authentication (Sprint 3)
 // export * from './auth';
 

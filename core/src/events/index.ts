@@ -2,8 +2,8 @@
  * Events module exports
  */
 
-// EventBus class and singleton
-export { EventBus, eventBus } from './EventBus';
+// EventBus class, singleton, and configuration
+export { EventBus, eventBus, configureEventBus } from './EventBus';
 
 // Event constants and types
 export {
