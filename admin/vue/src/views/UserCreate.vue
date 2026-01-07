@@ -1,5 +1,5 @@
 <template>
-  <div class="user-create-view">
+  <div class="user-create-view" data-testid="user-create-view">
     <div class="form-header">
       <button
         data-testid="back-button"

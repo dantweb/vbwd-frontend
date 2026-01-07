@@ -1,11 +1,20 @@
 <template>
-  <div class="subscriptions-view">
+  <div class="subscriptions-view" data-testid="subscriptions-view">
     <div class="subscriptions-header">
-      <h2>Subscriptions</h2>
-      <span
-        v-if="!loading && !error"
-        class="total-count"
-      >{{ total }} total</span>
+      <div class="header-left">
+        <h2>Subscriptions</h2>
+        <span
+          v-if="!loading && !error"
+          class="total-count"
+        >{{ total }} total</span>
+      </div>
+      <button
+        data-testid="create-subscription-button"
+        class="create-btn"
+        @click="navigateToCreate"
+      >
+        Create Subscription
+      </button>
     </div>
 
     <div class="subscriptions-filters">
@@ -195,6 +204,10 @@ function navigateToSubscription(subscriptionId: string): void {
   router.push(`/admin/subscriptions/${subscriptionId}`);
 }
 
+function navigateToCreate(): void {
+  router.push('/admin/subscriptions/create');
+}
+
 function formatStatus(status: string): string {
   const statusMap: Record<string, string> = {
     active: 'Active',
@@ -230,6 +243,12 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .subscriptions-header h2 {
   margin: 0;
   color: #2c3e50;
@@ -238,6 +257,21 @@ onMounted(() => {
 .total-count {
   color: #666;
   font-size: 0.9rem;
+}
+
+.create-btn {
+  padding: 10px 20px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.create-btn:hover {
+  background: #1e8449;
 }
 
 .subscriptions-filters {

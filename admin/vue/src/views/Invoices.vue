@@ -1,5 +1,5 @@
 <template>
-  <div class="invoices-view">
+  <div class="invoices-view" data-testid="invoices-view">
     <div class="invoices-header">
       <h2>Invoices</h2>
       <span

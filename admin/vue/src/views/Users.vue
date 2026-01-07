@@ -1,5 +1,5 @@
 <template>
-  <div class="users-view">
+  <div class="users-view" data-testid="users-view">
     <div class="users-header">
       <div class="header-left">
         <h2>Users</h2>

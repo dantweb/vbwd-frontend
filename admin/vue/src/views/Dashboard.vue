@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard" data-testid="dashboard-view">
     <h1>Dashboard</h1>
 
     <div

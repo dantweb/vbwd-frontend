@@ -1,8 +1,8 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" data-testid="login-view">
     <div class="login-box">
       <h1>VBWD Admin</h1>
-      <form @submit.prevent="handleLogin">
+      <form data-testid="login-form" @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="username">Username</label>
           <input
@@ -11,6 +11,7 @@
             type="text"
             required
             class="input"
+            data-testid="username-input"
           >
         </div>
         <div class="form-group">
@@ -21,11 +22,13 @@
             type="password"
             required
             class="input"
+            data-testid="password-input"
           >
         </div>
         <p
           v-if="error"
           class="error"
+          data-testid="login-error"
         >
           {{ error }}
         </p>
@@ -33,6 +36,7 @@
           type="submit"
           :disabled="loading"
           class="btn-primary"
+          data-testid="login-button"
         >
           {{ loading ? 'Logging in...' : 'Login' }}
         </button>

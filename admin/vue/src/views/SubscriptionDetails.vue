@@ -1,5 +1,5 @@
 <template>
-  <div class="subscription-details-view">
+  <div class="subscription-details-view" data-testid="subscription-details-view">
     <div
       v-if="loading"
       data-testid="loading-spinner"

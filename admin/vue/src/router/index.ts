@@ -45,6 +45,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/UserDetails.vue')
       },
       {
+        path: 'users/:id/edit',
+        name: 'user-edit',
+        component: () => import('@/views/UserEdit.vue')
+      },
+      {
         path: 'plans',
         name: 'plans',
         component: () => import('@/views/Plans.vue')
@@ -63,6 +68,11 @@ const routes: RouteRecordRaw[] = [
         path: 'subscriptions',
         name: 'subscriptions',
         component: () => import('@/views/Subscriptions.vue')
+      },
+      {
+        path: 'subscriptions/create',
+        name: 'subscription-create',
+        component: () => import('@/views/SubscriptionCreate.vue')
       },
       {
         path: 'subscriptions/:id',

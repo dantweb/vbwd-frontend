@@ -3,52 +3,60 @@
     <div class="sidebar-brand">
       <h2>VBWD Admin</h2>
     </div>
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" data-testid="sidebar-nav">
       <router-link
         to="/admin/dashboard"
         class="nav-item"
+        data-testid="nav-dashboard"
       >
         Dashboard
       </router-link>
       <router-link
         to="/admin/users"
         class="nav-item"
+        data-testid="nav-users"
       >
         Users
       </router-link>
       <router-link
         to="/admin/plans"
         class="nav-item"
+        data-testid="nav-plans"
       >
         Plans
       </router-link>
       <router-link
         to="/admin/subscriptions"
         class="nav-item"
+        data-testid="nav-subscriptions"
       >
         Subscriptions
       </router-link>
       <router-link
         to="/admin/invoices"
         class="nav-item"
+        data-testid="nav-invoices"
       >
         Invoices
       </router-link>
       <router-link
         to="/admin/analytics"
         class="nav-item"
+        data-testid="nav-analytics"
       >
         Analytics
       </router-link>
       <router-link
         to="/admin/webhooks"
         class="nav-item"
+        data-testid="nav-webhooks"
       >
         Webhooks
       </router-link>
       <router-link
         to="/admin/settings"
         class="nav-item"
+        data-testid="nav-settings"
       >
         Settings
       </router-link>
@@ -81,8 +89,8 @@ const userEmail = computed((): string => {
   return authStore.user?.email || 'Admin';
 });
 
-function handleLogout(): void {
-  authStore.logout();
+async function handleLogout(): Promise<void> {
+  await authStore.logout();
   router.push('/admin/login');
 }
 </script>

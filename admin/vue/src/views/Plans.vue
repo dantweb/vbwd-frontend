@@ -1,5 +1,5 @@
 <template>
-  <div class="plans-view">
+  <div class="plans-view" data-testid="plans-view">
     <div class="plans-header">
       <h2>Plans</h2>
       <button

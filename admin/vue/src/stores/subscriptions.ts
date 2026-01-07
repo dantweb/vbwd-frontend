@@ -34,6 +34,13 @@ export interface FetchSubscriptionsParams {
   plan?: string;
 }
 
+export interface CreateSubscriptionData {
+  user_id: string;
+  plan_id: string;
+  status?: string;
+  trial_days?: number;
+}
+
 export interface FetchSubscriptionsResponse {
   subscriptions: Subscription[];
   total: number;
@@ -160,6 +167,24 @@ export const useSubscriptionsStore = defineStore('subscriptions', {
         await api.put(`/admin/subscriptions/${subscriptionId}/plan`, { plan_id: planId });
       } catch (error) {
         this.error = (error as Error).message || 'Failed to change plan';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async createSubscription(data: CreateSubscriptionData): Promise<Subscription> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.post('/admin/subscriptions', data) as { subscription: Subscription };
+        // Add to local list
+        this.subscriptions.unshift(response.subscription);
+        this.total += 1;
+        return response.subscription;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to create subscription';
         throw error;
       } finally {
         this.loading = false;

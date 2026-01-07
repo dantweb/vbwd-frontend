@@ -1,5 +1,5 @@
 <template>
-  <div class="user-details-view">
+  <div class="user-details-view" data-testid="user-details-view">
     <div class="page-header">
       <button
         data-testid="back-button"
@@ -142,6 +142,13 @@
 
       <div class="user-actions">
         <button
+          data-testid="edit-button"
+          class="action-btn primary"
+          @click="goToEdit"
+        >
+          Edit User
+        </button>
+        <button
           v-if="user.is_active"
           data-testid="suspend-button"
           class="action-btn danger"
@@ -187,6 +194,10 @@ async function fetchUser(): Promise<void> {
 
 function goBack(): void {
   router.push('/admin/users');
+}
+
+function goToEdit(): void {
+  router.push(`/admin/users/${userId.value}/edit`);
 }
 
 async function handleSuspend(): Promise<void> {
@@ -398,6 +409,15 @@ onMounted(() => {
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
+}
+
+.action-btn.primary {
+  background: #3498db;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #2980b9;
 }
 
 .action-btn.danger {

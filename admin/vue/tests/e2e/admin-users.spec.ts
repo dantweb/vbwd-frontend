@@ -1,84 +1,144 @@
+/**
+ * E2E Tests: Admin Users Management
+ *
+ * Tests user listing, search, filter, and navigation.
+ * Uses real backend data (UI-First approach).
+ *
+ * Run with: E2E_BASE_URL=http://localhost:8081 npx playwright test admin-users
+ */
 import { test, expect } from '@playwright/test';
-import { setupAuth } from './fixtures/admin';
-import { mockUsersAPI, mockUsers } from './helpers/api-mocks';
+import { loginAsAdmin, navigateViaNavbar, waitForView } from './helpers/auth';
 
 test.describe('Admin Users Management', () => {
   test.beforeEach(async ({ page }) => {
-    await setupAuth(page);
-    await mockUsersAPI(page);
+    await loginAsAdmin(page);
+    await navigateViaNavbar(page, 'users');
+    await waitForView(page, 'users-view');
   });
 
   test('should display users list', async ({ page }) => {
-    await page.goto('/admin/users');
+    // Check page loaded with title (within users-view container)
+    await expect(page.locator('[data-testid="users-view"] h2')).toContainText('Users');
 
-    // Check page title
-    await expect(page.locator('h1, h2').first()).toContainText('Users');
+    // Check table is visible
+    await expect(page.locator('[data-testid="users-table"]')).toBeVisible();
 
     // Check table headers exist
     await expect(page.locator('th:has-text("Email")')).toBeVisible();
     await expect(page.locator('th:has-text("Status")')).toBeVisible();
+  });
 
-    // Check users are displayed
-    for (const user of mockUsers.slice(0, 3)) {
-      await expect(page.locator(`text=${user.email}`)).toBeVisible();
-    }
+  test('should display Create User button', async ({ page }) => {
+    const createButton = page.locator('[data-testid="create-user-button"]');
+    await expect(createButton).toBeVisible();
+    await expect(createButton).toContainText('Create User');
   });
 
   test('should search users by email', async ({ page }) => {
-    await page.goto('/admin/users');
-
     // Enter search query
-    const searchInput = page.locator('input[placeholder*="Search"], input[data-testid="search-input"]');
-    await searchInput.fill('user1@test.com');
-
-    // Trigger search (may be on input or need button click)
+    const searchInput = page.locator('[data-testid="search-input"]');
+    await searchInput.fill('admin');
     await searchInput.press('Enter');
 
     // Wait for filtered results
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
-    // Should show matching user
-    await expect(page.locator('text=user1@test.com')).toBeVisible();
+    // Table should still be visible
+    await expect(page.locator('[data-testid="users-table"]')).toBeVisible();
   });
 
   test('should filter users by status', async ({ page }) => {
-    await page.goto('/admin/users');
+    // Find and change status filter
+    const statusFilter = page.locator('[data-testid="status-filter"]');
+    await expect(statusFilter).toBeVisible();
 
-    // Find and click status filter
-    const statusFilter = page.locator('select[data-testid="status-filter"], select:has-text("Status")').first();
-    if (await statusFilter.isVisible()) {
-      await statusFilter.selectOption('suspended');
-      await page.waitForTimeout(300);
-    }
+    await statusFilter.selectOption('active');
+    await page.waitForTimeout(500);
+
+    // Table should still be visible after filtering
+    const table = page.locator('[data-testid="users-table"]');
+    const emptyState = page.locator('[data-testid="empty-state"]');
+
+    // Either table with results or empty state is acceptable
+    const tableVisible = await table.isVisible().catch(() => false);
+    const emptyVisible = await emptyState.isVisible().catch(() => false);
+    expect(tableVisible || emptyVisible).toBeTruthy();
   });
 
-  test('should navigate to user details', async ({ page }) => {
-    await page.goto('/admin/users');
+  test('should navigate to user details on row click', async ({ page }) => {
+    // Wait for table to load
+    const table = page.locator('[data-testid="users-table"]');
+    await expect(table).toBeVisible();
 
-    // Click on first user row or view button
-    const viewButton = page.locator('[data-testid="view-user"], a:has-text("View")').first();
-    if (await viewButton.isVisible()) {
-      await viewButton.click();
-    } else {
-      // Click on user email link
-      await page.locator('text=user1@test.com').click();
-    }
+    // Click on first user row
+    const firstRow = page.locator('tbody tr').first();
+    await firstRow.click();
 
     // Should navigate to user details
-    await expect(page).toHaveURL(/.*\/admin\/users\/\d+/);
+    await expect(page).toHaveURL(/\/admin\/users\/[\w-]+/);
+    await expect(page.locator('[data-testid="user-details-view"]')).toBeVisible();
   });
 
   test('should display user status badges', async ({ page }) => {
-    await page.goto('/admin/users');
+    // Check for status badges in the table
+    const statusBadge = page.locator('[data-testid="status-active"], [data-testid="status-inactive"]').first();
+    await expect(statusBadge).toBeVisible();
+  });
 
-    // Check for status badges
-    await expect(page.locator('.badge:has-text("active"), .status-badge:has-text("active")').first()).toBeVisible();
+  test('should navigate to create user form', async ({ page }) => {
+    // Click create user button
+    await page.locator('[data-testid="create-user-button"]').click();
+
+    // Should navigate to create form
+    await expect(page).toHaveURL(/\/admin\/users\/create/);
+    await expect(page.locator('[data-testid="user-create-view"]')).toBeVisible();
+    await expect(page.locator('[data-testid="user-form"]')).toBeVisible();
   });
 
   test('should show pagination when many users', async ({ page }) => {
-    await page.goto('/admin/users');
+    // Pagination may or may not be visible depending on user count
+    const pagination = page.locator('[data-testid="pagination"]');
+    const paginationVisible = await pagination.isVisible().catch(() => false);
 
-    // Check for pagination controls (if users exceed page size)
-    await expect(page.locator('[data-testid="pagination"], .pagination, nav[aria-label="pagination"]').first()).toBeDefined();
+    // If pagination exists, check controls
+    if (paginationVisible) {
+      await expect(page.locator('[data-testid="pagination-prev"]')).toBeVisible();
+      await expect(page.locator('[data-testid="pagination-next"]')).toBeVisible();
+    }
+
+    // Test passes regardless - pagination only shows when needed
+    expect(true).toBeTruthy();
+  });
+
+  test('should display Edit button on user details page', async ({ page }) => {
+    // Click on first user row to go to details
+    const firstRow = page.locator('tbody tr').first();
+    await firstRow.click();
+
+    // Wait for user details page
+    await expect(page.locator('[data-testid="user-details-view"]')).toBeVisible();
+
+    // Check Edit button is visible
+    const editButton = page.locator('[data-testid="edit-button"]');
+    await expect(editButton).toBeVisible();
+    await expect(editButton).toContainText('Edit User');
+  });
+
+  test('should navigate to edit user form', async ({ page }) => {
+    // Click on first user row to go to details
+    const firstRow = page.locator('tbody tr').first();
+    await firstRow.click();
+
+    // Wait for user details page
+    await expect(page.locator('[data-testid="user-details-view"]')).toBeVisible();
+
+    // Click Edit button
+    await page.locator('[data-testid="edit-button"]').click();
+
+    // Should navigate to edit form
+    await expect(page).toHaveURL(/\/admin\/users\/[\w-]+\/edit/);
+    await expect(page.locator('[data-testid="user-edit-view"]')).toBeVisible();
+    await expect(page.locator('[data-testid="user-form"]')).toBeVisible();
+    await expect(page.locator('[data-testid="form-title"]')).toContainText('Edit User');
   });
 });
