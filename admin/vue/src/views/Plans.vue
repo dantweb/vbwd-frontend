@@ -12,6 +12,14 @@
     </div>
 
     <div class="plans-filters">
+      <input
+        v-model="searchQuery"
+        type="text"
+        data-testid="search-input"
+        placeholder="Search by name..."
+        class="search-input"
+        @input="handleSearch"
+      >
       <label class="checkbox-label">
         <input
           v-model="includeArchived"
@@ -67,17 +75,57 @@
     >
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Billing</th>
-          <th>Subscribers</th>
-          <th>Status</th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'name', 'sort-asc': sortColumn === 'name' && sortDirection === 'asc', 'sort-desc': sortColumn === 'name' && sortDirection === 'desc' }"
+            data-sortable="name"
+            @click="handleSort('name')"
+          >
+            Name
+            <span class="sort-indicator">{{ getSortIndicator('name') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'price', 'sort-asc': sortColumn === 'price' && sortDirection === 'asc', 'sort-desc': sortColumn === 'price' && sortDirection === 'desc' }"
+            data-sortable="price"
+            @click="handleSort('price')"
+          >
+            Price
+            <span class="sort-indicator">{{ getSortIndicator('price') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'billing_period', 'sort-asc': sortColumn === 'billing_period' && sortDirection === 'asc', 'sort-desc': sortColumn === 'billing_period' && sortDirection === 'desc' }"
+            data-sortable="billing_period"
+            @click="handleSort('billing_period')"
+          >
+            Billing
+            <span class="sort-indicator">{{ getSortIndicator('billing_period') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'subscriber_count', 'sort-asc': sortColumn === 'subscriber_count' && sortDirection === 'asc', 'sort-desc': sortColumn === 'subscriber_count' && sortDirection === 'desc' }"
+            data-sortable="subscriber_count"
+            @click="handleSort('subscriber_count')"
+          >
+            Subscribers
+            <span class="sort-indicator">{{ getSortIndicator('subscriber_count') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'status', 'sort-asc': sortColumn === 'status' && sortDirection === 'asc', 'sort-desc': sortColumn === 'status' && sortDirection === 'desc' }"
+            data-sortable="status"
+            @click="handleSort('status')"
+          >
+            Status
+            <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
+          </th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="plan in plans"
+          v-for="plan in sortedPlans"
           :key="plan.id"
           :data-testid="`plan-row-${plan.id}`"
           class="plan-row"
@@ -128,10 +176,92 @@ const router = useRouter();
 const planStore = usePlanAdminStore();
 
 const includeArchived = ref(false);
+const searchQuery = ref('');
+
+// Sorting state
+type SortColumn = 'name' | 'price' | 'billing_period' | 'subscriber_count' | 'status' | null;
+type SortDirection = 'asc' | 'desc';
+
+const sortColumn = ref<SortColumn>(null);
+const sortDirection = ref<SortDirection>('asc');
 
 const plans = computed(() => planStore.plans);
 const loading = computed(() => planStore.loading);
 const error = computed(() => planStore.error);
+
+// Filtered and sorted plans computed property
+const sortedPlans = computed(() => {
+  // First filter by search query
+  let filtered = plans.value;
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = plans.value.filter(plan =>
+      plan.name?.toLowerCase().includes(query)
+    );
+  }
+
+  if (!sortColumn.value) return filtered;
+
+  return [...filtered].sort((a, b) => {
+    let aVal: string | number | boolean | undefined;
+    let bVal: string | number | boolean | undefined;
+
+    switch (sortColumn.value) {
+      case 'name':
+        aVal = a.name?.toLowerCase() || '';
+        bVal = b.name?.toLowerCase() || '';
+        break;
+      case 'price':
+        aVal = a.price_float ?? 0;
+        bVal = b.price_float ?? 0;
+        break;
+      case 'billing_period':
+        aVal = a.billing_period?.toLowerCase() || '';
+        bVal = b.billing_period?.toLowerCase() || '';
+        break;
+      case 'subscriber_count':
+        aVal = a.subscriber_count ?? 0;
+        bVal = b.subscriber_count ?? 0;
+        break;
+      case 'status':
+        aVal = a.is_active;
+        bVal = b.is_active;
+        break;
+      default:
+        return 0;
+    }
+
+    let comparison = 0;
+    if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
+      comparison = aVal === bVal ? 0 : aVal ? -1 : 1;
+    } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+      comparison = aVal - bVal;
+    } else {
+      comparison = String(aVal).localeCompare(String(bVal));
+    }
+
+    return sortDirection.value === 'asc' ? comparison : -comparison;
+  });
+});
+
+function handleSort(column: SortColumn): void {
+  if (sortColumn.value === column) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+}
+
+function getSortIndicator(column: SortColumn): string {
+  if (sortColumn.value !== column) return '';
+  return sortDirection.value === 'asc' ? '▲' : '▼';
+}
+
+function handleSearch(): void {
+  // Client-side filtering is handled by the computed property
+  // This function is here for consistency and future server-side search
+}
 
 async function fetchPlans(): Promise<void> {
   try {
@@ -205,7 +335,24 @@ onMounted(() => {
 }
 
 .plans-filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
   margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 300px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .checkbox-label {
@@ -274,6 +421,26 @@ onMounted(() => {
   background: #f8f9fa;
   font-weight: 600;
   color: #2c3e50;
+}
+
+.plans-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.plans-table th.sortable:hover {
+  background: #e9ecef;
+}
+
+.plans-table th.sorted {
+  background: #e3f2fd;
+}
+
+.sort-indicator {
+  margin-left: 5px;
+  font-size: 0.75rem;
+  color: #3498db;
 }
 
 .plan-row {

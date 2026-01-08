@@ -95,29 +95,29 @@ test.describe('Admin User-Subscription-Invoice Flow (Real Backend)', () => {
       await roleSelect.selectOption('user');
     }
 
-    // Fill UserDetails fields (if visible)
-    const firstNameInput = page.locator('input[name="firstName"], input[name="first_name"], input[id="firstName"]');
-    if (await firstNameInput.isVisible()) {
+    // Fill UserDetails fields (if visible) - use #id selectors for reliability
+    const firstNameInput = page.locator('#firstName');
+    if (await firstNameInput.isVisible().catch(() => false)) {
       await firstNameInput.fill(testUser.firstName);
     }
 
-    const lastNameInput = page.locator('input[name="lastName"], input[name="last_name"], input[id="lastName"]');
-    if (await lastNameInput.isVisible()) {
+    const lastNameInput = page.locator('#lastName');
+    if (await lastNameInput.isVisible().catch(() => false)) {
       await lastNameInput.fill(testUser.lastName);
     }
 
-    const addressInput = page.locator('input[name="addressLine1"], input[name="address_line_1"], input[id="addressLine1"]');
-    if (await addressInput.isVisible()) {
+    const addressInput = page.locator('#addressLine1');
+    if (await addressInput.isVisible().catch(() => false)) {
       await addressInput.fill(testUser.addressLine1);
     }
 
-    const cityInput = page.locator('input[name="city"], input[id="city"]');
-    if (await cityInput.isVisible()) {
+    const cityInput = page.locator('#city');
+    if (await cityInput.isVisible().catch(() => false)) {
       await cityInput.fill(testUser.city);
     }
 
-    const postalCodeInput = page.locator('input[name="postalCode"], input[name="postal_code"], input[id="postalCode"]');
-    if (await postalCodeInput.isVisible()) {
+    const postalCodeInput = page.locator('#postalCode');
+    if (await postalCodeInput.isVisible().catch(() => false)) {
       await postalCodeInput.fill(testUser.postalCode);
     }
 

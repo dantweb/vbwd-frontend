@@ -10,7 +10,7 @@ export interface Invoice {
   subscription_id?: string;
   amount: number;
   currency?: string;
-  status: 'draft' | 'open' | 'paid' | 'void' | 'uncollectible';
+  status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
   due_date?: string;
   paid_at?: string;
   created_at?: string;
@@ -20,6 +20,17 @@ export interface InvoiceDetail extends Invoice {
   line_items?: LineItem[];
   billing_address?: BillingAddress;
   payment_method?: string;
+  // Plan info
+  plan_name?: string;
+  plan_description?: string;
+  plan_billing_period?: string;
+  plan_price?: string;
+  // Subscription info
+  subscription_status?: string;
+  subscription_start_date?: string;
+  subscription_end_date?: string;
+  subscription_is_trial?: boolean;
+  subscription_trial_end?: string;
 }
 
 export interface LineItem {
@@ -113,14 +124,48 @@ export const useInvoicesStore = defineStore('invoices', {
       }
     },
 
-    async refundInvoice(invoiceId: string, amount: number, reason: string): Promise<void> {
+    async refundInvoice(invoiceId: string): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        await api.post(`/admin/invoices/${invoiceId}/refund`, { amount, reason });
+        await api.post(`/admin/invoices/${invoiceId}/refund`, {});
+
+        // Update local state
+        if (this.selectedInvoice?.id === invoiceId) {
+          this.selectedInvoice.status = 'refunded';
+        }
+        const index = this.invoices.findIndex(i => i.id === invoiceId);
+        if (index !== -1) {
+          this.invoices[index].status = 'refunded';
+        }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to process refund';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async markPaid(invoiceId: string, paymentReference?: string): Promise<void> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        await api.post(`/admin/invoices/${invoiceId}/mark-paid`, {
+          payment_reference: paymentReference || 'MANUAL'
+        });
+
+        // Update local state
+        if (this.selectedInvoice?.id === invoiceId) {
+          this.selectedInvoice.status = 'paid';
+        }
+        const index = this.invoices.findIndex(i => i.id === invoiceId);
+        if (index !== -1) {
+          this.invoices[index].status = 'paid';
+        }
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to mark invoice as paid';
         throw error;
       } finally {
         this.loading = false;
@@ -150,14 +195,35 @@ export const useInvoicesStore = defineStore('invoices', {
 
         // Update local state
         if (this.selectedInvoice?.id === invoiceId) {
-          this.selectedInvoice.status = 'void';
+          this.selectedInvoice.status = 'cancelled';
         }
         const index = this.invoices.findIndex(i => i.id === invoiceId);
         if (index !== -1) {
-          this.invoices[index].status = 'void';
+          this.invoices[index].status = 'cancelled';
         }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to void invoice';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async duplicateInvoice(invoiceId: string): Promise<Invoice> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.post(`/admin/invoices/${invoiceId}/duplicate`, {}) as { invoice: Invoice };
+        const newInvoice = response.invoice;
+
+        // Add to local list
+        this.invoices.unshift(newInvoice);
+        this.total += 1;
+
+        return newInvoice;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to duplicate invoice';
         throw error;
       } finally {
         this.loading = false;

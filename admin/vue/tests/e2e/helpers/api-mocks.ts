@@ -8,19 +8,19 @@ import { Page } from '@playwright/test';
 // ============================================
 
 export const mockUsers = [
-  { id: '1', email: 'user1@test.com', name: 'User One', status: 'active', role: 'user', created_at: '2024-01-01' },
-  { id: '2', email: 'user2@test.com', name: 'User Two', status: 'active', role: 'user', created_at: '2024-01-02' },
-  { id: '3', email: 'suspended@test.com', name: 'Suspended User', status: 'suspended', role: 'user', created_at: '2024-01-03' },
-  { id: '4', email: 'admin@test.com', name: 'Admin User', status: 'active', role: 'admin', created_at: '2024-01-04' },
-  { id: '5', email: 'vendor@test.com', name: 'Vendor User', status: 'active', role: 'vendor', created_at: '2024-01-05' },
+  { id: '1', email: 'user1@test.com', name: 'User One', is_active: true, roles: ['user'], created_at: '2024-01-01' },
+  { id: '2', email: 'user2@test.com', name: 'User Two', is_active: true, roles: ['user'], created_at: '2024-01-02' },
+  { id: '3', email: 'suspended@test.com', name: 'Suspended User', is_active: false, roles: ['user'], created_at: '2024-01-03' },
+  { id: '4', email: 'admin@test.com', name: 'Admin User', is_active: true, roles: ['admin'], created_at: '2024-01-04' },
+  { id: '5', email: 'vendor@test.com', name: 'Vendor User', is_active: true, roles: ['vendor'], created_at: '2024-01-05' },
 ];
 
 export const mockUserDetails = {
   id: '1',
   email: 'user1@test.com',
   name: 'User One',
-  status: 'active',
-  role: 'user',
+  is_active: true,
+  roles: ['user'],
   created_at: '2024-01-01',
   stats: {
     total_subscriptions: 3,
@@ -173,7 +173,9 @@ export async function mockUsersAPI(page: Page): Promise<void> {
       filtered = filtered.filter(u => u.email.includes(search) || u.name.includes(search));
     }
     if (status) {
-      filtered = filtered.filter(u => u.status === status);
+      // Map status filter to is_active boolean
+      const isActive = status === 'active';
+      filtered = filtered.filter(u => u.is_active === isActive);
     }
 
     await route.fulfill({
@@ -185,19 +187,26 @@ export async function mockUsersAPI(page: Page): Promise<void> {
 
   await page.route('**/api/v1/admin/users/*', async (route) => {
     const method = route.request().method();
+    const url = route.request().url();
+
+    // Skip routes that end with /edit or /roles as they are handled elsewhere
+    if (url.endsWith('/edit') || url.endsWith('/roles')) {
+      await route.continue();
+      return;
+    }
 
     if (method === 'GET') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(mockUserDetails)
+        body: JSON.stringify({ user: mockUserDetails })
       });
     } else if (method === 'PUT') {
       const body = JSON.parse(route.request().postData() || '{}');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ ...mockUserDetails, ...body })
+        body: JSON.stringify({ user: { ...mockUserDetails, ...body } })
       });
     }
   });

@@ -96,10 +96,10 @@
           <option value="">
             Select billing period
           </option>
-          <option value="monthly">
+          <option value="MONTHLY">
             Monthly
           </option>
-          <option value="yearly">
+          <option value="YEARLY">
             Yearly
           </option>
         </select>
@@ -118,23 +118,57 @@
       </div>
 
       <div class="form-actions">
-        <button
-          type="button"
-          data-testid="cancel-button"
-          class="cancel-btn"
-          @click="goBack"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          data-testid="submit-button"
-          class="submit-btn"
-          :disabled="submitting"
-          @click="handleSubmit"
-        >
-          {{ submitting ? 'Saving...' : (isEdit ? 'Update Plan' : 'Create Plan') }}
-        </button>
+        <div class="form-actions-left">
+          <button
+            v-if="isEdit && planIsActive"
+            type="button"
+            data-testid="archive-button"
+            class="archive-btn"
+            :disabled="archiving"
+            @click="handleArchive"
+          >
+            {{ archiving ? 'Archiving...' : 'Archive Plan' }}
+          </button>
+          <button
+            v-if="isEdit && !planIsActive"
+            type="button"
+            data-testid="reactivate-button"
+            class="reactivate-btn"
+            :disabled="reactivating"
+            @click="handleReactivate"
+          >
+            {{ reactivating ? 'Reactivating...' : 'Reactivate Plan' }}
+          </button>
+          <button
+            v-if="isEdit"
+            type="button"
+            data-testid="copy-button"
+            class="copy-btn"
+            :disabled="copying"
+            @click="handleCopy"
+          >
+            {{ copying ? 'Copying...' : 'Copy Plan' }}
+          </button>
+        </div>
+        <div class="form-actions-right">
+          <button
+            type="button"
+            data-testid="cancel-button"
+            class="cancel-btn"
+            @click="goBack"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            data-testid="submit-button"
+            class="submit-btn"
+            :disabled="submitting"
+            @click="handleSubmit"
+          >
+            {{ submitting ? 'Saving...' : (isEdit ? 'Update Plan' : 'Create Plan') }}
+          </button>
+        </div>
       </div>
     </form>
   </div>
@@ -157,6 +191,10 @@ const fetchError = ref<string | null>(null);
 const validationError = ref<string | null>(null);
 const submitError = ref<string | null>(null);
 const submitting = ref(false);
+const archiving = ref(false);
+const reactivating = ref(false);
+const copying = ref(false);
+const planIsActive = ref(true);
 
 const formData = ref({
   name: '',
@@ -227,6 +265,7 @@ async function fetchPlan(): Promise<void> {
         billing_period: response.billing_period || '',
         features: response.features || []
       };
+      planIsActive.value = response.is_active !== false;
     }
   } catch (error) {
     fetchError.value = (error as Error).message || 'Failed to load plan';
@@ -262,7 +301,9 @@ async function handleSubmit(): Promise<void> {
 
   try {
     // Type guard ensures billing_period is not empty after validation
-    const billingPeriod = formData.value.billing_period as 'monthly' | 'yearly';
+    // Backend expects uppercase enum values (MONTHLY, YEARLY)
+    // Convert to uppercase to ensure compatibility with database enum
+    const billingPeriod = formData.value.billing_period.toUpperCase() as 'MONTHLY' | 'YEARLY';
     const data = {
       name: formData.value.name,
       price: formData.value.price,
@@ -288,6 +329,49 @@ function goBack(): void {
   router.push('/admin/plans');
 }
 
+async function handleArchive(): Promise<void> {
+  if (!isEdit.value) return;
+
+  archiving.value = true;
+  try {
+    await planStore.archivePlan(planId.value);
+    router.push('/admin/plans');
+  } catch (error) {
+    submitError.value = (error as Error).message || 'Failed to archive plan';
+  } finally {
+    archiving.value = false;
+  }
+}
+
+async function handleReactivate(): Promise<void> {
+  if (!isEdit.value) return;
+
+  reactivating.value = true;
+  try {
+    await planStore.activatePlan(planId.value);
+    planIsActive.value = true;
+  } catch (error) {
+    submitError.value = (error as Error).message || 'Failed to reactivate plan';
+  } finally {
+    reactivating.value = false;
+  }
+}
+
+async function handleCopy(): Promise<void> {
+  if (!isEdit.value) return;
+
+  copying.value = true;
+  try {
+    const newPlan = await planStore.copyPlan(planId.value);
+    // Navigate to the new plan's edit page
+    router.push(`/admin/plans/${newPlan.id}/edit`);
+  } catch (error) {
+    submitError.value = (error as Error).message || 'Failed to copy plan';
+  } finally {
+    copying.value = false;
+  }
+}
+
 onMounted(() => {
   if (isEdit.value) {
     fetchPlan();
@@ -300,7 +384,6 @@ onMounted(() => {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 600px;
 }
 
 .form-header {
@@ -404,10 +487,21 @@ onMounted(() => {
 .form-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 30px;
   padding-top: 20px;
   border-top: 1px solid #eee;
+}
+
+.form-actions-left {
+  display: flex;
+  gap: 12px;
+}
+
+.form-actions-right {
+  display: flex;
+  gap: 12px;
 }
 
 .cancel-btn {
@@ -440,6 +534,63 @@ onMounted(() => {
 }
 
 .submit-btn:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+
+.archive-btn {
+  padding: 10px 20px;
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.archive-btn:hover:not(:disabled) {
+  background: #e0a800;
+}
+
+.archive-btn:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+
+.reactivate-btn {
+  padding: 10px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.reactivate-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.reactivate-btn:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+
+.copy-btn {
+  padding: 10px 20px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.copy-btn:hover:not(:disabled) {
+  background: #138496;
+}
+
+.copy-btn:disabled {
   background: #95a5a6;
   cursor: not-allowed;
 }

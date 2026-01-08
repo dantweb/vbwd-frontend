@@ -6,7 +6,7 @@
         class="back-btn"
         @click="goBack"
       >
-        &larr; Back to User
+        &larr; Back to Users
       </button>
     </div>
 
@@ -84,6 +84,7 @@
               id="status"
               v-model="formData.is_active"
               name="status"
+              data-testid="status-select"
               class="form-select"
             >
               <option :value="true">
@@ -96,33 +97,24 @@
           </div>
 
           <div class="form-group">
-            <label for="role">Roles</label>
-            <div class="checkbox-group">
-              <label class="checkbox-label">
-                <input
-                  v-model="formData.roles"
-                  type="checkbox"
-                  value="user"
-                >
+            <label for="role">Role</label>
+            <select
+              id="role"
+              v-model="selectedRole"
+              name="role"
+              data-testid="role-select"
+              class="form-select"
+            >
+              <option value="user">
                 User
-              </label>
-              <label class="checkbox-label">
-                <input
-                  v-model="formData.roles"
-                  type="checkbox"
-                  value="admin"
-                >
+              </option>
+              <option value="admin">
                 Admin
-              </label>
-              <label class="checkbox-label">
-                <input
-                  v-model="formData.roles"
-                  type="checkbox"
-                  value="vendor"
-                >
+              </option>
+              <option value="vendor">
                 Vendor
-              </label>
-            </div>
+              </option>
+            </select>
           </div>
         </div>
       </section>
@@ -199,7 +191,6 @@ const submitting = ref(false);
 interface FormData {
   email: string;
   is_active: boolean;
-  roles: string[];
   first_name: string;
   last_name: string;
 }
@@ -207,10 +198,13 @@ interface FormData {
 const formData = ref<FormData>({
   email: '',
   is_active: true,
-  roles: ['user'],
   first_name: '',
   last_name: '',
 });
+
+// Role is handled separately as a single value
+const selectedRole = ref<string>('user');
+const originalRole = ref<string>('user');
 
 const userId = route.params.id as string;
 
@@ -222,14 +216,16 @@ async function fetchUser(): Promise<void> {
     const user = await usersStore.fetchUser(userId);
 
     // Populate form with existing data
-    // Handle roles as array or convert from other formats
-    const userRoles = Array.isArray(user.roles) ? user.roles :
-      (user.roles ? [user.roles] : ['user']);
+    // Handle role - get first role from array or use single role value
+    const userRole = Array.isArray(user.roles) ? user.roles[0] : ((user as unknown as { role?: string }).role || 'user');
+
+    // Store original role to detect changes later
+    originalRole.value = userRole;
+    selectedRole.value = userRole;
 
     formData.value = {
       email: user.email,
       is_active: user.is_active,
-      roles: [...userRoles],
       first_name: extractName(user.name, 'first'),
       last_name: extractName(user.name, 'last'),
     };
@@ -250,8 +246,8 @@ function extractName(fullName: string | undefined, part: 'first' | 'last'): stri
 function validateForm(): boolean {
   validationError.value = null;
 
-  if (formData.value.roles.length === 0) {
-    validationError.value = 'At least one role is required';
+  if (!selectedRole.value) {
+    validationError.value = 'Role is required';
     return false;
   }
 
@@ -275,13 +271,12 @@ async function handleSubmit(): Promise<void> {
       name,
     });
 
-    // Update roles separately if changed
-    const user = usersStore.selectedUser;
-    if (user && JSON.stringify(user.roles) !== JSON.stringify(formData.value.roles)) {
-      await usersStore.updateUserRoles(userId, formData.value.roles);
+    // Update role separately if changed
+    if (originalRole.value !== selectedRole.value) {
+      await usersStore.updateUserRoles(userId, [selectedRole.value]);
     }
 
-    router.push(`/admin/users/${userId}`);
+    router.push('/admin/users');
   } catch (error) {
     submitError.value = (error as Error).message || 'Failed to update user';
   } finally {
@@ -290,7 +285,7 @@ async function handleSubmit(): Promise<void> {
 }
 
 function goBack(): void {
-  router.push(`/admin/users/${userId}`);
+  router.push('/admin/users');
 }
 
 onMounted(() => {
@@ -303,7 +298,6 @@ onMounted(() => {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 700px;
 }
 
 .form-header {
@@ -429,25 +423,6 @@ onMounted(() => {
   margin-top: 4px;
   font-size: 12px;
   color: #666;
-}
-
-.checkbox-group {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  font-weight: normal;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
 }
 
 .form-actions {

@@ -111,6 +111,8 @@
               <tr
                 v-for="payment in subscription.payment_history"
                 :key="payment.id"
+                class="clickable-row"
+                @click="goToInvoice(payment.id)"
               >
                 <td>{{ formatDate(payment.created_at) }}</td>
                 <td>{{ formatAmount(payment.amount, payment.currency) }}</td>
@@ -191,6 +193,10 @@ async function handleCancel(): Promise<void> {
 
 function goBack(): void {
   router.push('/admin/subscriptions');
+}
+
+function goToInvoice(invoiceId: string): void {
+  router.push(`/admin/invoices/${invoiceId}`);
 }
 
 function formatStatus(status: string): string {
@@ -370,6 +376,15 @@ onMounted(() => {
   background: #f8f9fa;
   font-weight: 600;
   color: #2c3e50;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+  background-color: #f0f7ff;
 }
 
 .payment-status {

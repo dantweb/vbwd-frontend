@@ -18,6 +18,14 @@
     </div>
 
     <div class="subscriptions-filters">
+      <input
+        v-model="searchQuery"
+        type="text"
+        data-testid="search-input"
+        placeholder="Search by email..."
+        class="search-input"
+        @input="handleSearch"
+      >
       <select
         v-model="statusFilter"
         data-testid="status-filter"
@@ -30,8 +38,8 @@
         <option value="active">
           Active
         </option>
-        <option value="canceled">
-          Canceled
+        <option value="cancelled">
+          Cancelled
         </option>
         <option value="past_due">
           Past Due
@@ -102,15 +110,47 @@
     >
       <thead>
         <tr>
-          <th>User</th>
-          <th>Plan</th>
-          <th>Status</th>
-          <th>Created</th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'user_email', 'sort-asc': sortColumn === 'user_email' && sortDirection === 'asc', 'sort-desc': sortColumn === 'user_email' && sortDirection === 'desc' }"
+            data-sortable="user_email"
+            @click="handleSort('user_email')"
+          >
+            User
+            <span class="sort-indicator">{{ getSortIndicator('user_email') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'plan_name', 'sort-asc': sortColumn === 'plan_name' && sortDirection === 'asc', 'sort-desc': sortColumn === 'plan_name' && sortDirection === 'desc' }"
+            data-sortable="plan_name"
+            @click="handleSort('plan_name')"
+          >
+            Plan
+            <span class="sort-indicator">{{ getSortIndicator('plan_name') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'status', 'sort-asc': sortColumn === 'status' && sortDirection === 'asc', 'sort-desc': sortColumn === 'status' && sortDirection === 'desc' }"
+            data-sortable="status"
+            @click="handleSort('status')"
+          >
+            Status
+            <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'created_at', 'sort-asc': sortColumn === 'created_at' && sortDirection === 'asc', 'sort-desc': sortColumn === 'created_at' && sortDirection === 'desc' }"
+            data-sortable="created_at"
+            @click="handleSort('created_at')"
+          >
+            Created
+            <span class="sort-indicator">{{ getSortIndicator('created_at') }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="subscription in subscriptions"
+          v-for="subscription in sortedSubscriptions"
           :key="subscription.id"
           :data-testid="`subscription-row-${subscription.id}`"
           class="subscription-row"
@@ -168,10 +208,54 @@ const subscriptionsStore = useSubscriptionsStore();
 
 const statusFilter = ref('');
 const planFilter = ref('');
+const searchQuery = ref('');
 const page = ref(1);
 const perPage = ref(20);
 
+// Sorting state
+type SortColumn = 'user_email' | 'plan_name' | 'status' | 'created_at' | null;
+type SortDirection = 'asc' | 'desc';
+const sortColumn = ref<SortColumn>(null);
+const sortDirection = ref<SortDirection>('asc');
+
 const subscriptions = computed(() => subscriptionsStore.subscriptions);
+
+// Filtered and sorted subscriptions for display
+const sortedSubscriptions = computed(() => {
+  // First filter by search query
+  let filtered = subscriptions.value;
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = subscriptions.value.filter(sub =>
+      sub.user_email?.toLowerCase().includes(query)
+    );
+  }
+
+  if (!sortColumn.value) return filtered;
+
+  return [...filtered].sort((a, b) => {
+    const column = sortColumn.value as SortColumn;
+    if (!column) return 0;
+
+    let aVal = a[column];
+    let bVal = b[column];
+
+    // Handle null/undefined
+    if (aVal == null) aVal = '';
+    if (bVal == null) bVal = '';
+
+    // String comparison
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      const comparison = aVal.localeCompare(bVal);
+      return sortDirection.value === 'asc' ? comparison : -comparison;
+    }
+
+    // Fallback for other types
+    if (aVal < bVal) return sortDirection.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 const total = computed(() => subscriptionsStore.total);
 const loading = computed(() => subscriptionsStore.loading);
 const error = computed(() => subscriptionsStore.error);
@@ -188,6 +272,11 @@ async function fetchSubscriptions(): Promise<void> {
   } catch {
     // Error is already set in the store
   }
+}
+
+function handleSearch(): void {
+  // Client-side filtering is handled by the computed property
+  // This function is here for consistency and future server-side search
 }
 
 function handleFilterChange(): void {
@@ -211,10 +300,12 @@ function navigateToCreate(): void {
 function formatStatus(status: string): string {
   const statusMap: Record<string, string> = {
     active: 'Active',
-    canceled: 'Canceled',
+    cancelled: 'Cancelled',
     past_due: 'Past Due',
     trialing: 'Trialing',
-    paused: 'Paused'
+    paused: 'Paused',
+    pending: 'Pending',
+    expired: 'Expired'
   };
   return statusMap[status] || status;
 }
@@ -222,6 +313,22 @@ function formatStatus(status: string): string {
 function formatDate(dateString?: string): string {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString();
+}
+
+function handleSort(column: SortColumn): void {
+  if (sortColumn.value === column) {
+    // Toggle direction
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New column
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+}
+
+function getSortIndicator(column: SortColumn): string {
+  if (sortColumn.value !== column) return '';
+  return sortDirection.value === 'asc' ? '▲' : '▼';
 }
 
 onMounted(() => {
@@ -278,6 +385,20 @@ onMounted(() => {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 300px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .filter-select {
@@ -365,7 +486,7 @@ onMounted(() => {
   color: #155724;
 }
 
-.status-badge.canceled {
+.status-badge.cancelled {
   background: #f8d7da;
   color: #721c24;
 }
@@ -416,5 +537,26 @@ onMounted(() => {
 .pagination-info {
   color: #666;
   font-size: 0.9rem;
+}
+
+/* Sortable columns */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.sortable:hover {
+  background-color: #e9ecef;
+}
+
+.sortable.sorted {
+  background-color: #e3f2fd;
+}
+
+.sort-indicator {
+  margin-left: 5px;
+  font-size: 0.8em;
+  color: #3498db;
 }
 </style>

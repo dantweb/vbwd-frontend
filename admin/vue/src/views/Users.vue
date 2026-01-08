@@ -82,23 +82,55 @@
     >
       <thead>
         <tr>
-          <th>Email</th>
-          <th>Name</th>
-          <th>Status</th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'email', 'sort-asc': sortColumn === 'email' && sortDirection === 'asc', 'sort-desc': sortColumn === 'email' && sortDirection === 'desc' }"
+            data-sortable="email"
+            @click="handleSort('email')"
+          >
+            Email
+            <span class="sort-indicator">{{ getSortIndicator('email') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'name', 'sort-asc': sortColumn === 'name' && sortDirection === 'asc', 'sort-desc': sortColumn === 'name' && sortDirection === 'desc' }"
+            data-sortable="name"
+            @click="handleSort('name')"
+          >
+            Name
+            <span class="sort-indicator">{{ getSortIndicator('name') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'status', 'sort-asc': sortColumn === 'status' && sortDirection === 'asc', 'sort-desc': sortColumn === 'status' && sortDirection === 'desc' }"
+            data-sortable="status"
+            @click="handleSort('status')"
+          >
+            Status
+            <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
+          </th>
           <th>Roles</th>
-          <th>Created</th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'created_at', 'sort-asc': sortColumn === 'created_at' && sortDirection === 'asc', 'sort-desc': sortColumn === 'created_at' && sortDirection === 'desc' }"
+            data-sortable="created_at"
+            @click="handleSort('created_at')"
+          >
+            Created
+            <span class="sort-indicator">{{ getSortIndicator('created_at') }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="user in users"
+          v-for="user in sortedUsers"
           :key="user.id"
           :data-testid="`user-row-${user.id}`"
           class="user-row"
-          @click="navigateToUser(user.id)"
+          @click="navigateToEdit(user.id)"
         >
           <td>{{ user.email }}</td>
-          <td>{{ user.name }}</td>
+          <td>{{ user.name || '-' }}</td>
           <td>
             <span
               v-if="user.is_active"
@@ -117,7 +149,7 @@
           </td>
           <td>
             <span
-              v-for="role in user.roles"
+              v-for="role in (user.roles || ['user'])"
               :key="role"
               class="role-badge"
             >
@@ -168,11 +200,58 @@ const statusFilter = ref('');
 const page = ref(1);
 const perPage = ref(20);
 
+// Sorting state
+type SortColumn = 'email' | 'name' | 'status' | 'created_at' | null;
+type SortDirection = 'asc' | 'desc';
+
+const sortColumn = ref<SortColumn>(null);
+const sortDirection = ref<SortDirection>('asc');
+
 const users = computed(() => usersStore.users);
 const total = computed(() => usersStore.total);
 const loading = computed(() => usersStore.loading);
 const error = computed(() => usersStore.error);
 const totalPages = computed(() => Math.ceil(total.value / perPage.value));
+
+// Sorted users computed property
+const sortedUsers = computed(() => {
+  if (!sortColumn.value) return users.value;
+
+  return [...users.value].sort((a, b) => {
+    let aVal: string | boolean | undefined;
+    let bVal: string | boolean | undefined;
+
+    switch (sortColumn.value) {
+      case 'email':
+        aVal = a.email?.toLowerCase() || '';
+        bVal = b.email?.toLowerCase() || '';
+        break;
+      case 'name':
+        aVal = a.name?.toLowerCase() || '';
+        bVal = b.name?.toLowerCase() || '';
+        break;
+      case 'status':
+        aVal = a.is_active;
+        bVal = b.is_active;
+        break;
+      case 'created_at':
+        aVal = a.created_at || '';
+        bVal = b.created_at || '';
+        break;
+      default:
+        return 0;
+    }
+
+    let comparison = 0;
+    if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
+      comparison = aVal === bVal ? 0 : aVal ? -1 : 1;
+    } else {
+      comparison = String(aVal).localeCompare(String(bVal));
+    }
+
+    return sortDirection.value === 'asc' ? comparison : -comparison;
+  });
+});
 
 async function fetchUsers(): Promise<void> {
   try {
@@ -197,13 +276,29 @@ function handleStatusChange(): void {
   fetchUsers();
 }
 
+function handleSort(column: SortColumn): void {
+  if (sortColumn.value === column) {
+    // Toggle direction
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New column, default to ascending
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+}
+
+function getSortIndicator(column: SortColumn): string {
+  if (sortColumn.value !== column) return '';
+  return sortDirection.value === 'asc' ? '▲' : '▼';
+}
+
 function changePage(newPage: number): void {
   page.value = newPage;
   fetchUsers();
 }
 
-function navigateToUser(userId: string): void {
-  router.push(`/admin/users/${userId}`);
+function navigateToEdit(userId: string): void {
+  router.push(`/admin/users/${userId}/edit`);
 }
 
 function navigateToCreate(): void {
@@ -340,6 +435,26 @@ onMounted(() => {
   background: #f8f9fa;
   font-weight: 600;
   color: #2c3e50;
+}
+
+.users-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.users-table th.sortable:hover {
+  background: #e9ecef;
+}
+
+.users-table th.sorted {
+  background: #e3f2fd;
+}
+
+.sort-indicator {
+  margin-left: 5px;
+  font-size: 0.75rem;
+  color: #3498db;
 }
 
 .user-row {

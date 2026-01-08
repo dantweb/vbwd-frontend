@@ -140,6 +140,88 @@
         </div>
 
         <div
+          v-if="invoice.plan_name"
+          class="info-section"
+          data-testid="plan-info"
+        >
+          <h3>Plan Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Plan Name</label>
+              <span>{{ invoice.plan_name }}</span>
+            </div>
+            <div
+              v-if="invoice.plan_description"
+              class="info-item"
+            >
+              <label>Description</label>
+              <span>{{ invoice.plan_description }}</span>
+            </div>
+            <div
+              v-if="invoice.plan_billing_period"
+              class="info-item"
+            >
+              <label>Billing Period</label>
+              <span>{{ invoice.plan_billing_period }}</span>
+            </div>
+            <div
+              v-if="invoice.plan_price"
+              class="info-item"
+            >
+              <label>Plan Price</label>
+              <span>{{ formatAmount(parseFloat(invoice.plan_price), invoice.currency) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="invoice.subscription_id"
+          class="info-section"
+          data-testid="subscription-info"
+        >
+          <h3>Subscription Information</h3>
+          <div class="info-grid">
+            <div
+              v-if="invoice.subscription_status"
+              class="info-item"
+            >
+              <label>Status</label>
+              <span
+                class="status-badge"
+                :class="invoice.subscription_status"
+              >
+                {{ invoice.subscription_status }}
+              </span>
+            </div>
+            <div
+              v-if="invoice.subscription_start_date"
+              class="info-item"
+            >
+              <label>Start Date</label>
+              <span>{{ formatDate(invoice.subscription_start_date) }}</span>
+            </div>
+            <div
+              v-if="invoice.subscription_end_date"
+              class="info-item"
+            >
+              <label>End Date</label>
+              <span>{{ formatDate(invoice.subscription_end_date) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Trial</label>
+              <span>{{ invoice.subscription_is_trial ? 'Yes' : 'No' }}</span>
+            </div>
+            <div
+              v-if="invoice.subscription_trial_end"
+              class="info-item"
+            >
+              <label>Trial End Date</label>
+              <span>{{ formatDate(invoice.subscription_trial_end) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div
           v-if="invoice.billing_address"
           class="info-section"
           data-testid="billing-address"
@@ -164,6 +246,14 @@
 
         <div class="actions-section">
           <button
+            data-testid="duplicate-button"
+            class="action-btn duplicate-btn"
+            :disabled="processing"
+            @click="handleDuplicate"
+          >
+            {{ processing ? 'Duplicating...' : 'Duplicate Invoice' }}
+          </button>
+          <button
             data-testid="resend-button"
             class="action-btn resend-btn"
             :disabled="processing"
@@ -172,13 +262,31 @@
             {{ processing ? 'Sending...' : 'Resend Invoice' }}
           </button>
           <button
-            v-if="invoice.status === 'open' || invoice.status === 'draft'"
+            v-if="invoice.status === 'pending'"
+            data-testid="mark-paid-button"
+            class="action-btn mark-paid-btn"
+            :disabled="processing"
+            @click="handleMarkPaid"
+          >
+            {{ processing ? 'Processing...' : 'Mark as Paid' }}
+          </button>
+          <button
+            v-if="invoice.status === 'pending'"
             data-testid="void-button"
             class="action-btn void-btn"
             :disabled="processing"
             @click="handleVoid"
           >
             {{ processing ? 'Processing...' : 'Void Invoice' }}
+          </button>
+          <button
+            v-if="invoice.status === 'paid'"
+            data-testid="refund-button"
+            class="action-btn refund-btn"
+            :disabled="processing"
+            @click="handleRefund"
+          >
+            {{ processing ? 'Processing...' : 'Refund' }}
           </button>
         </div>
       </div>
@@ -237,17 +345,60 @@ async function handleVoid(): Promise<void> {
   }
 }
 
+async function handleMarkPaid(): Promise<void> {
+  if (!invoice.value) return;
+
+  processing.value = true;
+  try {
+    await invoicesStore.markPaid(invoice.value.id);
+    await fetchInvoice();
+  } catch {
+    // Error is already set in the store
+  } finally {
+    processing.value = false;
+  }
+}
+
+async function handleRefund(): Promise<void> {
+  if (!invoice.value) return;
+
+  processing.value = true;
+  try {
+    await invoicesStore.refundInvoice(invoice.value.id);
+    await fetchInvoice();
+  } catch {
+    // Error is already set in the store
+  } finally {
+    processing.value = false;
+  }
+}
+
+async function handleDuplicate(): Promise<void> {
+  if (!invoice.value) return;
+
+  processing.value = true;
+  try {
+    const newInvoice = await invoicesStore.duplicateInvoice(invoice.value.id);
+    // Navigate to the new invoice
+    router.push(`/admin/invoices/${newInvoice.id}`);
+  } catch {
+    // Error is already set in the store
+  } finally {
+    processing.value = false;
+  }
+}
+
 function goBack(): void {
   router.push('/admin/invoices');
 }
 
 function formatStatus(status: string): string {
   const statusMap: Record<string, string> = {
-    draft: 'Draft',
-    open: 'Open',
+    pending: 'Pending',
     paid: 'Paid',
-    void: 'Void',
-    uncollectible: 'Uncollectible'
+    failed: 'Failed',
+    cancelled: 'Cancelled',
+    refunded: 'Refunded'
   };
   return statusMap[status] || status;
 }
@@ -388,22 +539,22 @@ onMounted(() => {
   color: #155724;
 }
 
-.status-badge.open {
+.status-badge.pending {
   background: #cce5ff;
   color: #004085;
 }
 
-.status-badge.draft {
-  background: #e9ecef;
-  color: #495057;
-}
-
-.status-badge.void {
+.status-badge.failed {
   background: #f8d7da;
   color: #721c24;
 }
 
-.status-badge.uncollectible {
+.status-badge.cancelled {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.status-badge.refunded {
   background: #fff3cd;
   color: #856404;
 }
@@ -485,5 +636,32 @@ onMounted(() => {
 
 .void-btn:hover:not(:disabled) {
   background: #c82333;
+}
+
+.mark-paid-btn {
+  background: #28a745;
+  color: white;
+}
+
+.mark-paid-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.refund-btn {
+  background: #ffc107;
+  color: #212529;
+}
+
+.refund-btn:hover:not(:disabled) {
+  background: #e0a800;
+}
+
+.duplicate-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.duplicate-btn:hover:not(:disabled) {
+  background: #5a6268;
 }
 </style>

@@ -130,19 +130,16 @@ describe('invoices store', () => {
       vi.mocked(api.post).mockResolvedValue({ message: 'Refund processed' });
 
       const store = useInvoicesStore();
-      await store.refundInvoice('1', 29.99, 'Customer request');
+      await store.refundInvoice('1');
 
-      expect(api.post).toHaveBeenCalledWith('/admin/invoices/1/refund', {
-        amount: 29.99,
-        reason: 'Customer request'
-      });
+      expect(api.post).toHaveBeenCalledWith('/admin/invoices/1/refund', {});
     });
 
     it('sets error on refund failure', async () => {
       vi.mocked(api.post).mockRejectedValue(new Error('Refund failed'));
 
       const store = useInvoicesStore();
-      await expect(store.refundInvoice('1', 29.99, 'test')).rejects.toThrow();
+      await expect(store.refundInvoice('1')).rejects.toThrow();
 
       expect(store.error).toBe('Refund failed');
     });

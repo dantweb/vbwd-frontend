@@ -14,7 +14,7 @@ export interface AdminPlan {
   price?: AdminPlanPrice | number;
   price_float?: number;
   currency?: string;
-  billing_period: 'monthly' | 'yearly' | 'quarterly' | 'weekly' | 'one_time';
+  billing_period: 'MONTHLY' | 'YEARLY' | 'QUARTERLY' | 'WEEKLY' | 'ONE_TIME' | 'monthly' | 'yearly' | 'quarterly' | 'weekly' | 'one_time';
   features?: string[] | Record<string, unknown>;
   limits?: Record<string, number>;
   is_active: boolean;
@@ -113,6 +113,36 @@ export const usePlanAdminStore = defineStore('planAdmin', {
         return response;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to archive plan';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async activatePlan(planId: string) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.post(`/admin/tarif-plans/${planId}/activate`);
+        return response;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to activate plan';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async copyPlan(planId: string): Promise<AdminPlan> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.post(`/admin/tarif-plans/${planId}/copy`) as { plan: AdminPlan };
+        return response.plan;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to copy plan';
         throw error;
       } finally {
         this.loading = false;

@@ -132,23 +132,26 @@ export const useUsersStore = defineStore('users', {
       }
     },
 
-    async updateUser(userId: string, data: Partial<User>): Promise<void> {
+    async updateUser(userId: string, data: Partial<User>): Promise<User> {
       this.loading = true;
       this.error = null;
 
       try {
-        await api.put(`/admin/users/${userId}`, data);
+        const response = await api.put(`/admin/users/${userId}`, data) as { user: User };
+        const updatedUser = response.user;
 
-        // Update local state if this is the selected user
+        // Update local state with response from server
         if (this.selectedUser?.id === userId) {
-          this.selectedUser = { ...this.selectedUser, ...data };
+          this.selectedUser = { ...this.selectedUser, ...updatedUser };
         }
 
         // Update in list if present
         const index = this.users.findIndex(u => u.id === userId);
         if (index !== -1) {
-          this.users[index] = { ...this.users[index], ...data };
+          this.users[index] = { ...this.users[index], ...updatedUser };
         }
+
+        return updatedUser;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to update user';
         throw error;

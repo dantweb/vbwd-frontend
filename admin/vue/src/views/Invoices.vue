@@ -9,6 +9,14 @@
     </div>
 
     <div class="invoices-filters">
+      <input
+        v-model="searchQuery"
+        type="text"
+        data-testid="search-input"
+        placeholder="Search by email or invoice #..."
+        class="search-input"
+        @input="handleSearch"
+      >
       <select
         v-model="statusFilter"
         data-testid="status-filter"
@@ -18,20 +26,20 @@
         <option value="">
           All Status
         </option>
-        <option value="draft">
-          Draft
-        </option>
-        <option value="open">
-          Open
+        <option value="pending">
+          Pending
         </option>
         <option value="paid">
           Paid
         </option>
-        <option value="void">
-          Void
+        <option value="failed">
+          Failed
         </option>
-        <option value="uncollectible">
-          Uncollectible
+        <option value="cancelled">
+          Cancelled
+        </option>
+        <option value="refunded">
+          Refunded
         </option>
       </select>
     </div>
@@ -74,16 +82,56 @@
     >
       <thead>
         <tr>
-          <th>Invoice #</th>
-          <th>Customer</th>
-          <th>Amount</th>
-          <th>Status</th>
-          <th>Date</th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'invoice_number', 'sort-asc': sortColumn === 'invoice_number' && sortDirection === 'asc', 'sort-desc': sortColumn === 'invoice_number' && sortDirection === 'desc' }"
+            data-sortable="invoice_number"
+            @click="handleSort('invoice_number')"
+          >
+            Invoice #
+            <span class="sort-indicator">{{ getSortIndicator('invoice_number') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'user_email', 'sort-asc': sortColumn === 'user_email' && sortDirection === 'asc', 'sort-desc': sortColumn === 'user_email' && sortDirection === 'desc' }"
+            data-sortable="user_email"
+            @click="handleSort('user_email')"
+          >
+            Customer
+            <span class="sort-indicator">{{ getSortIndicator('user_email') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'amount', 'sort-asc': sortColumn === 'amount' && sortDirection === 'asc', 'sort-desc': sortColumn === 'amount' && sortDirection === 'desc' }"
+            data-sortable="amount"
+            @click="handleSort('amount')"
+          >
+            Amount
+            <span class="sort-indicator">{{ getSortIndicator('amount') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'status', 'sort-asc': sortColumn === 'status' && sortDirection === 'asc', 'sort-desc': sortColumn === 'status' && sortDirection === 'desc' }"
+            data-sortable="status"
+            @click="handleSort('status')"
+          >
+            Status
+            <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
+          </th>
+          <th
+            class="sortable"
+            :class="{ sorted: sortColumn === 'created_at', 'sort-asc': sortColumn === 'created_at' && sortDirection === 'asc', 'sort-desc': sortColumn === 'created_at' && sortDirection === 'desc' }"
+            data-sortable="created_at"
+            @click="handleSort('created_at')"
+          >
+            Date
+            <span class="sort-indicator">{{ getSortIndicator('created_at') }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="invoice in invoices"
+          v-for="invoice in sortedInvoices"
           :key="invoice.id"
           :data-testid="`invoice-row-${invoice.id}`"
           class="invoice-row"
@@ -141,10 +189,62 @@ const router = useRouter();
 const invoicesStore = useInvoicesStore();
 
 const statusFilter = ref('');
+const searchQuery = ref('');
 const page = ref(1);
 const perPage = ref(20);
 
+// Sorting state
+type SortColumn = 'invoice_number' | 'user_email' | 'amount' | 'status' | 'created_at' | null;
+type SortDirection = 'asc' | 'desc';
+const sortColumn = ref<SortColumn>(null);
+const sortDirection = ref<SortDirection>('asc');
+
 const invoices = computed(() => invoicesStore.invoices);
+
+// Filtered and sorted invoices for display
+const sortedInvoices = computed(() => {
+  // First filter by search query
+  let filtered = invoices.value;
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = invoices.value.filter(inv =>
+      inv.user_email?.toLowerCase().includes(query) ||
+      inv.invoice_number?.toLowerCase().includes(query)
+    );
+  }
+
+  if (!sortColumn.value) return filtered;
+
+  return [...filtered].sort((a, b) => {
+    const column = sortColumn.value as SortColumn;
+    if (!column) return 0;
+
+    let aVal = a[column];
+    let bVal = b[column];
+
+    // Handle null/undefined
+    if (aVal == null) aVal = '';
+    if (bVal == null) bVal = '';
+
+    // Numeric comparison for amount
+    if (column === 'amount') {
+      const aNum = Number(aVal) || 0;
+      const bNum = Number(bVal) || 0;
+      return sortDirection.value === 'asc' ? aNum - bNum : bNum - aNum;
+    }
+
+    // String comparison
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      const comparison = aVal.localeCompare(bVal);
+      return sortDirection.value === 'asc' ? comparison : -comparison;
+    }
+
+    // Fallback for other types
+    if (aVal < bVal) return sortDirection.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 const total = computed(() => invoicesStore.total);
 const loading = computed(() => invoicesStore.loading);
 const error = computed(() => invoicesStore.error);
@@ -160,6 +260,11 @@ async function fetchInvoices(): Promise<void> {
   } catch {
     // Error is already set in the store
   }
+}
+
+function handleSearch(): void {
+  // Client-side filtering is handled by the computed property
+  // This function is here for consistency and future server-side search
 }
 
 function handleFilterChange(): void {
@@ -178,11 +283,11 @@ function navigateToInvoice(invoiceId: string): void {
 
 function formatStatus(status: string): string {
   const statusMap: Record<string, string> = {
-    draft: 'Draft',
-    open: 'Open',
+    pending: 'Pending',
     paid: 'Paid',
-    void: 'Void',
-    uncollectible: 'Uncollectible'
+    failed: 'Failed',
+    cancelled: 'Cancelled',
+    refunded: 'Refunded'
   };
   return statusMap[status] || status;
 }
@@ -198,6 +303,22 @@ function formatAmount(amount: number, currency?: string): string {
     style: 'currency',
     currency: currencyCode
   }).format(amount);
+}
+
+function handleSort(column: SortColumn): void {
+  if (sortColumn.value === column) {
+    // Toggle direction
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New column
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+}
+
+function getSortIndicator(column: SortColumn): string {
+  if (sortColumn.value !== column) return '';
+  return sortDirection.value === 'asc' ? '▲' : '▼';
 }
 
 onMounted(() => {
@@ -233,6 +354,20 @@ onMounted(() => {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 300px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .filter-select {
@@ -320,22 +455,22 @@ onMounted(() => {
   color: #155724;
 }
 
-.status-badge.open {
+.status-badge.pending {
   background: #cce5ff;
   color: #004085;
 }
 
-.status-badge.draft {
-  background: #e9ecef;
-  color: #495057;
-}
-
-.status-badge.void {
+.status-badge.failed {
   background: #f8d7da;
   color: #721c24;
 }
 
-.status-badge.uncollectible {
+.status-badge.cancelled {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.status-badge.refunded {
   background: #fff3cd;
   color: #856404;
 }
@@ -371,5 +506,26 @@ onMounted(() => {
 .pagination-info {
   color: #666;
   font-size: 0.9rem;
+}
+
+/* Sortable columns */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.sortable:hover {
+  background-color: #e9ecef;
+}
+
+.sortable.sorted {
+  background-color: #e3f2fd;
+}
+
+.sort-indicator {
+  margin-left: 5px;
+  font-size: 0.8em;
+  color: #3498db;
 }
 </style>

@@ -65,7 +65,7 @@ test.describe('Admin Users Management', () => {
     expect(tableVisible || emptyVisible).toBeTruthy();
   });
 
-  test('should navigate to user details on row click', async ({ page }) => {
+  test('should navigate to user edit on row click', async ({ page }) => {
     // Wait for table to load
     const table = page.locator('[data-testid="users-table"]');
     await expect(table).toBeVisible();
@@ -74,9 +74,9 @@ test.describe('Admin Users Management', () => {
     const firstRow = page.locator('tbody tr').first();
     await firstRow.click();
 
-    // Should navigate to user details
-    await expect(page).toHaveURL(/\/admin\/users\/[\w-]+/);
-    await expect(page.locator('[data-testid="user-details-view"]')).toBeVisible();
+    // Should navigate directly to user edit page
+    await expect(page).toHaveURL(/\/admin\/users\/[\w-]+\/edit/);
+    await expect(page.locator('[data-testid="user-edit-view"]')).toBeVisible();
   });
 
   test('should display user status badges', async ({ page }) => {
@@ -110,35 +110,32 @@ test.describe('Admin Users Management', () => {
     expect(true).toBeTruthy();
   });
 
-  test('should display Edit button on user details page', async ({ page }) => {
-    // Click on first user row to go to details
+  test('should display user edit form with proper title', async ({ page }) => {
+    // Click on first user row to go directly to edit
     const firstRow = page.locator('tbody tr').first();
     await firstRow.click();
 
-    // Wait for user details page
-    await expect(page.locator('[data-testid="user-details-view"]')).toBeVisible();
-
-    // Check Edit button is visible
-    const editButton = page.locator('[data-testid="edit-button"]');
-    await expect(editButton).toBeVisible();
-    await expect(editButton).toContainText('Edit User');
-  });
-
-  test('should navigate to edit user form', async ({ page }) => {
-    // Click on first user row to go to details
-    const firstRow = page.locator('tbody tr').first();
-    await firstRow.click();
-
-    // Wait for user details page
-    await expect(page.locator('[data-testid="user-details-view"]')).toBeVisible();
-
-    // Click Edit button
-    await page.locator('[data-testid="edit-button"]').click();
-
-    // Should navigate to edit form
-    await expect(page).toHaveURL(/\/admin\/users\/[\w-]+\/edit/);
+    // Wait for user edit page
     await expect(page.locator('[data-testid="user-edit-view"]')).toBeVisible();
+
+    // Check form and title
     await expect(page.locator('[data-testid="user-form"]')).toBeVisible();
     await expect(page.locator('[data-testid="form-title"]')).toContainText('Edit User');
+  });
+
+  test('should have back button that returns to users list', async ({ page }) => {
+    // Click on first user row to go to edit
+    const firstRow = page.locator('tbody tr').first();
+    await firstRow.click();
+
+    // Wait for user edit page
+    await expect(page.locator('[data-testid="user-edit-view"]')).toBeVisible();
+
+    // Click back button
+    await page.locator('[data-testid="back-button"]').click();
+
+    // Should navigate back to users list
+    await expect(page).toHaveURL(/\/admin\/users$/);
+    await expect(page.locator('[data-testid="users-view"]')).toBeVisible();
   });
 });
