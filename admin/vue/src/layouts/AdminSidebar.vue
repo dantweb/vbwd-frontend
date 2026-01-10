@@ -3,91 +3,107 @@
     <div class="sidebar-brand">
       <h2>VBWD Admin</h2>
     </div>
-    <nav class="sidebar-nav" data-testid="sidebar-nav">
+    <nav
+      class="sidebar-nav"
+      data-testid="sidebar-nav"
+    >
       <router-link
         to="/admin/dashboard"
         class="nav-item"
         data-testid="nav-dashboard"
       >
-        Dashboard
+        {{ $t('nav.dashboard') }}
       </router-link>
       <router-link
         to="/admin/users"
         class="nav-item"
         data-testid="nav-users"
       >
-        Users
+        {{ $t('nav.users') }}
       </router-link>
       <router-link
         to="/admin/plans"
         class="nav-item"
         data-testid="nav-plans"
       >
-        Plans
+        {{ $t('nav.plans') }}
       </router-link>
       <router-link
         to="/admin/subscriptions"
         class="nav-item"
         data-testid="nav-subscriptions"
       >
-        Subscriptions
+        {{ $t('nav.subscriptions') }}
       </router-link>
       <router-link
         to="/admin/invoices"
         class="nav-item"
         data-testid="nav-invoices"
       >
-        Invoices
+        {{ $t('nav.invoices') }}
       </router-link>
-      <router-link
-        to="/admin/analytics"
-        class="nav-item"
-        data-testid="nav-analytics"
-      >
-        Analytics
-      </router-link>
-      <router-link
-        to="/admin/webhooks"
-        class="nav-item"
-        data-testid="nav-webhooks"
-      >
-        Webhooks
-      </router-link>
+
       <router-link
         to="/admin/settings"
         class="nav-item"
         data-testid="nav-settings"
       >
-        Settings
+        {{ $t('nav.settings') }}
       </router-link>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-info">
-        <span class="user-email">{{ userEmail }}</span>
-        <span class="user-role">Administrator</span>
-      </div>
-      <button
-        data-testid="logout-button"
-        class="logout-btn"
-        @click="handleLogout"
+      <div
+        class="user-menu"
+        data-testid="user-menu"
+        @click="toggleUserMenu"
       >
-        Logout
-      </button>
+        <div class="user-info">
+          <span class="user-email">{{ userEmail }}</span>
+          <span class="user-role">{{ $t('users.roles.admin') }}</span>
+        </div>
+        <span class="menu-arrow">{{ userMenuOpen ? '▲' : '▼' }}</span>
+      </div>
+      <div
+        v-if="userMenuOpen"
+        class="user-dropdown"
+      >
+        <router-link
+          to="/admin/profile"
+          class="dropdown-item"
+          data-testid="profile-link"
+          @click="userMenuOpen = false"
+        >
+          {{ $t('nav.profile') }}
+        </router-link>
+        <button
+          data-testid="logout-button"
+          class="dropdown-item logout-item"
+          @click="handleLogout"
+        >
+          {{ $t('nav.logout') }}
+        </button>
+      </div>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
+const userMenuOpen = ref(false);
+
 const userEmail = computed((): string => {
   return authStore.user?.email || 'Admin';
 });
+
+function toggleUserMenu(): void {
+  userMenuOpen.value = !userMenuOpen.value;
+}
 
 async function handleLogout(): Promise<void> {
   await authStore.logout();
@@ -181,5 +197,60 @@ async function handleLogout(): Promise<void> {
 
 .logout-btn:hover {
   background-color: #c0392b;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 10px;
+  margin: -10px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.user-menu:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.menu-arrow {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.user-dropdown {
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.logout-item {
+  color: #e74c3c;
+}
+
+.logout-item:hover {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
 }
 </style>

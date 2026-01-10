@@ -34,13 +34,17 @@ test.describe('Admin User Edit - Layout', () => {
   });
 
   test('should have all form sections visible', async ({ page }) => {
-    // Account section
-    const accountSection = page.locator('.form-section:has-text("Account")');
+    // Account section (use h3 to match exact section title)
+    const accountSection = page.locator('.form-section').filter({ has: page.locator('h3', { hasText: /^Account$/ }) });
     await expect(accountSection).toBeVisible();
 
     // Personal Details section
-    const personalSection = page.locator('.form-section:has-text("Personal Details")');
+    const personalSection = page.locator('.form-section').filter({ has: page.locator('h3', { hasText: 'Personal Details' }) });
     await expect(personalSection).toBeVisible();
+
+    // Balance section
+    const balanceSection = page.locator('.form-section').filter({ has: page.locator('h3', { hasText: 'Balance' }) });
+    await expect(balanceSection).toBeVisible();
   });
 
   test('should display email field as readonly', async ({ page }) => {

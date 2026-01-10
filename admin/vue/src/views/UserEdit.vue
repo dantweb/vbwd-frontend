@@ -1,12 +1,15 @@
 <template>
-  <div class="user-edit-view" data-testid="user-edit-view">
+  <div
+    class="user-edit-view"
+    data-testid="user-edit-view"
+  >
     <div class="form-header">
       <button
         data-testid="back-button"
         class="back-btn"
         @click="goBack"
       >
-        &larr; Back to Users
+        &larr; {{ $t('users.backToUsers') }}
       </button>
     </div>
 
@@ -16,7 +19,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading user...</p>
+      <p>{{ $t('users.loadingUser') }}</p>
     </div>
 
     <div
@@ -29,159 +32,431 @@
         class="retry-btn"
         @click="fetchUser"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
-    <form
-      v-else
-      data-testid="user-form"
-      class="user-form"
-      @submit.prevent="handleSubmit"
-    >
+    <template v-else>
       <h2 data-testid="form-title">
-        Edit User
+        {{ $t('users.editUser') }}
       </h2>
 
+      <!-- Tab Navigation -->
       <div
-        v-if="validationError"
-        data-testid="validation-error"
-        class="validation-error"
+        class="tabs-container"
+        data-testid="user-edit-tabs"
       >
-        {{ validationError }}
+        <button
+          data-testid="tab-account"
+          class="tab-btn"
+          :class="{ active: activeTab === 'account' }"
+          @click="activeTab = 'account'"
+        >
+          {{ $t('users.account') }}
+        </button>
+        <button
+          data-testid="tab-subscriptions"
+          class="tab-btn"
+          :class="{ active: activeTab === 'subscriptions' }"
+          @click="switchToSubscriptions"
+        >
+          {{ $t('nav.subscriptions') }}
+        </button>
+        <button
+          data-testid="tab-invoices"
+          class="tab-btn"
+          :class="{ active: activeTab === 'invoices' }"
+          @click="switchToInvoices"
+        >
+          {{ $t('nav.invoices') }}
+        </button>
       </div>
 
+      <!-- Account Tab Content -->
       <div
-        v-if="submitError"
-        data-testid="submit-error"
-        class="submit-error"
+        v-show="activeTab === 'account'"
+        data-testid="tab-content-account"
+        class="tab-content"
       >
-        {{ submitError }}
-      </div>
-
-      <!-- Account Section -->
-      <section class="form-section">
-        <h3>Account</h3>
-
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            v-model="formData.email"
-            name="email"
-            type="email"
-            class="form-input readonly"
-            readonly
-            disabled
+        <form
+          data-testid="user-form"
+          class="user-form"
+          @submit.prevent="handleSubmit"
+        >
+          <div
+            v-if="validationError"
+            data-testid="validation-error"
+            class="validation-error"
           >
-          <small class="help-text">Email cannot be changed</small>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="status">Status</label>
-            <select
-              id="status"
-              v-model="formData.is_active"
-              name="status"
-              data-testid="status-select"
-              class="form-select"
-            >
-              <option :value="true">
-                Active
-              </option>
-              <option :value="false">
-                Inactive
-              </option>
-            </select>
+            {{ validationError }}
           </div>
 
-          <div class="form-group">
-            <label for="role">Role</label>
-            <select
-              id="role"
-              v-model="selectedRole"
-              name="role"
-              data-testid="role-select"
-              class="form-select"
-            >
-              <option value="user">
-                User
-              </option>
-              <option value="admin">
-                Admin
-              </option>
-              <option value="vendor">
-                Vendor
-              </option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <!-- Personal Details Section -->
-      <section class="form-section">
-        <h3>Personal Details</h3>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input
-              id="firstName"
-              v-model="formData.first_name"
-              name="firstName"
-              type="text"
-              placeholder="John"
-              class="form-input"
-            >
+          <div
+            v-if="submitError"
+            data-testid="submit-error"
+            class="submit-error"
+          >
+            {{ submitError }}
           </div>
 
-          <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input
-              id="lastName"
-              v-model="formData.last_name"
-              name="lastName"
-              type="text"
-              placeholder="Doe"
-              class="form-input"
-            >
-          </div>
-        </div>
-      </section>
+          <!-- Account Section -->
+          <section class="form-section">
+            <h3>{{ $t('users.account') }}</h3>
 
-      <!-- Form Actions -->
-      <div class="form-actions">
-        <button
-          type="button"
-          data-testid="cancel-button"
-          class="cancel-btn"
-          @click="goBack"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          data-testid="submit-button"
-          class="submit-btn"
-          :disabled="submitting"
-        >
-          {{ submitting ? 'Saving...' : 'Save Changes' }}
-        </button>
+            <div class="form-group">
+              <label for="email">{{ $t('users.email') }}</label>
+              <input
+                id="email"
+                v-model="formData.email"
+                name="email"
+                type="email"
+                class="form-input readonly"
+                readonly
+                disabled
+              >
+              <small class="help-text">{{ $t('profile.emailReadonly') }}</small>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="status">{{ $t('users.status') }}</label>
+                <select
+                  id="status"
+                  v-model="formData.is_active"
+                  name="status"
+                  data-testid="status-select"
+                  class="form-select"
+                >
+                  <option :value="true">
+                    {{ $t('users.active') }}
+                  </option>
+                  <option :value="false">
+                    {{ $t('users.inactive') }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="role">{{ $t('users.role') }}</label>
+                <select
+                  id="role"
+                  v-model="selectedRole"
+                  name="role"
+                  data-testid="role-select"
+                  class="form-select"
+                >
+                  <option value="user">
+                    {{ $t('users.roles.user') }}
+                  </option>
+                  <option value="admin">
+                    {{ $t('users.roles.admin') }}
+                  </option>
+                  <option value="vendor">
+                    {{ $t('users.roles.vendor') }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">{{ $t('users.newPassword') }}</label>
+              <input
+                id="newPassword"
+                v-model="formData.new_password"
+                name="newPassword"
+                type="password"
+                data-testid="new-password-input"
+                :placeholder="$t('users.newPasswordPlaceholder')"
+                class="form-input"
+              >
+              <small
+                class="help-text"
+                data-testid="new-password-help"
+              >
+                {{ $t('users.newPasswordHelp') }}
+              </small>
+            </div>
+          </section>
+
+          <!-- Personal Details Section -->
+          <section class="form-section">
+            <h3>{{ $t('users.personalDetails') }}</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">{{ $t('users.firstName') }}</label>
+                <input
+                  id="firstName"
+                  v-model="formData.first_name"
+                  name="firstName"
+                  type="text"
+                  placeholder="John"
+                  class="form-input"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="lastName">{{ $t('users.lastName') }}</label>
+                <input
+                  id="lastName"
+                  v-model="formData.last_name"
+                  name="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  class="form-input"
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- Balance Section -->
+          <section class="form-section">
+            <h3>{{ $t('profile.balance') }}</h3>
+
+            <div class="form-group">
+              <label for="balance">{{ $t('users.tokenBalance') }}</label>
+              <input
+                id="balance"
+                v-model="formData.balance"
+                name="balance"
+                type="number"
+                step="0.01"
+                min="0"
+                data-testid="balance-input"
+                class="form-input balance-input"
+              >
+              <small class="help-text">
+                {{ $t('users.tokenBalanceHelp') }}
+              </small>
+            </div>
+          </section>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button
+              type="button"
+              data-testid="cancel-button"
+              class="cancel-btn"
+              @click="goBack"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button
+              type="submit"
+              data-testid="submit-button"
+              class="submit-btn"
+              :disabled="submitting"
+            >
+              {{ submitting ? $t('users.saving') : $t('common.saveChanges') }}
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
+
+      <!-- Subscriptions Tab Content -->
+      <div
+        v-show="activeTab === 'subscriptions'"
+        data-testid="tab-content-subscriptions"
+        class="tab-content"
+      >
+        <div class="tab-filters">
+          <input
+            v-model="subscriptionSearch"
+            type="text"
+            data-testid="subscriptions-search-input"
+            :placeholder="$t('subscriptions.searchPlaceholder')"
+            class="search-input"
+          >
+        </div>
+
+        <div
+          v-if="subscriptionsLoading"
+          class="loading-state"
+        >
+          <div class="spinner" />
+          <p>{{ $t('subscriptions.loading') }}</p>
+        </div>
+
+        <div
+          v-else-if="filteredSubscriptions.length === 0"
+          data-testid="subscriptions-empty-state"
+          class="empty-state"
+        >
+          <p>{{ $t('subscriptions.noSubscriptionsForUser') }}</p>
+        </div>
+
+        <table
+          v-else
+          data-testid="user-subscriptions-table"
+          class="data-table"
+        >
+          <thead>
+            <tr>
+              <th>{{ $t('subscriptions.plan') }}</th>
+              <th>{{ $t('subscriptions.status') }}</th>
+              <th>{{ $t('subscriptions.createdAt') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="subscription in filteredSubscriptions"
+              :key="subscription.id"
+              class="clickable-row"
+              @click="navigateToSubscription(subscription.id)"
+            >
+              <td>{{ subscription.plan_name }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  :class="subscription.status"
+                >
+                  {{ formatStatus(subscription.status) }}
+                </span>
+              </td>
+              <td>{{ formatDate(subscription.created_at) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div
+          v-if="subscriptionsTotalPages > 1"
+          data-testid="subscriptions-pagination"
+          class="pagination"
+        >
+          <button
+            :disabled="subscriptionsPage === 1"
+            class="pagination-btn"
+            @click="changeSubscriptionsPage(subscriptionsPage - 1)"
+          >
+            {{ $t('common.previous') }}
+          </button>
+          <span class="pagination-info">
+            {{ $t('common.page') }} {{ subscriptionsPage }} {{ $t('common.of') }} {{ subscriptionsTotalPages }}
+          </span>
+          <button
+            :disabled="subscriptionsPage >= subscriptionsTotalPages"
+            class="pagination-btn"
+            @click="changeSubscriptionsPage(subscriptionsPage + 1)"
+          >
+            {{ $t('common.next') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Invoices Tab Content -->
+      <div
+        v-show="activeTab === 'invoices'"
+        data-testid="tab-content-invoices"
+        class="tab-content"
+      >
+        <div class="tab-filters">
+          <input
+            v-model="invoiceSearch"
+            type="text"
+            data-testid="invoices-search-input"
+            :placeholder="$t('invoices.searchPlaceholder')"
+            class="search-input"
+          >
+        </div>
+
+        <div
+          v-if="invoicesLoading"
+          class="loading-state"
+        >
+          <div class="spinner" />
+          <p>{{ $t('invoices.loading') }}</p>
+        </div>
+
+        <div
+          v-else-if="filteredInvoices.length === 0"
+          data-testid="invoices-empty-state"
+          class="empty-state"
+        >
+          <p>{{ $t('invoices.noInvoicesForUser') }}</p>
+        </div>
+
+        <table
+          v-else
+          data-testid="user-invoices-table"
+          class="data-table"
+        >
+          <thead>
+            <tr>
+              <th>{{ $t('invoices.invoiceNumber') }}</th>
+              <th>{{ $t('invoices.amount') }}</th>
+              <th>{{ $t('invoices.status') }}</th>
+              <th>{{ $t('invoices.date') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="invoice in filteredInvoices"
+              :key="invoice.id"
+              class="clickable-row"
+              @click="navigateToInvoice(invoice.id)"
+            >
+              <td>{{ invoice.invoice_number }}</td>
+              <td>{{ formatAmount(invoice.amount, invoice.currency) }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  :class="invoice.status"
+                >
+                  {{ formatInvoiceStatus(invoice.status) }}
+                </span>
+              </td>
+              <td>{{ formatDate(invoice.created_at) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div
+          v-if="invoicesTotalPages > 1"
+          data-testid="invoices-pagination"
+          class="pagination"
+        >
+          <button
+            :disabled="invoicesPage === 1"
+            class="pagination-btn"
+            @click="changeInvoicesPage(invoicesPage - 1)"
+          >
+            {{ $t('common.previous') }}
+          </button>
+          <span class="pagination-info">
+            {{ $t('common.page') }} {{ invoicesPage }} {{ $t('common.of') }} {{ invoicesTotalPages }}
+          </span>
+          <button
+            :disabled="invoicesPage >= invoicesTotalPages"
+            class="pagination-btn"
+            @click="changeInvoicesPage(invoicesPage + 1)"
+          >
+            {{ $t('common.next') }}
+          </button>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useUsersStore } from '@/stores/users';
+import { useSubscriptionsStore, type Subscription } from '@/stores/subscriptions';
+import { useInvoicesStore, type Invoice } from '@/stores/invoices';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const usersStore = useUsersStore();
+const subscriptionsStore = useSubscriptionsStore();
+const invoicesStore = useInvoicesStore();
 
+// Tab state
+const activeTab = ref<'account' | 'subscriptions' | 'invoices'>('account');
+
+// User form state
 const loadingUser = ref(true);
 const loadError = ref<string | null>(null);
 const validationError = ref<string | null>(null);
@@ -193,6 +468,8 @@ interface FormData {
   is_active: boolean;
   first_name: string;
   last_name: string;
+  new_password: string;
+  balance: string;
 }
 
 const formData = ref<FormData>({
@@ -200,6 +477,8 @@ const formData = ref<FormData>({
   is_active: true,
   first_name: '',
   last_name: '',
+  new_password: '',
+  balance: '0.00',
 });
 
 // Role is handled separately as a single value
@@ -208,6 +487,53 @@ const originalRole = ref<string>('user');
 
 const userId = route.params.id as string;
 
+// Subscriptions state
+const subscriptionsLoading = ref(false);
+const userSubscriptions = ref<Subscription[]>([]);
+const subscriptionsTotal = ref(0);
+const subscriptionsPage = ref(1);
+const subscriptionSearch = ref('');
+const subscriptionsPerPage = 10;
+
+// Invoices state
+const invoicesLoading = ref(false);
+const userInvoices = ref<Invoice[]>([]);
+const invoicesTotal = ref(0);
+const invoicesPage = ref(1);
+const invoiceSearch = ref('');
+const invoicesPerPage = 10;
+
+// Computed
+const subscriptionsTotalPages = computed(() =>
+  Math.ceil(subscriptionsTotal.value / subscriptionsPerPage)
+);
+const invoicesTotalPages = computed(() =>
+  Math.ceil(invoicesTotal.value / invoicesPerPage)
+);
+
+const filteredSubscriptions = computed(() => {
+  if (!subscriptionSearch.value.trim()) {
+    return userSubscriptions.value;
+  }
+  const query = subscriptionSearch.value.toLowerCase();
+  return userSubscriptions.value.filter(sub =>
+    sub.plan_name?.toLowerCase().includes(query) ||
+    sub.status?.toLowerCase().includes(query)
+  );
+});
+
+const filteredInvoices = computed(() => {
+  if (!invoiceSearch.value.trim()) {
+    return userInvoices.value;
+  }
+  const query = invoiceSearch.value.toLowerCase();
+  return userInvoices.value.filter(inv =>
+    inv.invoice_number?.toLowerCase().includes(query) ||
+    inv.status?.toLowerCase().includes(query)
+  );
+});
+
+// Methods
 async function fetchUser(): Promise<void> {
   loadingUser.value = true;
   loadError.value = null;
@@ -215,22 +541,29 @@ async function fetchUser(): Promise<void> {
   try {
     const user = await usersStore.fetchUser(userId);
 
-    // Populate form with existing data
     // Handle role - get first role from array or use single role value
-    const userRole = Array.isArray(user.roles) ? user.roles[0] : ((user as unknown as { role?: string }).role || 'user');
+    const userRole = Array.isArray(user.roles)
+      ? user.roles[0]
+      : ((user as unknown as { role?: string }).role || 'user');
 
     // Store original role to detect changes later
     originalRole.value = userRole;
     selectedRole.value = userRole;
+
+    // Get balance from user details
+    const details = (user as unknown as { details?: { balance?: number } }).details || {};
+    const balance = details.balance ?? 0;
 
     formData.value = {
       email: user.email,
       is_active: user.is_active,
       first_name: extractName(user.name, 'first'),
       last_name: extractName(user.name, 'last'),
+      new_password: '',
+      balance: balance.toFixed(2),
     };
   } catch (error) {
-    loadError.value = (error as Error).message || 'Failed to load user';
+    loadError.value = (error as Error).message || t('users.loadFailed');
   } finally {
     loadingUser.value = false;
   }
@@ -247,7 +580,13 @@ function validateForm(): boolean {
   validationError.value = null;
 
   if (!selectedRole.value) {
-    validationError.value = 'Role is required';
+    validationError.value = t('users.validation.roleRequired');
+    return false;
+  }
+
+  // Password validation: if provided, must be at least 8 characters
+  if (formData.value.new_password && formData.value.new_password.length < 8) {
+    validationError.value = t('users.passwordMinLength');
     return false;
   }
 
@@ -266,10 +605,23 @@ async function handleSubmit(): Promise<void> {
       .filter(Boolean)
       .join(' ') || undefined;
 
-    await usersStore.updateUser(userId, {
+    // Build update payload, only include password if provided
+    const updatePayload: { is_active: boolean; name?: string; password?: string; balance?: number } = {
       is_active: formData.value.is_active,
       name,
-    });
+    };
+
+    if (formData.value.new_password) {
+      updatePayload.password = formData.value.new_password;
+    }
+
+    // Parse balance as float
+    const balanceValue = parseFloat(formData.value.balance);
+    if (!isNaN(balanceValue)) {
+      updatePayload.balance = balanceValue;
+    }
+
+    await usersStore.updateUser(userId, updatePayload);
 
     // Update role separately if changed
     if (originalRole.value !== selectedRole.value) {
@@ -278,7 +630,7 @@ async function handleSubmit(): Promise<void> {
 
     router.push('/admin/users');
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to update user';
+    submitError.value = (error as Error).message || t('users.updateFailed');
   } finally {
     submitting.value = false;
   }
@@ -286,6 +638,100 @@ async function handleSubmit(): Promise<void> {
 
 function goBack(): void {
   router.push('/admin/users');
+}
+
+// Tab switching with data loading
+async function switchToSubscriptions(): Promise<void> {
+  activeTab.value = 'subscriptions';
+  if (userSubscriptions.value.length === 0) {
+    await fetchUserSubscriptions();
+  }
+}
+
+async function switchToInvoices(): Promise<void> {
+  activeTab.value = 'invoices';
+  if (userInvoices.value.length === 0) {
+    await fetchUserInvoices();
+  }
+}
+
+async function fetchUserSubscriptions(): Promise<void> {
+  subscriptionsLoading.value = true;
+  try {
+    const response = await subscriptionsStore.fetchSubscriptions({
+      page: subscriptionsPage.value,
+      per_page: subscriptionsPerPage,
+      user_id: userId
+    });
+    userSubscriptions.value = response.subscriptions;
+    subscriptionsTotal.value = response.total;
+  } catch {
+    // Error handled in store
+  } finally {
+    subscriptionsLoading.value = false;
+  }
+}
+
+async function fetchUserInvoices(): Promise<void> {
+  invoicesLoading.value = true;
+  try {
+    const response = await invoicesStore.fetchInvoices({
+      page: invoicesPage.value,
+      per_page: invoicesPerPage,
+      user_id: userId
+    });
+    userInvoices.value = response.invoices;
+    invoicesTotal.value = response.total;
+  } catch {
+    // Error handled in store
+  } finally {
+    invoicesLoading.value = false;
+  }
+}
+
+function changeSubscriptionsPage(page: number): void {
+  subscriptionsPage.value = page;
+  fetchUserSubscriptions();
+}
+
+function changeInvoicesPage(page: number): void {
+  invoicesPage.value = page;
+  fetchUserInvoices();
+}
+
+function navigateToSubscription(subscriptionId: string): void {
+  router.push(`/admin/subscriptions/${subscriptionId}`);
+}
+
+function navigateToInvoice(invoiceId: string): void {
+  router.push(`/admin/invoices/${invoiceId}`);
+}
+
+function formatStatus(status: string): string {
+  const statusKey = `subscriptions.statuses.${status}`;
+  const translated = t(statusKey);
+  // If translation key not found, return original status
+  return translated === statusKey ? status : translated;
+}
+
+function formatInvoiceStatus(status: string): string {
+  const statusKey = `invoices.statuses.${status}`;
+  const translated = t(statusKey);
+  // If translation key not found, return original status
+  return translated === statusKey ? status : translated;
+}
+
+function formatDate(dateString?: string): string {
+  if (!dateString) return '-';
+  return new Date(dateString).toLocaleDateString();
+}
+
+function formatAmount(amount: number, currency?: string): string {
+  const currencyCode = currency || 'USD';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode
+  }).format(amount);
 }
 
 onMounted(() => {
@@ -318,7 +764,8 @@ onMounted(() => {
 }
 
 .loading-state,
-.error-state {
+.error-state,
+.empty-state {
   text-align: center;
   padding: 40px;
   color: #666;
@@ -349,6 +796,41 @@ onMounted(() => {
   cursor: pointer;
 }
 
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #3498db;
+}
+
+.tab-btn.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+/* Form styles */
 .user-form h2 {
   margin: 0 0 25px 0;
   color: #2c3e50;
@@ -418,6 +900,11 @@ onMounted(() => {
   color: #666;
 }
 
+.balance-input {
+  max-width: 200px;
+  font-family: monospace;
+}
+
 .help-text {
   display: block;
   margin-top: 4px;
@@ -466,5 +953,125 @@ onMounted(() => {
 .submit-btn:disabled {
   background: #95a5a6;
   cursor: not-allowed;
+}
+
+/* Tab content styles */
+.tab-filters {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Data table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+  background-color: #f8f9fa;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.active,
+.status-badge.paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.cancelled,
+.status-badge.failed {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-badge.past_due,
+.status-badge.refunded {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.trialing,
+.status-badge.pending {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.status-badge.paused,
+.status-badge.expired {
+  background: #e9ecef;
+  color: #495057;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #2980b9;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 0.9rem;
 }
 </style>

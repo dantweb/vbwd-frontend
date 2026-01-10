@@ -1,12 +1,15 @@
 <template>
-  <div class="subscription-create-view" data-testid="subscription-create-view">
+  <div
+    class="subscription-create-view"
+    data-testid="subscription-create-view"
+  >
     <div class="form-header">
       <button
         data-testid="back-button"
         class="back-btn"
         @click="goBack"
       >
-        &larr; Back to Subscriptions
+        &larr; {{ $t('subscriptions.backToSubscriptions') }}
       </button>
     </div>
 
@@ -16,7 +19,7 @@
       @submit.prevent="handleSubmit"
     >
       <h2 data-testid="form-title">
-        Create Subscription
+        {{ $t('subscriptions.createSubscription') }}
       </h2>
 
       <div
@@ -37,16 +40,16 @@
 
       <!-- User Selection -->
       <section class="form-section">
-        <h3>User</h3>
+        <h3>{{ $t('subscriptions.user') }}</h3>
 
         <div class="form-group">
-          <label for="userSearch">Search User by Email *</label>
+          <label for="userSearch">{{ $t('subscriptions.searchUserByEmail') }} *</label>
           <div class="search-container">
             <input
               id="userSearch"
               v-model="userSearch"
               type="text"
-              placeholder="Enter email to search..."
+              :placeholder="$t('subscriptions.enterEmailToSearch')"
               class="form-input"
               @input="handleUserSearch"
             >
@@ -54,7 +57,7 @@
               v-if="searchingUsers"
               class="search-status"
             >
-              Searching...
+              {{ $t('common.searching') }}
             </div>
           </div>
           <div
@@ -77,16 +80,16 @@
           v-if="selectedUser"
           class="selected-user"
         >
-          <label>Selected User</label>
+          <label>{{ $t('subscriptions.selectedUser') }}</label>
           <div class="user-card">
             <span class="user-email">{{ selectedUser.email }}</span>
-            <span class="user-name">{{ selectedUser.name || 'No name' }}</span>
+            <span class="user-name">{{ selectedUser.name || $t('users.noName') }}</span>
             <button
               type="button"
               class="clear-btn"
               @click="clearUser"
             >
-              Clear
+              {{ $t('subscriptions.clear') }}
             </button>
           </div>
         </div>
@@ -94,20 +97,20 @@
 
       <!-- Plan Selection -->
       <section class="form-section">
-        <h3>Plan</h3>
+        <h3>{{ $t('subscriptions.plan') }}</h3>
 
         <div
           v-if="loadingPlans"
           class="loading-plans"
         >
-          Loading plans...
+          {{ $t('plans.loading') }}
         </div>
 
         <div
           v-else
           class="form-group"
         >
-          <label for="planId">Select Plan *</label>
+          <label for="planId">{{ $t('subscriptions.selectPlan') }} *</label>
           <select
             id="planId"
             v-model="formData.plan_id"
@@ -116,7 +119,7 @@
             required
           >
             <option value="">
-              -- Select a Plan --
+              -- {{ $t('subscriptions.selectAPlan') }} --
             </option>
             <option
               v-for="plan in activePlans"
@@ -131,11 +134,11 @@
 
       <!-- Subscription Options -->
       <section class="form-section">
-        <h3>Options</h3>
+        <h3>{{ $t('subscriptions.options') }}</h3>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="status">Initial Status</label>
+            <label for="status">{{ $t('subscriptions.initialStatus') }}</label>
             <select
               id="status"
               v-model="formData.status"
@@ -143,10 +146,10 @@
               class="form-select"
             >
               <option value="active">
-                Active
+                {{ $t('subscriptions.statuses.active') }}
               </option>
               <option value="trialing">
-                Trialing
+                {{ $t('subscriptions.statuses.trialing') }}
               </option>
             </select>
           </div>
@@ -155,7 +158,7 @@
             v-if="formData.status === 'trialing'"
             class="form-group"
           >
-            <label for="trialDays">Trial Days</label>
+            <label for="trialDays">{{ $t('subscriptions.trialDays') }}</label>
             <input
               id="trialDays"
               v-model.number="formData.trial_days"
@@ -178,7 +181,7 @@
           class="cancel-btn"
           @click="goBack"
         >
-          Cancel
+          {{ $t('common.cancel') }}
         </button>
         <button
           type="submit"
@@ -186,7 +189,7 @@
           class="submit-btn"
           :disabled="submitting || !isFormValid"
         >
-          {{ submitting ? 'Creating...' : 'Create Subscription' }}
+          {{ submitting ? $t('subscriptions.creating') : $t('subscriptions.createSubscription') }}
         </button>
       </div>
     </form>
@@ -196,11 +199,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useSubscriptionsStore, type CreateSubscriptionData } from '@/stores/subscriptions';
 import { usePlanAdminStore, type AdminPlan } from '@/stores/planAdmin';
 import { useUsersStore, type User } from '@/stores/users';
 
 const router = useRouter();
+const { t } = useI18n();
 const subscriptionsStore = useSubscriptionsStore();
 const plansStore = usePlanAdminStore();
 const usersStore = useUsersStore();
@@ -281,7 +286,7 @@ function clearUser(): void {
 }
 
 function formatPrice(plan: AdminPlan): string {
-  if (!plan.price) return 'Free';
+  if (!plan.price) return t('plans.free');
   if (typeof plan.price === 'number') {
     return `$${plan.price.toFixed(2)}`;
   }
@@ -289,24 +294,24 @@ function formatPrice(plan: AdminPlan): string {
     const symbol = plan.price.currency_symbol || '$';
     return `${symbol}${plan.price.price_float.toFixed(2)}`;
   }
-  return plan.price.price_decimal || 'Free';
+  return plan.price.price_decimal || t('plans.free');
 }
 
 function validateForm(): boolean {
   validationError.value = null;
 
   if (!selectedUser.value) {
-    validationError.value = 'Please select a user';
+    validationError.value = t('subscriptions.validation.selectUser');
     return false;
   }
 
   if (!formData.value.plan_id) {
-    validationError.value = 'Please select a plan';
+    validationError.value = t('subscriptions.validation.selectPlan');
     return false;
   }
 
   if (formData.value.status === 'trialing' && (!formData.value.trial_days || formData.value.trial_days < 1)) {
-    validationError.value = 'Trial days must be at least 1';
+    validationError.value = t('subscriptions.validation.trialDaysMin');
     return false;
   }
 
@@ -333,7 +338,7 @@ async function handleSubmit(): Promise<void> {
     const subscription = await subscriptionsStore.createSubscription(data);
     router.push(`/admin/subscriptions/${subscription.id}`);
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to create subscription';
+    submitError.value = (error as Error).message || t('subscriptions.createFailed');
   } finally {
     submitting.value = false;
   }

@@ -1,10 +1,16 @@
 <template>
-  <div class="login-container" data-testid="login-view">
+  <div
+    class="login-container"
+    data-testid="login-view"
+  >
     <div class="login-box">
-      <h1>VBWD Admin</h1>
-      <form data-testid="login-form" @submit.prevent="handleLogin">
+      <h1>{{ $t('auth.login') }}</h1>
+      <form
+        data-testid="login-form"
+        @submit.prevent="handleLogin"
+      >
         <div class="form-group">
-          <label for="username">Username</label>
+          <label for="username">{{ $t('auth.email') }}</label>
           <input
             id="username"
             v-model="username"
@@ -15,7 +21,7 @@
           >
         </div>
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">{{ $t('auth.password') }}</label>
           <input
             id="password"
             v-model="password"
@@ -38,7 +44,7 @@
           class="btn-primary"
           data-testid="login-button"
         >
-          {{ loading ? 'Logging in...' : 'Login' }}
+          {{ loading ? $t('auth.loggingIn') : $t('auth.loginButton') }}
         </button>
       </form>
     </div>
@@ -47,8 +53,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
+
+const { t } = useI18n();
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -74,7 +83,7 @@ async function handleLogin(): Promise<void> {
 
     router.push('/admin/dashboard');
   } catch (e) {
-    error.value = 'Invalid credentials';
+    error.value = t('auth.invalidCredentials');
   } finally {
     loading.value = false;
   }

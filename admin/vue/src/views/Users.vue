@@ -1,19 +1,22 @@
 <template>
-  <div class="users-view" data-testid="users-view">
+  <div
+    class="users-view"
+    data-testid="users-view"
+  >
     <div class="users-header">
       <div class="header-left">
-        <h2>Users</h2>
+        <h2>{{ $t('users.title') }}</h2>
         <span
           v-if="!loading && !error"
           class="total-count"
-        >{{ total }} total</span>
+        >{{ total }} {{ $t('common.entries') }}</span>
       </div>
       <button
         data-testid="create-user-button"
         class="create-btn"
         @click="navigateToCreate"
       >
-        Create User
+        {{ $t('users.createUser') }}
       </button>
     </div>
 
@@ -22,7 +25,7 @@
         v-model="searchQuery"
         type="text"
         data-testid="search-input"
-        placeholder="Search by email or name..."
+        :placeholder="$t('common.search')"
         class="search-input"
         @keyup.enter="handleSearch"
       >
@@ -33,13 +36,13 @@
         @change="handleStatusChange"
       >
         <option value="">
-          All Status
+          {{ $t('common.all') }} {{ $t('common.status') }}
         </option>
         <option value="active">
-          Active
+          {{ $t('common.active') }}
         </option>
         <option value="inactive">
-          Inactive
+          {{ $t('common.inactive') }}
         </option>
       </select>
     </div>
@@ -50,7 +53,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading users...</p>
+      <p>{{ $t('common.loading') }}</p>
     </div>
 
     <div
@@ -63,7 +66,7 @@
         class="retry-btn"
         @click="fetchUsers"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -72,7 +75,7 @@
       data-testid="empty-state"
       class="empty-state"
     >
-      <p>No users found</p>
+      <p>{{ $t('common.noResults') }}</p>
     </div>
 
     <table
@@ -88,7 +91,7 @@
             data-sortable="email"
             @click="handleSort('email')"
           >
-            Email
+            {{ $t('users.email') }}
             <span class="sort-indicator">{{ getSortIndicator('email') }}</span>
           </th>
           <th
@@ -97,7 +100,7 @@
             data-sortable="name"
             @click="handleSort('name')"
           >
-            Name
+            {{ $t('users.name') }}
             <span class="sort-indicator">{{ getSortIndicator('name') }}</span>
           </th>
           <th
@@ -106,17 +109,17 @@
             data-sortable="status"
             @click="handleSort('status')"
           >
-            Status
+            {{ $t('users.status') }}
             <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
           </th>
-          <th>Roles</th>
+          <th>{{ $t('users.role') }}</th>
           <th
             class="sortable"
             :class="{ sorted: sortColumn === 'created_at', 'sort-asc': sortColumn === 'created_at' && sortDirection === 'asc', 'sort-desc': sortColumn === 'created_at' && sortDirection === 'desc' }"
             data-sortable="created_at"
             @click="handleSort('created_at')"
           >
-            Created
+            {{ $t('users.createdAt') }}
             <span class="sort-indicator">{{ getSortIndicator('created_at') }}</span>
           </th>
         </tr>
@@ -137,14 +140,14 @@
               data-testid="status-active"
               class="status-badge active"
             >
-              Active
+              {{ $t('users.active') }}
             </span>
             <span
               v-else
               data-testid="status-inactive"
               class="status-badge inactive"
             >
-              Inactive
+              {{ $t('users.inactive') }}
             </span>
           </td>
           <td>
@@ -172,16 +175,16 @@
         class="pagination-btn"
         @click="changePage(page - 1)"
       >
-        Previous
+        {{ $t('common.previous') }}
       </button>
-      <span class="pagination-info">Page {{ page }} of {{ totalPages }}</span>
+      <span class="pagination-info">{{ $t('common.page') }} {{ page }} {{ $t('common.of') }} {{ totalPages }}</span>
       <button
         data-testid="pagination-next"
         :disabled="page >= totalPages"
         class="pagination-btn"
         @click="changePage(page + 1)"
       >
-        Next
+        {{ $t('common.next') }}
       </button>
     </div>
   </div>

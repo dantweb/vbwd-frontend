@@ -1,13 +1,16 @@
 <template>
-  <div class="plans-view" data-testid="plans-view">
+  <div
+    class="plans-view"
+    data-testid="plans-view"
+  >
     <div class="plans-header">
-      <h2>Plans</h2>
+      <h2>{{ $t('plans.title') }}</h2>
       <button
         data-testid="create-plan-button"
         class="create-btn"
         @click="navigateToCreate"
       >
-        + Create Plan
+        + {{ $t('plans.createPlan') }}
       </button>
     </div>
 
@@ -16,7 +19,7 @@
         v-model="searchQuery"
         type="text"
         data-testid="search-input"
-        placeholder="Search by name..."
+        :placeholder="$t('common.search')"
         class="search-input"
         @input="handleSearch"
       >
@@ -27,7 +30,7 @@
           data-testid="include-archived"
           @change="fetchPlans"
         >
-        Include archived plans
+        {{ $t('plans.includeArchived') }}
       </label>
     </div>
 
@@ -37,7 +40,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading plans...</p>
+      <p>{{ $t('common.loading') }}</p>
     </div>
 
     <div
@@ -50,7 +53,7 @@
         class="retry-btn"
         @click="fetchPlans"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -59,12 +62,12 @@
       data-testid="empty-state"
       class="empty-state"
     >
-      <p>No plans found</p>
+      <p>{{ $t('common.noResults') }}</p>
       <button
         class="create-btn"
         @click="navigateToCreate"
       >
-        Create your first plan
+        {{ $t('plans.createFirstPlan') }}
       </button>
     </div>
 
@@ -81,7 +84,7 @@
             data-sortable="name"
             @click="handleSort('name')"
           >
-            Name
+            {{ $t('plans.name') }}
             <span class="sort-indicator">{{ getSortIndicator('name') }}</span>
           </th>
           <th
@@ -90,7 +93,7 @@
             data-sortable="price"
             @click="handleSort('price')"
           >
-            Price
+            {{ $t('plans.price') }}
             <span class="sort-indicator">{{ getSortIndicator('price') }}</span>
           </th>
           <th
@@ -99,7 +102,7 @@
             data-sortable="billing_period"
             @click="handleSort('billing_period')"
           >
-            Billing
+            {{ $t('plans.billingPeriod') }}
             <span class="sort-indicator">{{ getSortIndicator('billing_period') }}</span>
           </th>
           <th
@@ -108,7 +111,7 @@
             data-sortable="subscriber_count"
             @click="handleSort('subscriber_count')"
           >
-            Subscribers
+            {{ $t('plans.subscribers') }}
             <span class="sort-indicator">{{ getSortIndicator('subscriber_count') }}</span>
           </th>
           <th
@@ -117,10 +120,10 @@
             data-sortable="status"
             @click="handleSort('status')"
           >
-            Status
+            {{ $t('common.status') }}
             <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
           </th>
-          <th>Actions</th>
+          <th>{{ $t('common.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -141,14 +144,14 @@
               data-testid="status-active"
               class="status-badge active"
             >
-              Active
+              {{ $t('common.active') }}
             </span>
             <span
               v-else
               data-testid="status-inactive"
               class="status-badge inactive"
             >
-              Inactive
+              {{ $t('common.inactive') }}
             </span>
           </td>
           <td @click.stop>
@@ -158,7 +161,7 @@
               class="action-btn archive"
               @click="handleArchive(plan.id)"
             >
-              Archive
+              {{ $t('plans.archive') }}
             </button>
           </td>
         </tr>

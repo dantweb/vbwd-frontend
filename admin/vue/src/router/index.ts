@@ -90,24 +90,14 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/InvoiceDetails.vue')
       },
       {
-        path: 'analytics',
-        name: 'analytics',
-        component: () => import('@/views/Analytics.vue')
-      },
-      {
-        path: 'webhooks',
-        name: 'webhooks',
-        component: () => import('@/views/Webhooks.vue')
-      },
-      {
-        path: 'webhooks/:id',
-        name: 'webhook-details',
-        component: () => import('@/views/WebhookDetails.vue')
-      },
-      {
         path: 'settings',
         name: 'settings',
         component: () => import('@/views/Settings.vue')
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/views/Profile.vue')
       }
     ]
   }

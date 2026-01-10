@@ -67,7 +67,7 @@ test.describe('Admin Subscriptions - Field Population', () => {
     const text = await dateCell.textContent();
     expect(text).toBeTruthy();
     // Date should contain / or - (date separator)
-    expect(text).toMatch(/[\d\/\-\.]+/);
+    expect(text).toMatch(/[\d/\-.]+/);
   });
 
   test('should display total count', async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe('Admin Subscriptions - Sortable Columns', () => {
     await userHeader.click();
     await page.waitForTimeout(200);
 
-    let indicator = userHeader.locator('.sort-indicator');
+    const indicator = userHeader.locator('.sort-indicator');
     let indicatorText = await indicator.textContent();
     const firstDirection = indicatorText;
 

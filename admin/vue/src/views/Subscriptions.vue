@@ -1,19 +1,22 @@
 <template>
-  <div class="subscriptions-view" data-testid="subscriptions-view">
+  <div
+    class="subscriptions-view"
+    data-testid="subscriptions-view"
+  >
     <div class="subscriptions-header">
       <div class="header-left">
-        <h2>Subscriptions</h2>
+        <h2>{{ $t('subscriptions.title') }}</h2>
         <span
           v-if="!loading && !error"
           class="total-count"
-        >{{ total }} total</span>
+        >{{ total }} {{ $t('common.entries') }}</span>
       </div>
       <button
         data-testid="create-subscription-button"
         class="create-btn"
         @click="navigateToCreate"
       >
-        Create Subscription
+        {{ $t('subscriptions.createSubscription') }}
       </button>
     </div>
 
@@ -22,7 +25,7 @@
         v-model="searchQuery"
         type="text"
         data-testid="search-input"
-        placeholder="Search by email..."
+        :placeholder="$t('common.search')"
         class="search-input"
         @input="handleSearch"
       >
@@ -33,22 +36,22 @@
         @change="handleFilterChange"
       >
         <option value="">
-          All Status
+          {{ $t('common.all') }} {{ $t('common.status') }}
         </option>
         <option value="active">
-          Active
+          {{ $t('subscriptions.statuses.active') }}
         </option>
         <option value="cancelled">
-          Cancelled
+          {{ $t('subscriptions.statuses.cancelled') }}
         </option>
         <option value="past_due">
-          Past Due
+          {{ $t('subscriptions.statuses.pastDue') }}
         </option>
         <option value="trialing">
-          Trialing
+          {{ $t('subscriptions.statuses.trialing') }}
         </option>
         <option value="paused">
-          Paused
+          {{ $t('subscriptions.statuses.paused') }}
         </option>
       </select>
       <select
@@ -58,7 +61,7 @@
         @change="handleFilterChange"
       >
         <option value="">
-          All Plans
+          {{ $t('common.all') }} {{ $t('nav.plans') }}
         </option>
         <option value="Free">
           Free
@@ -78,7 +81,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading subscriptions...</p>
+      <p>{{ $t('common.loading') }}</p>
     </div>
 
     <div
@@ -91,7 +94,7 @@
         class="retry-btn"
         @click="fetchSubscriptions"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -100,7 +103,7 @@
       data-testid="empty-state"
       class="empty-state"
     >
-      <p>No subscriptions found</p>
+      <p>{{ $t('subscriptions.noSubscriptions') }}</p>
     </div>
 
     <table
@@ -116,7 +119,7 @@
             data-sortable="user_email"
             @click="handleSort('user_email')"
           >
-            User
+            {{ $t('subscriptions.user') }}
             <span class="sort-indicator">{{ getSortIndicator('user_email') }}</span>
           </th>
           <th
@@ -125,7 +128,7 @@
             data-sortable="plan_name"
             @click="handleSort('plan_name')"
           >
-            Plan
+            {{ $t('subscriptions.plan') }}
             <span class="sort-indicator">{{ getSortIndicator('plan_name') }}</span>
           </th>
           <th
@@ -134,7 +137,7 @@
             data-sortable="status"
             @click="handleSort('status')"
           >
-            Status
+            {{ $t('subscriptions.status') }}
             <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
           </th>
           <th
@@ -143,7 +146,7 @@
             data-sortable="created_at"
             @click="handleSort('created_at')"
           >
-            Created
+            {{ $t('subscriptions.createdAt') }}
             <span class="sort-indicator">{{ getSortIndicator('created_at') }}</span>
           </th>
         </tr>
@@ -183,16 +186,16 @@
         class="pagination-btn"
         @click="changePage(page - 1)"
       >
-        Previous
+        {{ $t('common.previous') }}
       </button>
-      <span class="pagination-info">Page {{ page }} of {{ totalPages }}</span>
+      <span class="pagination-info">{{ $t('common.page') }} {{ page }} {{ $t('common.of') }} {{ totalPages }}</span>
       <button
         data-testid="pagination-next"
         :disabled="page >= totalPages"
         class="pagination-btn"
         @click="changePage(page + 1)"
       >
-        Next
+        {{ $t('common.next') }}
       </button>
     </div>
   </div>
@@ -201,7 +204,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useSubscriptionsStore } from '@/stores/subscriptions';
+
+const { t } = useI18n();
 
 const router = useRouter();
 const subscriptionsStore = useSubscriptionsStore();
@@ -299,13 +305,13 @@ function navigateToCreate(): void {
 
 function formatStatus(status: string): string {
   const statusMap: Record<string, string> = {
-    active: 'Active',
-    cancelled: 'Cancelled',
-    past_due: 'Past Due',
-    trialing: 'Trialing',
-    paused: 'Paused',
-    pending: 'Pending',
-    expired: 'Expired'
+    active: t('subscriptions.statuses.active'),
+    cancelled: t('subscriptions.statuses.cancelled'),
+    past_due: t('subscriptions.statuses.pastDue'),
+    trialing: t('subscriptions.statuses.trialing'),
+    paused: t('subscriptions.statuses.paused'),
+    pending: t('subscriptions.statuses.pending'),
+    expired: t('subscriptions.statuses.expired')
   };
   return statusMap[status] || status;
 }

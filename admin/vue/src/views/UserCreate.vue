@@ -1,12 +1,15 @@
 <template>
-  <div class="user-create-view" data-testid="user-create-view">
+  <div
+    class="user-create-view"
+    data-testid="user-create-view"
+  >
     <div class="form-header">
       <button
         data-testid="back-button"
         class="back-btn"
         @click="goBack"
       >
-        &larr; Back to Users
+        &larr; {{ $t('users.backToUsers') }}
       </button>
     </div>
 
@@ -16,7 +19,7 @@
       @submit.prevent="handleSubmit"
     >
       <h2 data-testid="form-title">
-        Create User
+        {{ $t('users.createUser') }}
       </h2>
 
       <div
@@ -37,10 +40,10 @@
 
       <!-- Account Section -->
       <section class="form-section">
-        <h3>Account</h3>
+        <h3>{{ $t('users.account') }}</h3>
 
         <div class="form-group">
-          <label for="email">Email *</label>
+          <label for="email">{{ $t('users.email') }} *</label>
           <input
             id="email"
             v-model="formData.email"
@@ -53,13 +56,13 @@
         </div>
 
         <div class="form-group">
-          <label for="password">Password *</label>
+          <label for="password">{{ $t('auth.password') }} *</label>
           <input
             id="password"
             v-model="formData.password"
             name="password"
             type="password"
-            placeholder="Minimum 8 characters"
+            :placeholder="$t('users.passwordMinLength')"
             class="form-input"
             minlength="8"
             required
@@ -68,7 +71,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="status">Status</label>
+            <label for="status">{{ $t('users.status') }}</label>
             <select
               id="status"
               v-model="formData.status"
@@ -76,19 +79,19 @@
               class="form-select"
             >
               <option value="active">
-                Active
+                {{ $t('users.active') }}
               </option>
               <option value="pending">
-                Pending
+                {{ $t('subscriptions.statuses.pending') }}
               </option>
               <option value="suspended">
-                Suspended
+                {{ $t('users.suspended') }}
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="role">Role</label>
+            <label for="role">{{ $t('users.role') }}</label>
             <select
               id="role"
               v-model="formData.role"
@@ -96,13 +99,13 @@
               class="form-select"
             >
               <option value="user">
-                User
+                {{ $t('users.roles.user') }}
               </option>
               <option value="admin">
-                Admin
+                {{ $t('users.roles.admin') }}
               </option>
               <option value="vendor">
-                Vendor
+                {{ $t('users.roles.vendor') }}
               </option>
             </select>
           </div>
@@ -111,11 +114,11 @@
 
       <!-- Personal Details Section -->
       <section class="form-section">
-        <h3>Personal Details</h3>
+        <h3>{{ $t('users.personalDetails') }}</h3>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="firstName">First Name</label>
+            <label for="firstName">{{ $t('users.firstName') }}</label>
             <input
               id="firstName"
               v-model="formData.details.first_name"
@@ -127,7 +130,7 @@
           </div>
 
           <div class="form-group">
-            <label for="lastName">Last Name</label>
+            <label for="lastName">{{ $t('users.lastName') }}</label>
             <input
               id="lastName"
               v-model="formData.details.last_name"
@@ -140,7 +143,7 @@
         </div>
 
         <div class="form-group">
-          <label for="addressLine1">Address Line 1</label>
+          <label for="addressLine1">{{ $t('profile.addressLine1') }}</label>
           <input
             id="addressLine1"
             v-model="formData.details.address_line_1"
@@ -152,7 +155,7 @@
         </div>
 
         <div class="form-group">
-          <label for="addressLine2">Address Line 2</label>
+          <label for="addressLine2">{{ $t('profile.addressLine2') }}</label>
           <input
             id="addressLine2"
             v-model="formData.details.address_line_2"
@@ -165,7 +168,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="city">City</label>
+            <label for="city">{{ $t('profile.city') }}</label>
             <input
               id="city"
               v-model="formData.details.city"
@@ -177,7 +180,7 @@
           </div>
 
           <div class="form-group">
-            <label for="postalCode">Postal Code</label>
+            <label for="postalCode">{{ $t('profile.postalCode') }}</label>
             <input
               id="postalCode"
               v-model="formData.details.postal_code"
@@ -191,7 +194,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="country">Country</label>
+            <label for="country">{{ $t('profile.country') }}</label>
             <select
               id="country"
               v-model="formData.details.country"
@@ -199,34 +202,34 @@
               class="form-select"
             >
               <option value="">
-                Select Country
+                {{ $t('users.selectCountry') }}
               </option>
               <option value="DE">
-                Germany
+                {{ $t('countries.germany') }}
               </option>
               <option value="AT">
-                Austria
+                {{ $t('countries.austria') }}
               </option>
               <option value="CH">
-                Switzerland
+                {{ $t('countries.switzerland') }}
               </option>
               <option value="US">
-                United States
+                {{ $t('countries.unitedStates') }}
               </option>
               <option value="GB">
-                United Kingdom
+                {{ $t('countries.unitedKingdom') }}
               </option>
               <option value="FR">
-                France
+                {{ $t('countries.france') }}
               </option>
               <option value="NL">
-                Netherlands
+                {{ $t('countries.netherlands') }}
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="phone">Phone</label>
+            <label for="phone">{{ $t('profile.phone') }}</label>
             <input
               id="phone"
               v-model="formData.details.phone"
@@ -247,7 +250,7 @@
           class="cancel-btn"
           @click="goBack"
         >
-          Cancel
+          {{ $t('common.cancel') }}
         </button>
         <button
           type="submit"
@@ -255,7 +258,7 @@
           class="submit-btn"
           :disabled="submitting"
         >
-          {{ submitting ? 'Creating...' : 'Create User' }}
+          {{ submitting ? $t('users.creating') : $t('users.createUser') }}
         </button>
       </div>
     </form>
@@ -265,10 +268,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useUsersStore, type CreateUserData } from '@/stores/users';
 
 const router = useRouter();
 const usersStore = useUsersStore();
+const { t } = useI18n();
 
 const validationError = ref<string | null>(null);
 const submitError = ref<string | null>(null);
@@ -314,22 +319,22 @@ function validateForm(): boolean {
   validationError.value = null;
 
   if (!formData.value.email.trim()) {
-    validationError.value = 'Email is required';
+    validationError.value = t('users.validation.emailRequired');
     return false;
   }
 
   if (!formData.value.email.includes('@')) {
-    validationError.value = 'Please enter a valid email address';
+    validationError.value = t('users.validation.emailInvalid');
     return false;
   }
 
   if (!formData.value.password) {
-    validationError.value = 'Password is required';
+    validationError.value = t('users.validation.passwordRequired');
     return false;
   }
 
   if (formData.value.password.length < 8) {
-    validationError.value = 'Password must be at least 8 characters';
+    validationError.value = t('users.passwordMinLength');
     return false;
   }
 
@@ -369,7 +374,7 @@ async function handleSubmit(): Promise<void> {
     const user = await usersStore.createUser(data);
     router.push(`/admin/users/${user.id}`);
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to create user';
+    submitError.value = (error as Error).message || t('users.createFailed');
   } finally {
     submitting.value = false;
   }

@@ -1,12 +1,15 @@
 <template>
-  <div class="invoice-details-view" data-testid="invoice-details-view">
+  <div
+    class="invoice-details-view"
+    data-testid="invoice-details-view"
+  >
     <div
       v-if="loading"
       data-testid="loading-spinner"
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading invoice...</p>
+      <p>{{ $t('invoices.loadingInvoice') }}</p>
     </div>
 
     <div
@@ -19,7 +22,7 @@
         class="back-btn"
         @click="goBack"
       >
-        Back to Invoices
+        {{ $t('invoices.backToInvoices') }}
       </button>
     </div>
 
@@ -30,35 +33,35 @@
           class="back-btn"
           @click="goBack"
         >
-          ← Back to Invoices
+          ← {{ $t('invoices.backToInvoices') }}
         </button>
-        <h2>Invoice {{ invoice.invoice_number }}</h2>
+        <h2>{{ $t('invoices.invoice') }} {{ invoice.invoice_number }}</h2>
       </div>
 
       <div class="details-content">
         <div class="info-section">
-          <h3>Customer Information</h3>
+          <h3>{{ $t('invoices.customerInfo') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Email</label>
+              <label>{{ $t('users.email') }}</label>
               <span>{{ invoice.user_email }}</span>
             </div>
             <div class="info-item">
-              <label>Name</label>
+              <label>{{ $t('users.name') }}</label>
               <span>{{ invoice.user_name }}</span>
             </div>
           </div>
         </div>
 
         <div class="info-section">
-          <h3>Invoice Information</h3>
+          <h3>{{ $t('invoices.invoiceInfo') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Invoice Number</label>
+              <label>{{ $t('invoices.invoiceNumber') }}</label>
               <span>{{ invoice.invoice_number }}</span>
             </div>
             <div class="info-item">
-              <label>Status</label>
+              <label>{{ $t('common.status') }}</label>
               <span
                 :data-testid="`status-${invoice.status}`"
                 class="status-badge"
@@ -68,22 +71,22 @@
               </span>
             </div>
             <div class="info-item">
-              <label>Amount</label>
+              <label>{{ $t('invoices.amount') }}</label>
               <span class="amount">{{ formatAmount(invoice.amount, invoice.currency) }}</span>
             </div>
             <div class="info-item">
-              <label>Due Date</label>
+              <label>{{ $t('invoices.dueDate') }}</label>
               <span>{{ formatDate(invoice.due_date) }}</span>
             </div>
             <div
               v-if="invoice.paid_at"
               class="info-item"
             >
-              <label>Paid At</label>
+              <label>{{ $t('invoices.paidAt') }}</label>
               <span>{{ formatDate(invoice.paid_at) }}</span>
             </div>
             <div class="info-item">
-              <label>Created</label>
+              <label>{{ $t('common.created') }}</label>
               <span>{{ formatDate(invoice.created_at) }}</span>
             </div>
           </div>
@@ -93,17 +96,17 @@
           class="info-section"
           data-testid="line-items"
         >
-          <h3>Line Items</h3>
+          <h3>{{ $t('invoices.lineItems') }}</h3>
           <table
             v-if="invoice.line_items?.length"
             class="line-items-table"
           >
             <thead>
               <tr>
-                <th>Description</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Amount</th>
+                <th>{{ $t('common.description') }}</th>
+                <th>{{ $t('invoices.qty') }}</th>
+                <th>{{ $t('invoices.unitPrice') }}</th>
+                <th>{{ $t('invoices.amount') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +126,7 @@
                   colspan="3"
                   class="total-label"
                 >
-                  Total
+                  {{ $t('invoices.total') }}
                 </td>
                 <td class="total-amount">
                   {{ formatAmount(invoice.amount, invoice.currency) }}
@@ -135,7 +138,7 @@
             v-else
             class="no-items"
           >
-            No line items
+            {{ $t('invoices.noLineItems') }}
           </p>
         </div>
 
@@ -144,31 +147,31 @@
           class="info-section"
           data-testid="plan-info"
         >
-          <h3>Plan Information</h3>
+          <h3>{{ $t('invoices.planInfo') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Plan Name</label>
+              <label>{{ $t('plans.name') }}</label>
               <span>{{ invoice.plan_name }}</span>
             </div>
             <div
               v-if="invoice.plan_description"
               class="info-item"
             >
-              <label>Description</label>
+              <label>{{ $t('plans.description') }}</label>
               <span>{{ invoice.plan_description }}</span>
             </div>
             <div
               v-if="invoice.plan_billing_period"
               class="info-item"
             >
-              <label>Billing Period</label>
+              <label>{{ $t('plans.billingPeriod') }}</label>
               <span>{{ invoice.plan_billing_period }}</span>
             </div>
             <div
               v-if="invoice.plan_price"
               class="info-item"
             >
-              <label>Plan Price</label>
+              <label>{{ $t('invoices.planPrice') }}</label>
               <span>{{ formatAmount(parseFloat(invoice.plan_price), invoice.currency) }}</span>
             </div>
           </div>
@@ -179,13 +182,13 @@
           class="info-section"
           data-testid="subscription-info"
         >
-          <h3>Subscription Information</h3>
+          <h3>{{ $t('invoices.subscriptionInfo') }}</h3>
           <div class="info-grid">
             <div
               v-if="invoice.subscription_status"
               class="info-item"
             >
-              <label>Status</label>
+              <label>{{ $t('common.status') }}</label>
               <span
                 class="status-badge"
                 :class="invoice.subscription_status"
@@ -197,25 +200,25 @@
               v-if="invoice.subscription_start_date"
               class="info-item"
             >
-              <label>Start Date</label>
+              <label>{{ $t('subscriptions.startDate') }}</label>
               <span>{{ formatDate(invoice.subscription_start_date) }}</span>
             </div>
             <div
               v-if="invoice.subscription_end_date"
               class="info-item"
             >
-              <label>End Date</label>
+              <label>{{ $t('subscriptions.endDate') }}</label>
               <span>{{ formatDate(invoice.subscription_end_date) }}</span>
             </div>
             <div class="info-item">
-              <label>Trial</label>
-              <span>{{ invoice.subscription_is_trial ? 'Yes' : 'No' }}</span>
+              <label>{{ $t('invoices.trial') }}</label>
+              <span>{{ invoice.subscription_is_trial ? $t('common.yes') : $t('common.no') }}</span>
             </div>
             <div
               v-if="invoice.subscription_trial_end"
               class="info-item"
             >
-              <label>Trial End Date</label>
+              <label>{{ $t('invoices.trialEndDate') }}</label>
               <span>{{ formatDate(invoice.subscription_trial_end) }}</span>
             </div>
           </div>
@@ -226,7 +229,7 @@
           class="info-section"
           data-testid="billing-address"
         >
-          <h3>Billing Address</h3>
+          <h3>{{ $t('invoices.billingAddress') }}</h3>
           <div class="address">
             <p v-if="invoice.billing_address.line1">
               {{ invoice.billing_address.line1 }}
@@ -251,7 +254,7 @@
             :disabled="processing"
             @click="handleDuplicate"
           >
-            {{ processing ? 'Duplicating...' : 'Duplicate Invoice' }}
+            {{ processing ? $t('invoices.duplicating') : $t('invoices.duplicate') }}
           </button>
           <button
             data-testid="resend-button"
@@ -259,7 +262,7 @@
             :disabled="processing"
             @click="handleResend"
           >
-            {{ processing ? 'Sending...' : 'Resend Invoice' }}
+            {{ processing ? $t('invoices.sending') : $t('invoices.resend') }}
           </button>
           <button
             v-if="invoice.status === 'pending'"
@@ -268,7 +271,7 @@
             :disabled="processing"
             @click="handleMarkPaid"
           >
-            {{ processing ? 'Processing...' : 'Mark as Paid' }}
+            {{ processing ? $t('common.processing') : $t('invoices.markAsPaid') }}
           </button>
           <button
             v-if="invoice.status === 'pending'"
@@ -277,7 +280,7 @@
             :disabled="processing"
             @click="handleVoid"
           >
-            {{ processing ? 'Processing...' : 'Void Invoice' }}
+            {{ processing ? $t('common.processing') : $t('invoices.void') }}
           </button>
           <button
             v-if="invoice.status === 'paid'"
@@ -286,7 +289,7 @@
             :disabled="processing"
             @click="handleRefund"
           >
-            {{ processing ? 'Processing...' : 'Refund' }}
+            {{ processing ? $t('common.processing') : $t('invoices.refund') }}
           </button>
         </div>
       </div>
@@ -297,8 +300,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useInvoicesStore } from '@/stores/invoices';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const invoicesStore = useInvoicesStore();
@@ -393,14 +398,9 @@ function goBack(): void {
 }
 
 function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    pending: 'Pending',
-    paid: 'Paid',
-    failed: 'Failed',
-    cancelled: 'Cancelled',
-    refunded: 'Refunded'
-  };
-  return statusMap[status] || status;
+  const statusKey = `invoices.statuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 }
 
 function formatDate(dateString?: string): string {

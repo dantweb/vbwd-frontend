@@ -1,12 +1,15 @@
 <template>
-  <div class="dashboard" data-testid="dashboard-view">
-    <h1>Dashboard</h1>
+  <div
+    class="dashboard"
+    data-testid="dashboard-view"
+  >
+    <h1>{{ $t('dashboard.title') }}</h1>
 
     <div
       v-if="analyticsStore.loading"
       class="loading"
     >
-      Loading...
+      {{ $t('common.loading') }}
     </div>
     <div
       v-else-if="analyticsStore.error"
@@ -20,7 +23,7 @@
       class="stats-grid"
     >
       <div class="stat-card">
-        <h3>Monthly Recurring Revenue</h3>
+        <h3>{{ $t('dashboard.mrr') }}</h3>
         <div class="stat-value">
           ${{ formatNumber(dashboard?.mrr?.total || 0) }}
         </div>
@@ -33,7 +36,7 @@
         </div>
       </div>
       <div class="stat-card">
-        <h3>Total Revenue</h3>
+        <h3>{{ $t('dashboard.totalRevenue') }}</h3>
         <div class="stat-value">
           ${{ formatNumber(dashboard?.revenue?.total || 0) }}
         </div>
@@ -46,7 +49,7 @@
         </div>
       </div>
       <div class="stat-card">
-        <h3>User Growth</h3>
+        <h3>{{ $t('dashboard.userGrowth') }}</h3>
         <div class="stat-value">
           {{ formatNumber(dashboard?.user_growth?.total || 0) }}
         </div>
@@ -59,7 +62,7 @@
         </div>
       </div>
       <div class="stat-card">
-        <h3>Churn Rate</h3>
+        <h3>{{ $t('dashboard.churnRate') }}</h3>
         <div class="stat-value">
           {{ formatPercent(dashboard?.churn?.total || 0) }}
         </div>
@@ -72,7 +75,7 @@
         </div>
       </div>
       <div class="stat-card">
-        <h3>ARPU</h3>
+        <h3>{{ $t('dashboard.arpu') }}</h3>
         <div class="stat-value">
           ${{ formatNumber(dashboard?.arpu?.total || 0) }}
         </div>
@@ -85,7 +88,7 @@
         </div>
       </div>
       <div class="stat-card">
-        <h3>Conversion Rate</h3>
+        <h3>{{ $t('dashboard.conversionRate') }}</h3>
         <div class="stat-value">
           {{ formatPercent(dashboard?.conversion?.total || 0) }}
         </div>

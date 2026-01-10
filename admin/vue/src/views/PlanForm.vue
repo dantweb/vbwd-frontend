@@ -6,7 +6,7 @@
         class="back-btn"
         @click="goBack"
       >
-        &larr; Back to Plans
+        &larr; {{ $t('plans.backToPlans') }}
       </button>
     </div>
 
@@ -16,7 +16,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading plan...</p>
+      <p>{{ $t('plans.loadingPlan') }}</p>
     </div>
 
     <div
@@ -29,7 +29,7 @@
         class="retry-btn"
         @click="fetchPlan"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -40,7 +40,7 @@
       @submit.prevent="handleSubmit"
     >
       <h2 data-testid="form-title">
-        {{ isEdit ? 'Edit Plan' : 'Create Plan' }}
+        {{ isEdit ? $t('plans.editPlan') : $t('plans.createPlan') }}
       </h2>
 
       <div
@@ -60,19 +60,19 @@
       </div>
 
       <div class="form-group">
-        <label for="plan-name">Name *</label>
+        <label for="plan-name">{{ $t('plans.name') }} *</label>
         <input
           id="plan-name"
           v-model="formData.name"
           data-testid="plan-name"
           type="text"
-          placeholder="Enter plan name"
+          :placeholder="$t('plans.enterPlanName')"
           class="form-input"
         >
       </div>
 
       <div class="form-group">
-        <label for="plan-price">Price *</label>
+        <label for="plan-price">{{ $t('plans.price') }} *</label>
         <input
           id="plan-price"
           v-model.number="formData.price"
@@ -86,7 +86,7 @@
       </div>
 
       <div class="form-group">
-        <label for="plan-billing">Billing Period *</label>
+        <label for="plan-billing">{{ $t('plans.billingPeriod') }} *</label>
         <select
           id="plan-billing"
           v-model="formData.billing_period"
@@ -94,25 +94,25 @@
           class="form-select"
         >
           <option value="">
-            Select billing period
+            {{ $t('plans.selectBillingPeriod') }}
           </option>
           <option value="MONTHLY">
-            Monthly
+            {{ $t('plans.monthly') }}
           </option>
           <option value="YEARLY">
-            Yearly
+            {{ $t('plans.yearly') }}
           </option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="plan-features">Features (one per line)</label>
+        <label for="plan-features">{{ $t('plans.featuresOnePerLine') }}</label>
         <textarea
           id="plan-features"
           v-model="featuresText"
           data-testid="plan-features"
           rows="4"
-          placeholder="Enter features, one per line"
+          :placeholder="$t('plans.enterFeatures')"
           class="form-textarea"
         />
       </div>
@@ -127,7 +127,7 @@
             :disabled="archiving"
             @click="handleArchive"
           >
-            {{ archiving ? 'Archiving...' : 'Archive Plan' }}
+            {{ archiving ? $t('plans.archiving') : $t('plans.archivePlan') }}
           </button>
           <button
             v-if="isEdit && !planIsActive"
@@ -137,7 +137,7 @@
             :disabled="reactivating"
             @click="handleReactivate"
           >
-            {{ reactivating ? 'Reactivating...' : 'Reactivate Plan' }}
+            {{ reactivating ? $t('plans.reactivating') : $t('plans.reactivatePlan') }}
           </button>
           <button
             v-if="isEdit"
@@ -147,7 +147,7 @@
             :disabled="copying"
             @click="handleCopy"
           >
-            {{ copying ? 'Copying...' : 'Copy Plan' }}
+            {{ copying ? $t('plans.copying') : $t('plans.copyPlan') }}
           </button>
         </div>
         <div class="form-actions-right">
@@ -157,7 +157,7 @@
             class="cancel-btn"
             @click="goBack"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -166,7 +166,7 @@
             :disabled="submitting"
             @click="handleSubmit"
           >
-            {{ submitting ? 'Saving...' : (isEdit ? 'Update Plan' : 'Create Plan') }}
+            {{ submitting ? $t('common.saving') : (isEdit ? $t('plans.updatePlan') : $t('plans.createPlan')) }}
           </button>
         </div>
       </div>
@@ -177,8 +177,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { usePlanAdminStore } from '@/stores/planAdmin';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const planStore = usePlanAdminStore();
@@ -268,7 +270,7 @@ async function fetchPlan(): Promise<void> {
       planIsActive.value = response.is_active !== false;
     }
   } catch (error) {
-    fetchError.value = (error as Error).message || 'Failed to load plan';
+    fetchError.value = (error as Error).message || t('plans.failedToLoadPlan');
   }
 }
 
@@ -276,17 +278,17 @@ function validateForm(): boolean {
   validationError.value = null;
 
   if (!formData.value.name.trim()) {
-    validationError.value = 'Plan name is required';
+    validationError.value = t('plans.nameRequired');
     return false;
   }
 
   if (formData.value.price < 0) {
-    validationError.value = 'Price must be 0 or greater';
+    validationError.value = t('plans.priceInvalid');
     return false;
   }
 
   if (!formData.value.billing_period) {
-    validationError.value = 'Billing period is required';
+    validationError.value = t('plans.billingPeriodRequired');
     return false;
   }
 
@@ -319,7 +321,7 @@ async function handleSubmit(): Promise<void> {
 
     router.push('/admin/plans');
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to save plan';
+    submitError.value = (error as Error).message || t('plans.failedToSavePlan');
   } finally {
     submitting.value = false;
   }
@@ -337,7 +339,7 @@ async function handleArchive(): Promise<void> {
     await planStore.archivePlan(planId.value);
     router.push('/admin/plans');
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to archive plan';
+    submitError.value = (error as Error).message || t('plans.failedToArchivePlan');
   } finally {
     archiving.value = false;
   }
@@ -351,7 +353,7 @@ async function handleReactivate(): Promise<void> {
     await planStore.activatePlan(planId.value);
     planIsActive.value = true;
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to reactivate plan';
+    submitError.value = (error as Error).message || t('plans.failedToReactivatePlan');
   } finally {
     reactivating.value = false;
   }
@@ -366,7 +368,7 @@ async function handleCopy(): Promise<void> {
     // Navigate to the new plan's edit page
     router.push(`/admin/plans/${newPlan.id}/edit`);
   } catch (error) {
-    submitError.value = (error as Error).message || 'Failed to copy plan';
+    submitError.value = (error as Error).message || t('plans.failedToCopyPlan');
   } finally {
     copying.value = false;
   }

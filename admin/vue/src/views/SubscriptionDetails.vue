@@ -1,12 +1,15 @@
 <template>
-  <div class="subscription-details-view" data-testid="subscription-details-view">
+  <div
+    class="subscription-details-view"
+    data-testid="subscription-details-view"
+  >
     <div
       v-if="loading"
       data-testid="loading-spinner"
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading subscription...</p>
+      <p>{{ $t('subscriptions.loading') }}</p>
     </div>
 
     <div
@@ -19,7 +22,7 @@
         class="back-btn"
         @click="goBack"
       >
-        Back to Subscriptions
+        {{ $t('subscriptions.backToSubscriptions') }}
       </button>
     </div>
 
@@ -30,35 +33,35 @@
           class="back-btn"
           @click="goBack"
         >
-          ← Back to Subscriptions
+          &larr; {{ $t('subscriptions.backToSubscriptions') }}
         </button>
-        <h2>Subscription Details</h2>
+        <h2>{{ $t('subscriptions.subscriptionDetails') }}</h2>
       </div>
 
       <div class="details-content">
         <div class="info-section">
-          <h3>User Information</h3>
+          <h3>{{ $t('subscriptions.userInformation') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Email</label>
+              <label>{{ $t('users.email') }}</label>
               <span>{{ subscription.user_email }}</span>
             </div>
             <div class="info-item">
-              <label>Name</label>
+              <label>{{ $t('users.name') }}</label>
               <span>{{ subscription.user_name }}</span>
             </div>
           </div>
         </div>
 
         <div class="info-section">
-          <h3>Subscription Information</h3>
+          <h3>{{ $t('subscriptions.subscriptionInformation') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Plan</label>
+              <label>{{ $t('subscriptions.plan') }}</label>
               <span>{{ subscription.plan_name }}</span>
             </div>
             <div class="info-item">
-              <label>Status</label>
+              <label>{{ $t('subscriptions.status') }}</label>
               <span
                 :data-testid="`status-${subscription.status}`"
                 class="status-badge"
@@ -74,18 +77,18 @@
           class="info-section"
           data-testid="billing-period"
         >
-          <h3>Billing Period</h3>
+          <h3>{{ $t('subscriptions.billingPeriod') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Current Period Start</label>
+              <label>{{ $t('subscriptions.currentPeriodStart') }}</label>
               <span>{{ formatDate(subscription.current_period_start) }}</span>
             </div>
             <div class="info-item">
-              <label>Current Period End</label>
+              <label>{{ $t('subscriptions.currentPeriodEnd') }}</label>
               <span>{{ formatDate(subscription.current_period_end) }}</span>
             </div>
             <div class="info-item">
-              <label>Created</label>
+              <label>{{ $t('subscriptions.createdAt') }}</label>
               <span>{{ formatDate(subscription.created_at) }}</span>
             </div>
           </div>
@@ -95,16 +98,16 @@
           class="info-section"
           data-testid="payment-history"
         >
-          <h3>Payment History</h3>
+          <h3>{{ $t('subscriptions.paymentHistory') }}</h3>
           <table
             v-if="subscription.payment_history?.length"
             class="payments-table"
           >
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Status</th>
+                <th>{{ $t('invoices.date') }}</th>
+                <th>{{ $t('invoices.amount') }}</th>
+                <th>{{ $t('invoices.status') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,7 +134,7 @@
             v-else
             class="no-payments"
           >
-            No payment history available
+            {{ $t('subscriptions.noPaymentHistory') }}
           </p>
         </div>
 
@@ -145,7 +148,7 @@
             :disabled="canceling"
             @click="handleCancel"
           >
-            {{ canceling ? 'Canceling...' : 'Cancel Subscription' }}
+            {{ canceling ? $t('subscriptions.canceling') : $t('subscriptions.cancelSubscription') }}
           </button>
         </div>
       </div>
@@ -156,10 +159,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useSubscriptionsStore } from '@/stores/subscriptions';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const subscriptionsStore = useSubscriptionsStore();
 
 const canceling = ref(false);
@@ -200,14 +205,10 @@ function goToInvoice(invoiceId: string): void {
 }
 
 function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    active: 'Active',
-    canceled: 'Canceled',
-    past_due: 'Past Due',
-    trialing: 'Trialing',
-    paused: 'Paused'
-  };
-  return statusMap[status] || status;
+  const statusKey = `subscriptions.statuses.${status}`;
+  const translated = t(statusKey);
+  // If translation key not found, return original status
+  return translated === statusKey ? status : translated;
 }
 
 function formatDate(dateString?: string): string {

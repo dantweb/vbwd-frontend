@@ -51,7 +51,7 @@ describe('SubscriptionsStore', () => {
     await store.fetchSubscriptions({ page: 1, per_page: 20 });
 
     expect(api.get).toHaveBeenCalledWith('/admin/subscriptions', {
-      params: { page: 1, per_page: 20, status: '', plan: '' }
+      params: { page: 1, per_page: 20, status: '', plan: '', user_id: '' }
     });
     expect(store.subscriptions).toEqual(mockSubscriptions);
     expect(store.total).toBe(100);
@@ -65,7 +65,7 @@ describe('SubscriptionsStore', () => {
     await store.fetchSubscriptions({ page: 1, per_page: 20, status: 'active', plan: 'Pro' });
 
     expect(api.get).toHaveBeenCalledWith('/admin/subscriptions', {
-      params: { page: 1, per_page: 20, status: 'active', plan: 'Pro' }
+      params: { page: 1, per_page: 20, status: 'active', plan: 'Pro', user_id: '' }
     });
   });
 

@@ -1,12 +1,15 @@
 <template>
-  <div class="user-details-view" data-testid="user-details-view">
+  <div
+    class="user-details-view"
+    data-testid="user-details-view"
+  >
     <div class="page-header">
       <button
         data-testid="back-button"
         class="back-btn"
         @click="goBack"
       >
-        &larr; Back to Users
+        &larr; {{ $t('users.backToUsers') }}
       </button>
     </div>
 
@@ -16,7 +19,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading user details...</p>
+      <p>{{ $t('users.loadingDetails') }}</p>
     </div>
 
     <div
@@ -29,7 +32,7 @@
         class="retry-btn"
         @click="fetchUser"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -47,36 +50,36 @@
             data-testid="status-active"
             class="status-badge active"
           >
-            Active
+            {{ $t('users.active') }}
           </span>
           <span
             v-else
             data-testid="status-inactive"
             class="status-badge inactive"
           >
-            Inactive
+            {{ $t('users.inactive') }}
           </span>
         </div>
       </div>
 
       <div class="user-sections">
         <div class="section">
-          <h3>Account Details</h3>
+          <h3>{{ $t('users.accountDetails') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Email</label>
+              <label>{{ $t('users.email') }}</label>
               <span>{{ user.email }}</span>
             </div>
             <div class="info-item">
-              <label>Name</label>
+              <label>{{ $t('users.name') }}</label>
               <span>{{ user.name }}</span>
             </div>
             <div class="info-item">
-              <label>Created</label>
+              <label>{{ $t('users.createdAt') }}</label>
               <span>{{ formatDate(user.created_at) }}</span>
             </div>
             <div class="info-item">
-              <label>Roles</label>
+              <label>{{ $t('users.roles') }}</label>
               <div class="roles-list">
                 <span
                   v-for="role in user.roles"
@@ -94,26 +97,26 @@
           v-if="user.subscription"
           class="section"
         >
-          <h3>Subscription</h3>
+          <h3>{{ $t('users.subscription') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Plan</label>
-              <span>{{ user.subscription.plan || 'None' }}</span>
+              <label>{{ $t('subscriptions.plan') }}</label>
+              <span>{{ user.subscription.plan || $t('common.none') }}</span>
             </div>
             <div class="info-item">
-              <label>Status</label>
+              <label>{{ $t('subscriptions.status') }}</label>
               <span
                 class="subscription-status"
                 :class="user.subscription.status"
               >
-                {{ user.subscription.status || 'N/A' }}
+                {{ user.subscription.status || $t('common.na') }}
               </span>
             </div>
             <div
               v-if="user.subscription.expires_at"
               class="info-item"
             >
-              <label>Expires</label>
+              <label>{{ $t('subscriptions.expires') }}</label>
               <span>{{ formatDate(user.subscription.expires_at) }}</span>
             </div>
           </div>
@@ -123,17 +126,17 @@
           v-if="user.stats"
           class="section"
         >
-          <h3>Statistics</h3>
+          <h3>{{ $t('users.statistics') }}</h3>
           <div class="info-grid">
             <div class="info-item">
-              <label>Total Payments</label>
+              <label>{{ $t('users.totalPayments') }}</label>
               <span>{{ user.stats.total_payments }}</span>
             </div>
             <div
               v-if="user.stats.last_login"
               class="info-item"
             >
-              <label>Last Login</label>
+              <label>{{ $t('users.lastLogin') }}</label>
               <span>{{ formatDateTime(user.stats.last_login) }}</span>
             </div>
           </div>
@@ -146,7 +149,7 @@
           class="action-btn primary"
           @click="goToEdit"
         >
-          Edit User
+          {{ $t('users.editUser') }}
         </button>
         <button
           v-if="user.is_active"
@@ -154,7 +157,7 @@
           class="action-btn danger"
           @click="handleSuspend"
         >
-          Suspend User
+          {{ $t('users.suspendUser') }}
         </button>
         <button
           v-else
@@ -162,7 +165,7 @@
           class="action-btn success"
           @click="handleActivate"
         >
-          Activate User
+          {{ $t('users.activateUser') }}
         </button>
       </div>
     </template>

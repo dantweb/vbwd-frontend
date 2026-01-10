@@ -1,7 +1,7 @@
 <template>
   <div class="settings-view">
     <div class="settings-header">
-      <h2>Settings</h2>
+      <h2>{{ $t('settings.title') }}</h2>
     </div>
 
     <div
@@ -10,7 +10,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading settings...</p>
+      <p>{{ $t('common.loading') }}</p>
     </div>
 
     <div
@@ -23,7 +23,7 @@
         class="retry-btn"
         @click="fetchSettings"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -49,9 +49,9 @@
       </div>
 
       <div class="form-section">
-        <h3>Company Information</h3>
+        <h3>{{ $t('settings.companyInfo') }}</h3>
         <div class="form-group">
-          <label for="company-name">Company Name</label>
+          <label for="company-name">{{ $t('settings.companyName') }}</label>
           <input
             id="company-name"
             v-model="formData.company_name"
@@ -61,7 +61,7 @@
           >
         </div>
         <div class="form-group">
-          <label for="company-email">Company Email</label>
+          <label for="company-email">{{ $t('settings.companyEmail') }}</label>
           <input
             id="company-email"
             v-model="formData.company_email"
@@ -71,7 +71,7 @@
           >
         </div>
         <div class="form-group">
-          <label for="support-email">Support Email</label>
+          <label for="support-email">{{ $t('settings.supportEmail') }}</label>
           <input
             id="support-email"
             v-model="formData.support_email"
@@ -83,10 +83,10 @@
       </div>
 
       <div class="form-section">
-        <h3>Billing</h3>
+        <h3>{{ $t('settings.billing') }}</h3>
         <div class="form-row">
           <div class="form-group">
-            <label for="currency">Default Currency</label>
+            <label for="currency">{{ $t('settings.defaultCurrency') }}</label>
             <select
               id="currency"
               v-model="formData.default_currency"
@@ -105,7 +105,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="tax-rate">Tax Rate (%)</label>
+            <label for="tax-rate">{{ $t('settings.taxRate') }}</label>
             <input
               id="tax-rate"
               v-model.number="formData.tax_rate"
@@ -124,28 +124,28 @@
         class="form-section"
         data-testid="notification-preferences"
       >
-        <h3>Notification Preferences</h3>
+        <h3>{{ $t('settings.notificationPreferences') }}</h3>
         <div class="checkbox-group">
           <label class="checkbox-label">
             <input
               v-model="formData.notification_preferences.email_on_new_subscription"
               type="checkbox"
             >
-            <span>Email on new subscription</span>
+            <span>{{ $t('settings.emailOnNewSubscription') }}</span>
           </label>
           <label class="checkbox-label">
             <input
               v-model="formData.notification_preferences.email_on_cancellation"
               type="checkbox"
             >
-            <span>Email on cancellation</span>
+            <span>{{ $t('settings.emailOnCancellation') }}</span>
           </label>
           <label class="checkbox-label">
             <input
               v-model="formData.notification_preferences.email_on_payment_failed"
               type="checkbox"
             >
-            <span>Email on failed payment</span>
+            <span>{{ $t('settings.emailOnPaymentFailed') }}</span>
           </label>
         </div>
       </div>
@@ -158,7 +158,7 @@
           :disabled="saving"
           @click="handleSave"
         >
-          {{ saving ? 'Saving...' : 'Save Settings' }}
+          {{ saving ? $t('settings.saving') : $t('settings.saveSettings') }}
         </button>
       </div>
     </div>
@@ -167,7 +167,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { api } from '@/api';
+
+const { t } = useI18n();
 
 interface Settings {
   company_name: string;
@@ -222,7 +225,7 @@ async function handleSave(): Promise<void> {
 
   try {
     await api.put('/admin/settings', formData);
-    successMessage.value = 'Settings saved successfully';
+    successMessage.value = t('settings.settingsSaved');
     setTimeout(() => {
       successMessage.value = null;
     }, 3000);

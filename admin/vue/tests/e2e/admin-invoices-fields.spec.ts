@@ -57,7 +57,7 @@ test.describe('Admin Invoices - Field Population', () => {
     const text = await amountCell.textContent();
     expect(text).toBeTruthy();
     // Should contain currency symbol or number
-    expect(text).toMatch(/[$€£]?\d+[\d,\.]*|[\d,\.]+\s*[A-Z]{3}/);
+    expect(text).toMatch(/[$€£]?\d+[\d,.]*|[\d,.]+\s*[A-Z]{3}/);
   });
 
   test('should display status badge in fourth column', async ({ page }) => {
@@ -79,7 +79,7 @@ test.describe('Admin Invoices - Field Population', () => {
     const text = await dateCell.textContent();
     expect(text).toBeTruthy();
     // Date should contain / or - (date separator) or be a dash for empty
-    expect(text).toMatch(/[\d\/\-\.]+|-/);
+    expect(text).toMatch(/[\d/\-.]+|-/);
   });
 
   test('should display total count', async ({ page }) => {

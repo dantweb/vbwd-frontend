@@ -63,7 +63,7 @@ describe('Users.vue', () => {
     expect(wrapper.text()).toContain('Email');
     expect(wrapper.text()).toContain('Name');
     expect(wrapper.text()).toContain('Status');
-    expect(wrapper.text()).toContain('Roles');
+    expect(wrapper.text()).toContain('Role');
   });
 
   it('displays user data in table rows', async () => {
@@ -167,7 +167,7 @@ describe('Users.vue', () => {
     await firstRow.trigger('click');
     await flushPromises();
 
-    expect(router.currentRoute.value.path).toBe('/admin/users/1');
+    expect(router.currentRoute.value.path).toBe('/admin/users/1/edit');
   });
 
   it('handles pagination', async () => {
@@ -236,7 +236,7 @@ describe('Users.vue', () => {
     await flushPromises();
 
     expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('No users found');
+    expect(wrapper.text()).toContain('No results found');
   });
 
   it('displays total users count', async () => {

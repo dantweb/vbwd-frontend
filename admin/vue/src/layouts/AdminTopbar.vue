@@ -22,8 +22,6 @@ const pageTitle = computed((): string => {
     'plans': 'Plan Management',
     'subscriptions': 'Subscriptions',
     'invoices': 'Invoices',
-    'analytics': 'Analytics',
-    'webhooks': 'Webhooks',
     'settings': 'Settings'
   };
 

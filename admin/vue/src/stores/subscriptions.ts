@@ -32,6 +32,7 @@ export interface FetchSubscriptionsParams {
   per_page: number;
   status?: string;
   plan?: string;
+  user_id?: string;
 }
 
 export interface CreateSubscriptionData {
@@ -75,7 +76,8 @@ export const useSubscriptionsStore = defineStore('subscriptions', {
             page: params.page,
             per_page: params.per_page,
             status: params.status || '',
-            plan: params.plan || ''
+            plan: params.plan || '',
+            user_id: params.user_id || ''
           }
         }) as FetchSubscriptionsResponse;
 

@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    setupFiles: ['./tests/setup.ts'],
     include: ['tests/unit/**/*.spec.{js,ts}', 'tests/integration/**/*.spec.{js,ts}'],
     exclude: ['tests/e2e/**'],
     coverage: {

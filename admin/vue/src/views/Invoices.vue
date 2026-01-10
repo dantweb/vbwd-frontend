@@ -1,11 +1,14 @@
 <template>
-  <div class="invoices-view" data-testid="invoices-view">
+  <div
+    class="invoices-view"
+    data-testid="invoices-view"
+  >
     <div class="invoices-header">
-      <h2>Invoices</h2>
+      <h2>{{ $t('invoices.title') }}</h2>
       <span
         v-if="!loading && !error"
         class="total-count"
-      >{{ total }} total</span>
+      >{{ total }} {{ $t('common.entries') }}</span>
     </div>
 
     <div class="invoices-filters">
@@ -13,7 +16,7 @@
         v-model="searchQuery"
         type="text"
         data-testid="search-input"
-        placeholder="Search by email or invoice #..."
+        :placeholder="$t('common.search')"
         class="search-input"
         @input="handleSearch"
       >
@@ -24,22 +27,22 @@
         @change="handleFilterChange"
       >
         <option value="">
-          All Status
+          {{ $t('common.all') }} {{ $t('common.status') }}
         </option>
         <option value="pending">
-          Pending
+          {{ $t('invoices.statuses.pending') }}
         </option>
         <option value="paid">
-          Paid
+          {{ $t('invoices.statuses.paid') }}
         </option>
         <option value="failed">
-          Failed
+          {{ $t('invoices.statuses.failed') }}
         </option>
         <option value="cancelled">
-          Cancelled
+          {{ $t('invoices.statuses.cancelled') }}
         </option>
         <option value="refunded">
-          Refunded
+          {{ $t('invoices.statuses.refunded') }}
         </option>
       </select>
     </div>
@@ -50,7 +53,7 @@
       class="loading-state"
     >
       <div class="spinner" />
-      <p>Loading invoices...</p>
+      <p>{{ $t('common.loading') }}</p>
     </div>
 
     <div
@@ -63,7 +66,7 @@
         class="retry-btn"
         @click="fetchInvoices"
       >
-        Retry
+        {{ $t('common.retry') }}
       </button>
     </div>
 
@@ -72,7 +75,7 @@
       data-testid="empty-state"
       class="empty-state"
     >
-      <p>No invoices found</p>
+      <p>{{ $t('invoices.noInvoices') }}</p>
     </div>
 
     <table
@@ -88,7 +91,7 @@
             data-sortable="invoice_number"
             @click="handleSort('invoice_number')"
           >
-            Invoice #
+            {{ $t('invoices.invoiceNumber') }}
             <span class="sort-indicator">{{ getSortIndicator('invoice_number') }}</span>
           </th>
           <th
@@ -97,7 +100,7 @@
             data-sortable="user_email"
             @click="handleSort('user_email')"
           >
-            Customer
+            {{ $t('invoices.user') }}
             <span class="sort-indicator">{{ getSortIndicator('user_email') }}</span>
           </th>
           <th
@@ -106,7 +109,7 @@
             data-sortable="amount"
             @click="handleSort('amount')"
           >
-            Amount
+            {{ $t('invoices.amount') }}
             <span class="sort-indicator">{{ getSortIndicator('amount') }}</span>
           </th>
           <th
@@ -115,7 +118,7 @@
             data-sortable="status"
             @click="handleSort('status')"
           >
-            Status
+            {{ $t('invoices.status') }}
             <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
           </th>
           <th
@@ -124,7 +127,7 @@
             data-sortable="created_at"
             @click="handleSort('created_at')"
           >
-            Date
+            {{ $t('invoices.date') }}
             <span class="sort-indicator">{{ getSortIndicator('created_at') }}</span>
           </th>
         </tr>
@@ -165,16 +168,16 @@
         class="pagination-btn"
         @click="changePage(page - 1)"
       >
-        Previous
+        {{ $t('common.previous') }}
       </button>
-      <span class="pagination-info">Page {{ page }} of {{ totalPages }}</span>
+      <span class="pagination-info">{{ $t('common.page') }} {{ page }} {{ $t('common.of') }} {{ totalPages }}</span>
       <button
         data-testid="pagination-next"
         :disabled="page >= totalPages"
         class="pagination-btn"
         @click="changePage(page + 1)"
       >
-        Next
+        {{ $t('common.next') }}
       </button>
     </div>
   </div>
@@ -183,7 +186,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useInvoicesStore } from '@/stores/invoices';
+
+const { t } = useI18n();
 
 const router = useRouter();
 const invoicesStore = useInvoicesStore();
@@ -283,11 +289,11 @@ function navigateToInvoice(invoiceId: string): void {
 
 function formatStatus(status: string): string {
   const statusMap: Record<string, string> = {
-    pending: 'Pending',
-    paid: 'Paid',
-    failed: 'Failed',
-    cancelled: 'Cancelled',
-    refunded: 'Refunded'
+    pending: t('invoices.statuses.pending'),
+    paid: t('invoices.statuses.paid'),
+    failed: t('invoices.statuses.failed'),
+    cancelled: t('invoices.statuses.cancelled'),
+    refunded: t('invoices.statuses.refunded')
   };
   return statusMap[status] || status;
 }

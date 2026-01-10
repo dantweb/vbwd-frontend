@@ -2,13 +2,13 @@
   <div class="forbidden-container">
     <div class="forbidden-box">
       <h1>403</h1>
-      <h2>Access Forbidden</h2>
-      <p>You don't have permission to access this resource.</p>
+      <h2>{{ $t('errors.forbidden') }}</h2>
+      <p>{{ $t('errors.forbiddenMessage') }}</p>
       <router-link
         to="/admin/login"
         class="btn-primary"
       >
-        Return to Login
+        {{ $t('errors.returnToLogin') }}
       </router-link>
     </div>
   </div>

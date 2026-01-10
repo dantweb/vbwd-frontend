@@ -183,7 +183,7 @@ describe('Plans.vue', () => {
     await firstRow.trigger('click');
     await flushPromises();
 
-    expect(router.currentRoute.value.path).toBe('/admin/plans/1');
+    expect(router.currentRoute.value.path).toBe('/admin/plans/1/edit');
   });
 
   it('can archive an active plan', async () => {
@@ -234,7 +234,7 @@ describe('Plans.vue', () => {
     await flushPromises();
 
     expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('No plans found');
+    expect(wrapper.text()).toContain('No results found');
   });
 
   it('can filter to include archived plans', async () => {
