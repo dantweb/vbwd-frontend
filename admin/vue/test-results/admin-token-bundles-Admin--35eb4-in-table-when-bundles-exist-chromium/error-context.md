@@ -1,0 +1,45 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - heading "VBWD Admin" [level=2] [ref=e6]
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /admin/dashboard
+      - link "Users" [ref=e9] [cursor=pointer]:
+        - /url: /admin/users
+      - generic [ref=e10]:
+        - button "Tarifs ▼" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: Tarifs
+          - generic [ref=e13]: ▼
+        - generic [ref=e14]:
+          - link "Plans" [ref=e15] [cursor=pointer]:
+            - /url: /admin/plans
+          - link "Add-Ons" [ref=e16] [cursor=pointer]:
+            - /url: /admin/add-ons
+      - link "Subscriptions" [ref=e17] [cursor=pointer]:
+        - /url: /admin/subscriptions
+      - link "Invoices" [ref=e18] [cursor=pointer]:
+        - /url: /admin/invoices
+      - link "Settings" [ref=e19] [cursor=pointer]:
+        - /url: /admin/settings
+    - generic [ref=e21] [cursor=pointer]:
+      - generic [ref=e22]:
+        - generic [ref=e23]: admin@example.com
+        - generic [ref=e24]: Admin
+      - generic [ref=e25]: ▼
+  - generic [ref=e26]:
+    - banner [ref=e27]:
+      - heading "Settings" [level=1] [ref=e29]
+    - main [ref=e30]:
+      - generic [ref=e31]:
+        - heading "Settings" [level=2] [ref=e33]
+        - generic [ref=e34]:
+          - button "Core Settings" [ref=e35] [cursor=pointer]
+          - button "Payments" [ref=e36] [cursor=pointer]
+          - button "Token Bundles" [active] [ref=e37] [cursor=pointer]
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Not found
+          - button "Retry" [ref=e40] [cursor=pointer]
+```

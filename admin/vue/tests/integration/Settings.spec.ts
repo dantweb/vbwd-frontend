@@ -22,16 +22,16 @@ describe('Settings.vue', () => {
   let router: ReturnType<typeof createRouter>;
 
   const mockSettings = {
-    company_name: 'Test Company',
-    company_email: 'admin@test.com',
-    default_currency: 'USD',
-    tax_rate: 10,
-    support_email: 'support@test.com',
-    notification_preferences: {
-      email_on_new_subscription: true,
-      email_on_cancellation: true,
-      email_on_payment_failed: true
-    }
+    provider_name: 'Test Company',
+    contact_email: 'admin@test.com',
+    website_url: 'https://test.com',
+    address_street: '123 Main St',
+    address_city: 'Berlin',
+    address_postal_code: '10115',
+    address_country: 'Germany',
+    bank_name: 'Test Bank',
+    bank_iban: 'DE89370400440532013000',
+    bank_bic: 'COBADEFFXXX'
   };
 
   beforeEach(() => {
@@ -41,32 +41,37 @@ describe('Settings.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
-        { path: '/admin/settings', name: 'settings', component: Settings }
+        { path: '/admin/settings', name: 'settings', component: Settings },
+        { path: '/admin/settings/token-bundles/new', name: 'token-bundle-new', component: { template: '<div />' } },
+        { path: '/admin/settings/token-bundles/:id', name: 'token-bundle-edit', component: { template: '<div />' } }
       ]
     });
 
     vi.mocked(api.get).mockResolvedValue({ settings: mockSettings });
   });
 
-  it('renders settings form', async () => {
+  it('renders settings tabs', async () => {
     const wrapper = mount(Settings, {
       global: { plugins: [router] }
     });
 
     await flushPromises();
 
-    expect(wrapper.find('[data-testid="settings-form"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="settings-tabs"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tab-core-settings"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tab-payments"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tab-tokens"]').exists()).toBe(true);
   });
 
-  it('displays current settings values', async () => {
+  it('displays current settings values in core settings tab', async () => {
     const wrapper = mount(Settings, {
       global: { plugins: [router] }
     });
 
     await flushPromises();
 
-    const companyNameInput = wrapper.find('[data-testid="company-name-input"]');
-    expect((companyNameInput.element as HTMLInputElement).value).toBe('Test Company');
+    const providerNameInput = wrapper.find('[data-testid="provider-name-input"]');
+    expect((providerNameInput.element as HTMLInputElement).value).toBe('Test Company');
   });
 
   it('shows loading state while fetching settings', async () => {
@@ -81,8 +86,8 @@ describe('Settings.vue', () => {
     expect(wrapper.find('[data-testid="loading-spinner"]').exists()).toBe(true);
   });
 
-  it('can update settings', async () => {
-    vi.mocked(api.put).mockResolvedValue({ settings: { ...mockSettings, company_name: 'New Company' } });
+  it('can update core settings', async () => {
+    vi.mocked(api.put).mockResolvedValue({ settings: { ...mockSettings, provider_name: 'New Company' } });
 
     const wrapper = mount(Settings, {
       global: { plugins: [router] }
@@ -90,15 +95,15 @@ describe('Settings.vue', () => {
 
     await flushPromises();
 
-    const companyNameInput = wrapper.find('[data-testid="company-name-input"]');
-    await companyNameInput.setValue('New Company');
+    const providerNameInput = wrapper.find('[data-testid="provider-name-input"]');
+    await providerNameInput.setValue('New Company');
 
-    const saveBtn = wrapper.find('[data-testid="save-button"]');
+    const saveBtn = wrapper.find('[data-testid="save-core-settings-button"]');
     await saveBtn.trigger('click');
     await flushPromises();
 
     expect(api.put).toHaveBeenCalledWith('/admin/settings', expect.objectContaining({
-      company_name: 'New Company'
+      provider_name: 'New Company'
     }));
   });
 
@@ -111,7 +116,7 @@ describe('Settings.vue', () => {
 
     await flushPromises();
 
-    const saveBtn = wrapper.find('[data-testid="save-button"]');
+    const saveBtn = wrapper.find('[data-testid="save-core-settings-button"]');
     await saveBtn.trigger('click');
     await flushPromises();
 
@@ -128,7 +133,7 @@ describe('Settings.vue', () => {
 
     await flushPromises();
 
-    const saveBtn = wrapper.find('[data-testid="save-button"]');
+    const saveBtn = wrapper.find('[data-testid="save-core-settings-button"]');
     await saveBtn.trigger('click');
     await flushPromises();
 
@@ -137,14 +142,23 @@ describe('Settings.vue', () => {
     consoleSpy.mockRestore();
   });
 
-  it('displays notification preferences', async () => {
+  it('can switch between tabs', async () => {
     const wrapper = mount(Settings, {
       global: { plugins: [router] }
     });
 
     await flushPromises();
 
-    expect(wrapper.find('[data-testid="notification-preferences"]').exists()).toBe(true);
+    // Initially core settings tab should be visible
+    expect(wrapper.find('[data-testid="core-settings-content"]').isVisible()).toBe(true);
+
+    // Click on payments tab
+    await wrapper.find('[data-testid="tab-payments"]').trigger('click');
+    expect(wrapper.find('[data-testid="payments-content"]').isVisible()).toBe(true);
+
+    // Click on tokens tab
+    await wrapper.find('[data-testid="tab-tokens"]').trigger('click');
+    expect(wrapper.find('[data-testid="tokens-content"]').isVisible()).toBe(true);
   });
 
   it('shows error state on fetch failure', async () => {
@@ -161,5 +175,33 @@ describe('Settings.vue', () => {
     expect(wrapper.text()).toContain('Failed to load settings');
 
     consoleSpy.mockRestore();
+  });
+
+  it('displays payments subtabs', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [router] }
+    });
+
+    await flushPromises();
+
+    // Switch to payments tab
+    await wrapper.find('[data-testid="tab-payments"]').trigger('click');
+
+    expect(wrapper.find('[data-testid="payments-subtabs"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="subtab-payment-methods"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="subtab-payments-tab2"]').exists()).toBe(true);
+  });
+
+  it('displays token bundles section in tokens tab', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [router] }
+    });
+
+    await flushPromises();
+
+    // Switch to tokens tab
+    await wrapper.find('[data-testid="tab-tokens"]').trigger('click');
+
+    expect(wrapper.find('[data-testid="create-bundle-btn"]').exists()).toBe(true);
   });
 });

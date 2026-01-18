@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
+import { isAuthenticated, sessionExpired } from '../api';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -40,6 +41,24 @@ const routes: RouteRecordRaw[] = [
     name: 'plans',
     component: () => import('../views/Plans.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/checkout/:planSlug',
+    name: 'checkout',
+    component: () => import('../views/Checkout.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/invoices/:invoiceId',
+    name: 'invoice-detail',
+    component: () => import('../views/InvoiceDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/invoices/:invoiceId/pay',
+    name: 'invoice-pay',
+    component: () => import('../views/InvoicePay.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
@@ -50,11 +69,21 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, _from, next) => {
-  const isAuthenticated = localStorage.getItem('auth_token');
+  const authenticated = isAuthenticated();
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  // If session has expired, redirect to login
+  if (sessionExpired.value && to.name !== 'login') {
     next({ name: 'login' });
-  } else if (to.name === 'login' && isAuthenticated) {
+    return;
+  }
+
+  if (to.meta.requiresAuth && !authenticated) {
+    // Store the intended destination for redirect after login
+    if (to.fullPath !== '/') {
+      sessionStorage.setItem('redirect_after_login', to.fullPath);
+    }
+    next({ name: 'login' });
+  } else if (to.name === 'login' && authenticated) {
     next({ name: 'dashboard' });
   } else {
     next();

@@ -158,6 +158,20 @@ export const mockSettings = {
   }
 };
 
+export const mockTokenBundles = [
+  { id: '1', name: 'Starter Pack', token_amount: 100, price: '9.99', currency: 'USD', is_active: true, description: 'Perfect for trying out', created_at: '2024-01-01' },
+  { id: '2', name: 'Pro Pack', token_amount: 500, price: '39.99', currency: 'USD', is_active: true, description: 'Most popular choice', created_at: '2024-01-02' },
+  { id: '3', name: 'Enterprise Pack', token_amount: 2000, price: '99.99', currency: 'USD', is_active: true, description: 'Best value for power users', created_at: '2024-01-03' },
+  { id: '4', name: 'Legacy Pack', token_amount: 50, price: '4.99', currency: 'USD', is_active: false, description: 'Discontinued', created_at: '2024-01-04' },
+];
+
+export const mockAddons = [
+  { id: '1', name: 'Priority Support', slug: 'priority-support', price: '19.99', currency: 'EUR', billing_period: 'monthly', is_active: true, description: '24/7 priority support', config: {}, sort_order: 0, created_at: '2024-01-01' },
+  { id: '2', name: 'Custom Domain', slug: 'custom-domain', price: '9.99', currency: 'EUR', billing_period: 'monthly', is_active: true, description: 'Use your own domain', config: {}, sort_order: 1, created_at: '2024-01-02' },
+  { id: '3', name: 'Extra Storage', slug: 'extra-storage', price: '29.99', currency: 'EUR', billing_period: 'one_time', is_active: true, description: '100GB additional storage', config: { storage_gb: 100 }, sort_order: 2, created_at: '2024-01-03' },
+  { id: '4', name: 'Legacy Addon', slug: 'legacy-addon', price: '4.99', currency: 'EUR', billing_period: 'monthly', is_active: false, description: 'Discontinued addon', config: {}, sort_order: 99, created_at: '2024-01-04' },
+];
+
 // ============================================
 // MOCK SETUP FUNCTIONS
 // ============================================
@@ -413,6 +427,168 @@ export async function mockSettingsAPI(page: Page): Promise<void> {
   });
 }
 
+export async function mockTokenBundlesAPI(page: Page): Promise<void> {
+  await page.route('**/api/v1/admin/token-bundles', async (route) => {
+    const method = route.request().method();
+    const url = new URL(route.request().url());
+    const includeInactive = url.searchParams.get('include_inactive') !== 'false';
+
+    if (method === 'GET') {
+      let filtered = [...mockTokenBundles];
+      if (!includeInactive) {
+        filtered = filtered.filter(b => b.is_active);
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: filtered,
+          total: filtered.length,
+          page: 1,
+          per_page: 20,
+          pages: 1
+        })
+      });
+    } else if (method === 'POST') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          bundle: { id: '5', ...body, is_active: true },
+          message: 'Token bundle created successfully'
+        })
+      });
+    }
+  });
+
+  await page.route('**/api/v1/admin/token-bundles/*', async (route) => {
+    const method = route.request().method();
+    const url = route.request().url();
+    const id = url.split('/').pop()?.split('?')[0];
+    const bundle = mockTokenBundles.find(b => b.id === id) || mockTokenBundles[0];
+
+    if (url.includes('/activate')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bundle: { ...bundle, is_active: true }, message: 'Token bundle activated' })
+      });
+    } else if (url.includes('/deactivate')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bundle: { ...bundle, is_active: false }, message: 'Token bundle deactivated' })
+      });
+    } else if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bundle })
+      });
+    } else if (method === 'PUT') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bundle: { ...bundle, ...body } })
+      });
+    } else if (method === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Token bundle deleted successfully' })
+      });
+    }
+  });
+}
+
+export async function mockAddonsAPI(page: Page): Promise<void> {
+  await page.route('**/api/v1/admin/addons', async (route) => {
+    const method = route.request().method();
+    const url = new URL(route.request().url());
+    const includeInactive = url.searchParams.get('include_inactive') !== 'false';
+
+    if (method === 'GET') {
+      let filtered = [...mockAddons];
+      if (!includeInactive) {
+        filtered = filtered.filter(a => a.is_active);
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: filtered,
+          total: filtered.length,
+          page: 1,
+          per_page: 20,
+          pages: 1
+        })
+      });
+    } else if (method === 'POST') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          addon: { id: '5', ...body, is_active: true },
+          message: 'Add-on created successfully'
+        })
+      });
+    }
+  });
+
+  await page.route('**/api/v1/admin/addons/*', async (route) => {
+    const method = route.request().method();
+    const url = route.request().url();
+    const id = url.split('/').pop()?.split('?')[0];
+    const addon = mockAddons.find(a => a.id === id) || mockAddons[0];
+
+    if (url.includes('/activate')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ addon: { ...addon, is_active: true }, message: 'Add-on activated' })
+      });
+    } else if (url.includes('/deactivate')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ addon: { ...addon, is_active: false }, message: 'Add-on deactivated' })
+      });
+    } else if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ addon })
+      });
+    } else if (method === 'PUT') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ addon: { ...addon, ...body } })
+      });
+    } else if (method === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Add-on deleted successfully' })
+      });
+    }
+  });
+
+  // Public addons endpoint
+  await page.route('**/api/v1/addons', async (route) => {
+    const activeAddons = mockAddons.filter(a => a.is_active);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ addons: activeAddons })
+    });
+  });
+}
+
 /**
  * Set up all admin API mocks
  */
@@ -424,4 +600,6 @@ export async function mockAllAdminAPIs(page: Page): Promise<void> {
   await mockWebhooksAPI(page);
   await mockAnalyticsAPI(page);
   await mockSettingsAPI(page);
+  await mockTokenBundlesAPI(page);
+  await mockAddonsAPI(page);
 }

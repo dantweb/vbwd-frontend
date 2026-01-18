@@ -55,6 +55,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/Plans.vue')
       },
       {
+        path: 'add-ons',
+        name: 'add-ons',
+        component: () => import('@/views/AddOns.vue')
+      },
+      {
         path: 'plans/new',
         name: 'plan-new',
         component: () => import('@/views/PlanForm.vue')
@@ -93,6 +98,16 @@ const routes: RouteRecordRaw[] = [
         path: 'settings',
         name: 'settings',
         component: () => import('@/views/Settings.vue')
+      },
+      {
+        path: 'settings/token-bundles/new',
+        name: 'token-bundle-new',
+        component: () => import('@/views/TokenBundleForm.vue')
+      },
+      {
+        path: 'settings/token-bundles/:id',
+        name: 'token-bundle-edit',
+        component: () => import('@/views/TokenBundleForm.vue')
       },
       {
         path: 'profile',

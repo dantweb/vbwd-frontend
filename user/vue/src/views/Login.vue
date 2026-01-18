@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { api } from '@/api';
+import { api, clearSessionExpiry } from '@/api';
 
 const router = useRouter();
 
@@ -64,7 +64,14 @@ async function handleLogin() {
     localStorage.setItem('user_id', response.user_id);
     api.setToken(response.token);
 
-    router.push('/dashboard');
+    // Clear any session expired state
+    clearSessionExpiry();
+
+    // Redirect to stored destination or dashboard
+    const redirectPath = sessionStorage.getItem('redirect_after_login');
+    sessionStorage.removeItem('redirect_after_login');
+
+    router.push(redirectPath || '/dashboard');
   } catch (err) {
     error.value = (err as Error).message || 'Invalid credentials';
   } finally {

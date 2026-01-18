@@ -1,12 +1,28 @@
 import { defineStore } from 'pinia';
 import { api } from '@/api';
 
+export interface Plan {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  billing_period: string;
+}
+
 export interface Subscription {
   id: string;
-  planId: string;
-  planName: string;
-  status: 'active' | 'cancelling' | 'cancelled' | 'past_due';
-  currentPeriodEnd: string;
+  user_id: string;
+  tarif_plan_id: string;
+  pending_plan_id: string | null;
+  status: 'active' | 'cancelling' | 'cancelled' | 'paused' | 'expired';
+  is_valid: boolean;
+  days_remaining: number;
+  started_at: string | null;
+  expires_at: string | null;
+  cancelled_at: string | null;
+  paused_at: string | null;
+  plan?: Plan;
+  pending_plan?: Plan;
 }
 
 export interface Usage {
@@ -22,14 +38,26 @@ export const useSubscriptionStore = defineStore('subscription', {
     error: null as string | null
   }),
 
+  getters: {
+    currentPeriodEnd(): string | null {
+      return this.subscription?.expires_at || null;
+    },
+    planName(): string {
+      return this.subscription?.plan?.name || 'No Plan';
+    },
+    planId(): string | null {
+      return this.subscription?.plan?.id || this.subscription?.tarif_plan_id || null;
+    }
+  },
+
   actions: {
     async fetchSubscription() {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await api.get('/user/subscriptions/active');
-        this.subscription = response as Subscription;
+        const response = await api.get('/user/subscriptions/active') as { subscription: Subscription | null };
+        this.subscription = response.subscription;
         return response;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to fetch subscription';
@@ -65,10 +93,9 @@ export const useSubscriptionStore = defineStore('subscription', {
 
       try {
         const response = await api.post(`/user/subscriptions/${this.subscription.id}/cancel`);
-        if (this.subscription) {
-          this.subscription.status = 'cancelling';
-        }
-        return response as { success: boolean; cancellationDate: string };
+        // Refetch subscription to get updated status
+        await this.fetchSubscription();
+        return response as { subscription: Subscription; message: string };
       } catch (error) {
         this.error = (error as Error).message || 'Failed to cancel subscription';
         throw error;
@@ -87,7 +114,8 @@ export const useSubscriptionStore = defineStore('subscription', {
 
       try {
         const response = await api.post(`/user/subscriptions/${this.subscription.id}/upgrade`, { plan_id: planId });
-        this.subscription = response as Subscription;
+        // Refetch subscription to get updated data
+        await this.fetchSubscription();
         return response;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to change plan';

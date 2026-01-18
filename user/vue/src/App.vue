@@ -4,6 +4,9 @@
       <router-view />
     </UserLayout>
     <router-view v-else />
+
+    <!-- Session Expired Modal -->
+    <SessionExpiredModal />
   </div>
 </template>
 
@@ -11,6 +14,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import UserLayout from './layouts/UserLayout.vue';
+import SessionExpiredModal from './components/SessionExpiredModal.vue';
 
 const route = useRoute();
 const isAuthenticated = computed(() => {

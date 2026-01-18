@@ -5,6 +5,11 @@
  * This ensures the auth token is shared across the application.
  */
 import { ApiClient } from '@vbwd/view-component';
+import { ref } from 'vue';
+
+// Session expired state - reactive so components can react to it
+export const sessionExpired = ref(false);
+export const sessionExpiredMessage = ref('');
 
 // Singleton API client instance
 export const api = new ApiClient({
@@ -20,6 +25,35 @@ export function initializeApi(): void {
   if (token) {
     api.setToken(token);
   }
+
+  // Setup token expiry handler
+  api.on('token-expired', () => {
+    handleSessionExpiry('Your session has expired. Please log in again.');
+  });
+}
+
+/**
+ * Handle session expiry
+ * Clears auth state and sets the expired flag
+ */
+export function handleSessionExpiry(message = 'Session expired'): void {
+  // Only trigger once
+  if (sessionExpired.value) return;
+
+  sessionExpired.value = true;
+  sessionExpiredMessage.value = message;
+
+  // Clear auth state
+  clearApiAuth();
+}
+
+/**
+ * Clear session expired state
+ * Call this after user acknowledges the expiry modal
+ */
+export function clearSessionExpiry(): void {
+  sessionExpired.value = false;
+  sessionExpiredMessage.value = '';
 }
 
 /**
@@ -30,6 +64,13 @@ export function clearApiAuth(): void {
   api.clearToken();
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user_id');
+}
+
+/**
+ * Check if user is authenticated
+ */
+export function isAuthenticated(): boolean {
+  return !!localStorage.getItem('auth_token');
 }
 
 // Initialize on module load

@@ -2,56 +2,294 @@
   <div class="invoices">
     <h1>Invoices</h1>
 
-    <div class="card">
-      <div v-if="invoices.length === 0" class="empty">
-        No invoices yet.
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state" data-testid="invoices-loading">
+      <div class="spinner" />
+      <p>Loading invoices...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state" data-testid="invoices-error">
+      <p>{{ error }}</p>
+      <button class="retry-btn" @click="loadInvoices">Retry</button>
+    </div>
+
+    <!-- Invoices Content -->
+    <div v-else class="card">
+      <!-- Search and Filter -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search invoices..."
+            data-testid="invoice-search"
+          />
+        </div>
+        <div class="filter-box">
+          <select v-model="statusFilter" data-testid="status-filter">
+            <option value="">All Statuses</option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
       </div>
-      <table v-else class="invoice-table">
+
+      <!-- Empty State -->
+      <div v-if="filteredInvoices.length === 0" class="empty" data-testid="no-invoices">
+        <p>{{ searchQuery || statusFilter ? 'No invoices match your filters.' : 'No invoices yet.' }}</p>
+      </div>
+
+      <!-- Invoices Table -->
+      <table v-else class="invoice-table" data-testid="invoices-table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Invoice #</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th @click="sortBy('invoiced_at')" class="sortable">
+              Date
+              <span v-if="sortField === 'invoiced_at'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th @click="sortBy('invoice_number')" class="sortable">
+              Invoice #
+              <span v-if="sortField === 'invoice_number'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th @click="sortBy('amount')" class="sortable">
+              Amount
+              <span v-if="sortField === 'amount'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th @click="sortBy('status')" class="sortable">
+              Status
+              <span v-if="sortField === 'status'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="invoice in invoices" :key="invoice.id">
-            <td>{{ invoice.date }}</td>
-            <td>{{ invoice.number }}</td>
-            <td>{{ invoice.amount }}</td>
+          <tr
+            v-for="invoice in paginatedInvoices"
+            :key="invoice.id"
+            class="invoice-row"
+            :data-testid="`invoice-row-${invoice.id}`"
+            @click="viewInvoice(invoice)"
+          >
+            <td>{{ formatDate(invoice.invoiced_at || invoice.created_at) }}</td>
+            <td class="invoice-number" data-testid="invoice-number">{{ invoice.invoice_number }}</td>
+            <td class="invoice-amount">{{ formatPrice(invoice.amount) }}</td>
             <td>
-              <span :class="['status', invoice.status]">{{ invoice.status }}</span>
+              <span class="status" :class="invoice.status" :data-testid="`invoice-status-${invoice.id}`">
+                {{ invoice.status }}
+              </span>
             </td>
-            <td>
-              <button class="download-btn" @click="downloadInvoice(invoice.id)">
-                Download
+            <td class="actions-cell" @click.stop>
+              <button
+                class="action-btn view"
+                data-testid="view-invoice-btn"
+                @click="viewInvoice(invoice)"
+              >
+                View
+              </button>
+              <button
+                class="action-btn download"
+                data-testid="download-invoice-btn"
+                @click="downloadInvoice(invoice.id)"
+              >
+                PDF
+              </button>
+              <button
+                v-if="invoice.status === 'pending'"
+                class="action-btn pay"
+                data-testid="pay-invoice-btn"
+                @click="payInvoice(invoice)"
+              >
+                Pay
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination" data-testid="invoices-pagination">
+        <button
+          class="page-btn"
+          :disabled="currentPage <= 1"
+          data-testid="prev-page"
+          @click="currentPage--"
+        >
+          Previous
+        </button>
+        <span class="page-info" data-testid="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button
+          class="page-btn"
+          :disabled="currentPage >= totalPages"
+          data-testid="next-page"
+          @click="currentPage++"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div v-if="successMessage" class="toast success" data-testid="success-toast">
+      {{ successMessage }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useInvoicesStore, type Invoice } from '../stores/invoices';
 
-interface Invoice {
-  id: string;
-  date: string;
-  number: string;
-  amount: string;
-  status: 'paid' | 'pending' | 'overdue';
+const router = useRouter();
+const invoicesStore = useInvoicesStore();
+
+const loading = ref(true);
+const error = ref<string | null>(null);
+const searchQuery = ref('');
+const statusFilter = ref('');
+const sortField = ref('invoiced_at');
+const sortDirection = ref<'asc' | 'desc'>('desc');
+const currentPage = ref(1);
+const pageSize = 10;
+const successMessage = ref('');
+
+// Computed
+const filteredInvoices = computed(() => {
+  let result = [...invoicesStore.invoices];
+
+  // Filter by search
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    result = result.filter(inv =>
+      inv.invoice_number.toLowerCase().includes(query) ||
+      inv.status.toLowerCase().includes(query)
+    );
+  }
+
+  // Filter by status
+  if (statusFilter.value) {
+    result = result.filter(inv => inv.status === statusFilter.value);
+  }
+
+  // Sort
+  result.sort((a, b) => {
+    let aVal: string | number = '';
+    let bVal: string | number = '';
+
+    switch (sortField.value) {
+      case 'invoice_number':
+        aVal = a.invoice_number;
+        bVal = b.invoice_number;
+        break;
+      case 'invoiced_at':
+        aVal = a.invoiced_at || a.created_at || '';
+        bVal = b.invoiced_at || b.created_at || '';
+        break;
+      case 'amount':
+        aVal = parseFloat(a.amount) || 0;
+        bVal = parseFloat(b.amount) || 0;
+        break;
+      case 'status':
+        aVal = a.status;
+        bVal = b.status;
+        break;
+    }
+
+    if (sortDirection.value === 'asc') {
+      return aVal > bVal ? 1 : -1;
+    }
+    return aVal < bVal ? 1 : -1;
+  });
+
+  return result;
+});
+
+const totalPages = computed(() => Math.ceil(filteredInvoices.value.length / pageSize));
+
+const paginatedInvoices = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return filteredInvoices.value.slice(start, start + pageSize);
+});
+
+// Methods
+async function loadInvoices(): Promise<void> {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    await invoicesStore.fetchInvoices();
+  } catch (err) {
+    error.value = (err as Error).message || 'Failed to load invoices';
+  } finally {
+    loading.value = false;
+  }
 }
 
-const invoices = ref<Invoice[]>([]);
-
-function downloadInvoice(id: string) {
-  console.log('Download invoice:', id);
+function sortBy(field: string): void {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField.value = field;
+    sortDirection.value = 'desc';
+  }
+  currentPage.value = 1;
 }
+
+function viewInvoice(invoice: Invoice): void {
+  router.push(`/invoices/${invoice.id}`);
+}
+
+async function downloadInvoice(invoiceId: string): Promise<void> {
+  try {
+    const result = await invoicesStore.downloadInvoice(invoiceId);
+    if (result?.downloadUrl) {
+      window.open(result.downloadUrl, '_blank');
+    } else {
+      showSuccess('Invoice download initiated');
+    }
+  } catch (err) {
+    error.value = (err as Error).message || 'Failed to download invoice';
+  }
+}
+
+function payInvoice(invoice: Invoice): void {
+  router.push(`/invoices/${invoice.id}/pay`);
+}
+
+function showSuccess(message: string): void {
+  successMessage.value = message;
+  setTimeout(() => {
+    successMessage.value = '';
+  }, 3000);
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '-';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatPrice(amount: string | number | null | undefined): string {
+  if (amount === null || amount === undefined) return '-';
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(num);
+}
+
+onMounted(() => {
+  loadInvoices();
+});
 </script>
 
 <style scoped>
@@ -64,11 +302,67 @@ h1 {
   color: #2c3e50;
 }
 
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .card {
   background: white;
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.toolbar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.search-box input {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  width: 250px;
+}
+
+.filter-box select {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
 }
 
 .empty {
@@ -84,7 +378,7 @@ h1 {
 
 .invoice-table th,
 .invoice-table td {
-  padding: 12px;
+  padding: 12px 15px;
   text-align: left;
   border-bottom: 1px solid #eee;
 }
@@ -93,12 +387,45 @@ h1 {
   font-weight: 600;
   color: #666;
   font-size: 0.9rem;
+  background: #f8f9fa;
+}
+
+.invoice-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.invoice-table th.sortable:hover {
+  background: #e9ecef;
+}
+
+.sort-icon {
+  margin-left: 5px;
+}
+
+.invoice-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.invoice-row:hover {
+  background: #f8f9fa;
+}
+
+.invoice-number {
+  font-weight: 500;
+  color: #3498db;
+}
+
+.invoice-amount {
+  font-weight: 500;
 }
 
 .status {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.85rem;
+  text-transform: capitalize;
 }
 
 .status.paid {
@@ -116,17 +443,78 @@ h1 {
   color: #721c24;
 }
 
-.download-btn {
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
   padding: 6px 12px;
-  background-color: #3498db;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85rem;
+  transition: opacity 0.2s;
 }
 
-.download-btn:hover {
-  background-color: #2980b9;
+.action-btn:hover {
+  opacity: 0.8;
+}
+
+.action-btn.view {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.action-btn.download {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.action-btn.pay {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #e9ecef;
+}
+
+.page-btn:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.toast.success {
+  background-color: #27ae60;
+  color: white;
 }
 </style>

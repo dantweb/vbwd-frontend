@@ -21,13 +21,39 @@
       >
         {{ $t('nav.users') }}
       </router-link>
-      <router-link
-        to="/admin/plans"
-        class="nav-item"
-        data-testid="nav-plans"
-      >
-        {{ $t('nav.plans') }}
-      </router-link>
+
+      <!-- Tarifs Expandable Section -->
+      <div class="nav-section">
+        <button
+          class="nav-section-header"
+          :class="{ expanded: tarifsExpanded, 'has-active': isTarifsActive }"
+          data-testid="nav-tarifs"
+          @click="toggleTarifs"
+        >
+          <span>{{ $t('nav.tarifs') }}</span>
+          <span class="expand-arrow">{{ tarifsExpanded ? '▼' : '▶' }}</span>
+        </button>
+        <div
+          v-show="tarifsExpanded"
+          class="nav-submenu"
+        >
+          <router-link
+            to="/admin/plans"
+            class="nav-item nav-subitem"
+            data-testid="nav-plans"
+          >
+            {{ $t('nav.plans') }}
+          </router-link>
+          <router-link
+            to="/admin/add-ons"
+            class="nav-item nav-subitem"
+            data-testid="nav-addons"
+          >
+            {{ $t('nav.addOns') }}
+          </router-link>
+        </div>
+      </div>
+
       <router-link
         to="/admin/subscriptions"
         class="nav-item"
@@ -89,20 +115,32 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const userMenuOpen = ref(false);
+const tarifsExpanded = ref(true); // Start expanded by default
 
 const userEmail = computed((): string => {
   return authStore.user?.email || 'Admin';
 });
 
+// Check if current route is within Tarifs section
+const isTarifsActive = computed((): boolean => {
+  const path = route.path;
+  return path.includes('/admin/plans') || path.includes('/admin/add-ons');
+});
+
 function toggleUserMenu(): void {
   userMenuOpen.value = !userMenuOpen.value;
+}
+
+function toggleTarifs(): void {
+  tarifsExpanded.value = !tarifsExpanded.value;
 }
 
 async function handleLogout(): Promise<void> {
@@ -159,6 +197,60 @@ async function handleLogout(): Promise<void> {
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
   border-left-color: #3498db;
+}
+
+/* Expandable Section */
+.nav-section {
+  margin: 0;
+}
+
+.nav-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.nav-section-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.nav-section-header.has-active {
+  color: white;
+  border-left-color: #3498db;
+}
+
+.nav-section-header.expanded {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.expand-arrow {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.nav-submenu {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.nav-subitem {
+  padding-left: 35px;
+  font-size: 0.95em;
+}
+
+.nav-subitem.router-link-active {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-footer {

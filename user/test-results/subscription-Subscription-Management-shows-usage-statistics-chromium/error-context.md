@@ -1,0 +1,169 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - heading "VBWD" [level=2] [ref=e7]
+    - navigation [ref=e8]:
+      - link "Dashboard" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Profile" [ref=e10] [cursor=pointer]:
+        - /url: /profile
+      - link "Subscription" [ref=e11] [cursor=pointer]:
+        - /url: /subscription
+      - link "Invoices" [ref=e12] [cursor=pointer]:
+        - /url: /invoices
+      - link "Plans" [ref=e13] [cursor=pointer]:
+        - /url: /plans
+    - generic [ref=e14] [cursor=pointer]: User
+  - main [ref=e15]:
+    - generic [ref=e16]:
+      - heading "Subscription" [level=1] [ref=e17]
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - heading "Current Plan" [level=2] [ref=e20]
+          - generic [ref=e21]:
+            - generic [ref=e22]:
+              - generic [ref=e23]: Test Plan test-plan-69f900b4
+              - generic [ref=e24]: Active
+            - generic [ref=e25]:
+              - generic [ref=e26]:
+                - generic [ref=e27]: Price
+                - generic [ref=e28]: $29.00 / monthly
+              - generic [ref=e29]:
+                - generic [ref=e30]: Current Period
+                - generic [ref=e31]: "- - Feb 13, 2026"
+              - generic [ref=e32]:
+                - generic [ref=e33]: Next Billing Date
+                - generic [ref=e34]: Feb 13, 2026
+        - generic [ref=e35]:
+          - heading "Token Balance" [level=2] [ref=e36]
+          - generic [ref=e37]:
+            - generic [ref=e38]: 500TKN
+            - paragraph [ref=e39]: Use tokens for API calls, features, and more.
+            - button "Purchase Tokens" [ref=e40] [cursor=pointer]
+        - generic [ref=e41]:
+          - heading "Manage Subscription" [level=2] [ref=e42]
+          - generic [ref=e43]:
+            - link "Change Plan" [ref=e44] [cursor=pointer]:
+              - /url: /plans
+            - button "Cancel Subscription" [ref=e45] [cursor=pointer]
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - heading "Invoices" [level=2] [ref=e48]
+            - textbox "Search invoices..." [ref=e50]
+          - generic [ref=e51]:
+            - table [ref=e52]:
+              - rowgroup [ref=e53]:
+                - 'row "Invoice # Date ↓ Amount Status Actions" [ref=e54]':
+                  - 'columnheader "Invoice #" [ref=e55] [cursor=pointer]'
+                  - columnheader "Date ↓" [ref=e56] [cursor=pointer]
+                  - columnheader "Amount" [ref=e57] [cursor=pointer]
+                  - columnheader "Status" [ref=e58] [cursor=pointer]
+                  - columnheader "Actions" [ref=e59]
+              - rowgroup [ref=e60]:
+                - row "INV-20260114131752-6436AB Jan 14, 2026 $39.99 pending View PDF Pay" [ref=e61]:
+                  - cell "INV-20260114131752-6436AB" [ref=e62]
+                  - cell "Jan 14, 2026" [ref=e63]
+                  - cell "$39.99" [ref=e64]
+                  - cell "pending" [ref=e65]:
+                    - generic [ref=e66]: pending
+                  - cell "View PDF Pay" [ref=e67]:
+                    - button "View" [ref=e68] [cursor=pointer]
+                    - button "PDF" [ref=e69] [cursor=pointer]
+                    - button "Pay" [ref=e70] [cursor=pointer]
+                - row "INV-20260114131750-0735BF Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e71]:
+                  - cell "INV-20260114131750-0735BF" [ref=e72]
+                  - cell "Jan 14, 2026" [ref=e73]
+                  - cell "$29.99" [ref=e74]
+                  - cell "pending" [ref=e75]:
+                    - generic [ref=e76]: pending
+                  - cell "View PDF Pay" [ref=e77]:
+                    - button "View" [ref=e78] [cursor=pointer]
+                    - button "PDF" [ref=e79] [cursor=pointer]
+                    - button "Pay" [ref=e80] [cursor=pointer]
+                - row "INV-20260114131749-0BA425 Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e81]:
+                  - cell "INV-20260114131749-0BA425" [ref=e82]
+                  - cell "Jan 14, 2026" [ref=e83]
+                  - cell "$29.99" [ref=e84]
+                  - cell "pending" [ref=e85]:
+                    - generic [ref=e86]: pending
+                  - cell "View PDF Pay" [ref=e87]:
+                    - button "View" [ref=e88] [cursor=pointer]
+                    - button "PDF" [ref=e89] [cursor=pointer]
+                    - button "Pay" [ref=e90] [cursor=pointer]
+                - row "INV-20260114131749-5DBD51 Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e91]:
+                  - cell "INV-20260114131749-5DBD51" [ref=e92]
+                  - cell "Jan 14, 2026" [ref=e93]
+                  - cell "$29.99" [ref=e94]
+                  - cell "pending" [ref=e95]:
+                    - generic [ref=e96]: pending
+                  - cell "View PDF Pay" [ref=e97]:
+                    - button "View" [ref=e98] [cursor=pointer]
+                    - button "PDF" [ref=e99] [cursor=pointer]
+                    - button "Pay" [ref=e100] [cursor=pointer]
+                - row "INV-20260114131749-8E03CC Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e101]:
+                  - cell "INV-20260114131749-8E03CC" [ref=e102]
+                  - cell "Jan 14, 2026" [ref=e103]
+                  - cell "$29.99" [ref=e104]
+                  - cell "pending" [ref=e105]:
+                    - generic [ref=e106]: pending
+                  - cell "View PDF Pay" [ref=e107]:
+                    - button "View" [ref=e108] [cursor=pointer]
+                    - button "PDF" [ref=e109] [cursor=pointer]
+                    - button "Pay" [ref=e110] [cursor=pointer]
+                - row "INV-20260114131748-CD6963 Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e111]:
+                  - cell "INV-20260114131748-CD6963" [ref=e112]
+                  - cell "Jan 14, 2026" [ref=e113]
+                  - cell "$29.99" [ref=e114]
+                  - cell "pending" [ref=e115]:
+                    - generic [ref=e116]: pending
+                  - cell "View PDF Pay" [ref=e117]:
+                    - button "View" [ref=e118] [cursor=pointer]
+                    - button "PDF" [ref=e119] [cursor=pointer]
+                    - button "Pay" [ref=e120] [cursor=pointer]
+                - row "INV-20260114131748-CA884A Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e121]:
+                  - cell "INV-20260114131748-CA884A" [ref=e122]
+                  - cell "Jan 14, 2026" [ref=e123]
+                  - cell "$29.99" [ref=e124]
+                  - cell "pending" [ref=e125]:
+                    - generic [ref=e126]: pending
+                  - cell "View PDF Pay" [ref=e127]:
+                    - button "View" [ref=e128] [cursor=pointer]
+                    - button "PDF" [ref=e129] [cursor=pointer]
+                    - button "Pay" [ref=e130] [cursor=pointer]
+                - row "INV-20260114131731-12BF63 Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e131]:
+                  - cell "INV-20260114131731-12BF63" [ref=e132]
+                  - cell "Jan 14, 2026" [ref=e133]
+                  - cell "$29.99" [ref=e134]
+                  - cell "pending" [ref=e135]:
+                    - generic [ref=e136]: pending
+                  - cell "View PDF Pay" [ref=e137]:
+                    - button "View" [ref=e138] [cursor=pointer]
+                    - button "PDF" [ref=e139] [cursor=pointer]
+                    - button "Pay" [ref=e140] [cursor=pointer]
+                - row "INV-20260114131730-CC7006 Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e141]:
+                  - cell "INV-20260114131730-CC7006" [ref=e142]
+                  - cell "Jan 14, 2026" [ref=e143]
+                  - cell "$29.99" [ref=e144]
+                  - cell "pending" [ref=e145]:
+                    - generic [ref=e146]: pending
+                  - cell "View PDF Pay" [ref=e147]:
+                    - button "View" [ref=e148] [cursor=pointer]
+                    - button "PDF" [ref=e149] [cursor=pointer]
+                    - button "Pay" [ref=e150] [cursor=pointer]
+                - row "INV-20260114131730-D7355D Jan 14, 2026 $29.99 pending View PDF Pay" [ref=e151]:
+                  - cell "INV-20260114131730-D7355D" [ref=e152]
+                  - cell "Jan 14, 2026" [ref=e153]
+                  - cell "$29.99" [ref=e154]
+                  - cell "pending" [ref=e155]:
+                    - generic [ref=e156]: pending
+                  - cell "View PDF Pay" [ref=e157]:
+                    - button "View" [ref=e158] [cursor=pointer]
+                    - button "PDF" [ref=e159] [cursor=pointer]
+                    - button "Pay" [ref=e160] [cursor=pointer]
+            - generic [ref=e161]:
+              - button "Previous" [disabled] [ref=e162]
+              - generic [ref=e163]: Page 1 of 20
+              - button "Next" [ref=e164] [cursor=pointer]
+```
