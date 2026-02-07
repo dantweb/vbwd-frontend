@@ -69,13 +69,44 @@
         {{ $t('nav.invoices') }}
       </router-link>
 
-      <router-link
-        to="/admin/settings"
-        class="nav-item"
-        data-testid="nav-settings"
-      >
-        {{ $t('nav.settings') }}
-      </router-link>
+      <!-- Settings Expandable Section -->
+      <div class="nav-section">
+        <button
+          class="nav-section-header"
+          :class="{ expanded: settingsExpanded, 'has-active': isSettingsActive }"
+          data-testid="nav-settings-section"
+          @click="toggleSettings"
+        >
+          <span>{{ $t('nav.settings') }}</span>
+          <span class="expand-arrow">{{ settingsExpanded ? '▼' : '▶' }}</span>
+        </button>
+        <div
+          v-show="settingsExpanded"
+          class="nav-submenu"
+        >
+          <router-link
+            to="/admin/settings"
+            class="nav-item nav-subitem"
+            data-testid="nav-settings"
+          >
+            {{ $t('nav.settings') }}
+          </router-link>
+          <router-link
+            to="/admin/payment-methods"
+            class="nav-item nav-subitem"
+            data-testid="nav-payment-methods"
+          >
+            {{ $t('nav.paymentMethods') }}
+          </router-link>
+          <router-link
+            to="/admin/countries"
+            class="nav-item nav-subitem"
+            data-testid="nav-countries"
+          >
+            {{ $t('nav.countries') }}
+          </router-link>
+        </div>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div
@@ -124,6 +155,7 @@ const authStore = useAuthStore();
 
 const userMenuOpen = ref(false);
 const tarifsExpanded = ref(true); // Start expanded by default
+const settingsExpanded = ref(true); // Start expanded by default
 
 const userEmail = computed((): string => {
   return authStore.user?.email || 'Admin';
@@ -135,12 +167,22 @@ const isTarifsActive = computed((): boolean => {
   return path.includes('/admin/plans') || path.includes('/admin/add-ons');
 });
 
+// Check if current route is within Settings section
+const isSettingsActive = computed((): boolean => {
+  const path = route.path;
+  return path.includes('/admin/settings') || path.includes('/admin/payment-methods') || path.includes('/admin/countries');
+});
+
 function toggleUserMenu(): void {
   userMenuOpen.value = !userMenuOpen.value;
 }
 
 function toggleTarifs(): void {
   tarifsExpanded.value = !tarifsExpanded.value;
+}
+
+function toggleSettings(): void {
+  settingsExpanded.value = !settingsExpanded.value;
 }
 
 async function handleLogout(): Promise<void> {

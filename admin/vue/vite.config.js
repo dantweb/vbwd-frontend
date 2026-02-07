@@ -7,7 +7,8 @@ export default defineConfig({
   base: '/admin/',
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      '@plugins': resolve(__dirname, 'plugins')
     },
     // Ensure single instances of vue and pinia across all packages
     dedupe: ['vue', 'pinia', 'vue-router']

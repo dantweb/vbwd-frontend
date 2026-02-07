@@ -7,6 +7,7 @@ export interface Plan {
   slug: string;
   price: number;
   billing_period: string;
+  description?: string;
 }
 
 export interface Subscription {

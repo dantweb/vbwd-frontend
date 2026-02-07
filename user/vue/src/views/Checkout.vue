@@ -1,42 +1,67 @@
 <template>
   <div class="checkout">
-    <h1>Checkout</h1>
+    <h1>{{ $t('checkout.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="store.loading" class="loading-state" data-testid="checkout-loading">
+    <div
+      v-if="store.loading"
+      class="loading-state"
+      data-testid="checkout-loading"
+    >
       <div class="spinner" />
-      <p>Loading plan details...</p>
+      <p>{{ $t('checkout.loading') }}</p>
     </div>
 
     <!-- Error State (only show if no checkout result) -->
-    <div v-else-if="store.error && !store.checkoutResult" class="error-state" data-testid="checkout-error">
+    <div
+      v-else-if="store.error && !store.checkoutResult"
+      class="error-state"
+      data-testid="checkout-error"
+    >
       <p>{{ store.error }}</p>
-      <router-link to="/plans" class="btn secondary">Back to Plans</router-link>
+      <router-link
+        to="/plans"
+        class="btn secondary"
+      >
+        {{ $t('common.backToPlans') }}
+      </router-link>
     </div>
 
     <!-- Checkout Success -->
-    <div v-else-if="store.checkoutResult" class="checkout-success" data-testid="checkout-success">
-      <h2>Checkout Created</h2>
+    <div
+      v-else-if="store.checkoutResult"
+      class="checkout-success"
+      data-testid="checkout-success"
+    >
+      <h2>{{ $t('checkout.success.title') }}</h2>
 
       <div class="status-info">
-        <p>
-          Subscription Status:
+        <p
+          v-if="store.checkoutResult.subscription"
+        >
+          {{ $t('checkout.success.subscriptionStatus') }}
           <span data-testid="subscription-status">
-            {{ store.checkoutResult.subscription.status === 'pending' ? 'Pending' : 'Active' }}
+            {{ store.checkoutResult.subscription.status === 'pending' ? $t('checkout.success.statusPending') : $t('checkout.success.statusActive') }}
           </span>
         </p>
         <p data-testid="invoice-number">
-          Invoice: {{ store.checkoutResult.invoice.invoice_number }}
+          {{ $t('checkout.success.invoiceLabel') }} {{ store.checkoutResult.invoice.invoice_number }}
         </p>
       </div>
 
-      <div data-testid="payment-required-message" class="payment-message">
-        Complete payment to activate your subscription.
+      <div
+        data-testid="payment-required-message"
+        class="payment-message"
+      >
+        {{ $t('checkout.success.paymentRequired') }}
       </div>
 
       <!-- Invoice Line Items -->
-      <div data-testid="invoice-line-items" class="invoice-items card">
-        <h3>Invoice Items</h3>
+      <div
+        data-testid="invoice-line-items"
+        class="invoice-items card"
+      >
+        <h3>{{ $t('checkout.success.invoiceItems') }}</h3>
         <div
           v-for="(item, index) in store.checkoutResult.invoice.line_items"
           :key="index"
@@ -47,35 +72,72 @@
           <span>${{ item.total_price }}</span>
         </div>
         <div class="total">
-          <strong>Total: ${{ store.checkoutResult.invoice.total_amount }}</strong>
+          <strong>{{ $t('checkout.success.totalLabel') }} ${{ store.checkoutResult.invoice.total_amount }}</strong>
         </div>
       </div>
 
       <!-- Navigation Buttons -->
       <div class="checkout-actions">
-        <button data-testid="view-subscription-btn" class="btn primary" @click="goToSubscription">
-          View Subscription
+        <button
+          v-if="store.checkoutResult.subscription"
+          data-testid="view-subscription-btn"
+          class="btn primary"
+          @click="goToSubscription"
+        >
+          {{ $t('checkout.success.viewSubscription') }}
         </button>
-        <button data-testid="view-invoice-btn" class="btn secondary" @click="goToInvoice">
-          View Invoice
+        <button
+          data-testid="view-invoice-btn"
+          class="btn secondary"
+          @click="goToInvoice"
+        >
+          {{ $t('checkout.success.viewInvoice') }}
         </button>
-        <button data-testid="back-to-plans-btn" class="btn secondary" @click="goToPlans">
-          Back to Plans
+        <button
+          data-testid="back-to-plans-btn"
+          class="btn secondary"
+          @click="goToPlans"
+        >
+          {{ $t('common.backToPlans') }}
         </button>
       </div>
     </div>
 
     <!-- Checkout Form -->
-    <div v-else-if="store.plan" class="checkout-content">
+    <div
+      v-else-if="store.plan || store.lineItems.length > 0"
+      class="checkout-content"
+    >
+      <!-- Step 1: Email Block (only for unauthenticated users) -->
+      <EmailBlock
+        v-if="!isAuthenticated"
+        :initial-email="userEmail"
+        :is-authenticated="isAuthenticated"
+        class="card"
+        @authenticated="handleAuthenticated"
+        @logout="handleLogout"
+      />
+
       <!-- Order Summary Card -->
-      <div class="card order-summary" data-testid="order-summary">
-        <h2>Order Summary</h2>
-        <div class="plan-details">
+      <div
+        class="card order-summary"
+        data-testid="order-summary"
+      >
+        <h2>{{ $t('checkout.orderSummary.title') }}</h2>
+        <div
+          v-if="store.plan"
+          class="plan-details"
+        >
           <div class="plan-row">
             <span data-testid="plan-name">{{ store.plan.name }}</span>
             <span data-testid="plan-price">${{ getPlanPrice() }}/{{ formatBillingPeriod(store.plan.billing_period) }}</span>
           </div>
-          <p v-if="store.plan.description" class="plan-description">{{ store.plan.description }}</p>
+          <p
+            v-if="store.plan.description"
+            class="plan-description"
+          >
+            {{ store.plan.description }}
+          </p>
         </div>
 
         <!-- Selected Line Items -->
@@ -94,7 +156,7 @@
               class="btn-remove"
               @click="store.removeBundle(item.id)"
             >
-              Remove
+              {{ $t('common.remove') }}
             </button>
             <button
               v-if="item.type === 'add_on'"
@@ -102,19 +164,39 @@
               class="btn-remove"
               @click="store.removeAddon(item.id)"
             >
-              Remove
+              {{ $t('common.remove') }}
             </button>
           </div>
         </div>
 
-        <div data-testid="order-total" class="total">
-          <strong>Total: ${{ store.orderTotal }}</strong>
+        <div
+          data-testid="order-total"
+          class="total"
+        >
+          <strong>{{ $t('checkout.success.totalLabel') }} ${{ store.orderTotal }}</strong>
         </div>
       </div>
 
-      <!-- Token Bundles Section -->
-      <div v-if="store.availableBundles.length > 0" class="card" data-testid="token-bundles-section">
-        <h2>Add Token Bundles</h2>
+      <!-- Step 2: Billing Address -->
+      <BillingAddressBlock
+        :readonly="isAuthenticated"
+        class="card"
+        @valid="handleBillingAddressValid"
+      />
+
+      <!-- Step 3: Payment Methods -->
+      <PaymentMethodsBlock
+        class="card"
+        @selected="handlePaymentMethodSelected"
+      />
+
+      <!-- Token Bundles Section (hidden on cart checkout — items already chosen) -->
+      <div
+        v-if="!store.isCartCheckout && store.availableBundles.length > 0"
+        class="card"
+        data-testid="token-bundles-section"
+      >
+        <h2>{{ $t('checkout.tokenBundles.title') }}</h2>
         <div class="options-grid">
           <div
             v-for="bundle in store.availableBundles"
@@ -124,15 +206,23 @@
             :class="{ selected: isSelectedBundle(bundle.id) }"
             @click="store.addBundle(bundle)"
           >
-            <div class="option-name">{{ bundle.name }}</div>
-            <div class="option-price">${{ bundle.price }}</div>
+            <div class="option-name">
+              {{ bundle.name }}
+            </div>
+            <div class="option-price">
+              ${{ bundle.price }}
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Add-ons Section -->
-      <div v-if="store.availableAddons.length > 0" class="card" data-testid="addons-section">
-        <h2>Add-ons</h2>
+      <!-- Add-ons Section (hidden on cart checkout — items already chosen) -->
+      <div
+        v-if="!store.isCartCheckout && store.availableAddons.length > 0"
+        class="card"
+        data-testid="addons-section"
+      >
+        <h2>{{ $t('checkout.addonsSection.title') }}</h2>
         <div class="options-grid">
           <div
             v-for="addon in store.availableAddons"
@@ -142,63 +232,171 @@
             :class="{ selected: isSelectedAddon(addon.id) }"
             @click="store.addAddon(addon)"
           >
-            <div class="option-name">{{ addon.name }}</div>
-            <div :data-testid="`addon-${formatSlug(addon.name)}-price`" class="option-price">
+            <div class="option-name">
+              {{ addon.name }}
+            </div>
+            <div
+              :data-testid="`addon-${formatSlug(addon.name)}-price`"
+              class="option-price"
+            >
               ${{ addon.price }}
             </div>
-            <p :data-testid="`addon-${formatSlug(addon.name)}-description`" class="option-description">
+            <p
+              :data-testid="`addon-${formatSlug(addon.name)}-description`"
+              class="option-description"
+            >
               {{ addon.description }}
             </p>
           </div>
         </div>
       </div>
 
+      <!-- Step 4: Terms and Conditions -->
+      <TermsCheckbox @change="handleTermsChange" />
+
+      <!-- Requirements Status -->
+      <div
+        v-if="missingRequirements.length > 0"
+        class="requirements"
+        data-testid="checkout-requirements"
+      >
+        <p><strong>{{ $t('checkout.requirements.title') }}</strong></p>
+        <ul>
+          <li
+            v-for="req in missingRequirements"
+            :key="req"
+          >
+            {{ req }}
+          </li>
+        </ul>
+      </div>
+
       <!-- Confirm Section -->
       <div class="checkout-actions">
-        <router-link to="/plans" class="btn secondary">
-          Back to Plans
+        <router-link
+          to="/plans"
+          class="btn secondary"
+        >
+          {{ $t('common.backToPlans') }}
         </router-link>
-        <div v-if="store.submitting" data-testid="checkout-submitting" class="submitting-text">
-          Processing...
-        </div>
         <button
           data-testid="confirm-checkout"
-          class="btn primary"
-          :disabled="store.submitting"
+          class="btn primary pay-button"
+          :disabled="!canCheckout"
           @click="store.submitCheckout"
         >
-          Confirm Purchase
+          {{ store.submitting ? $t('checkout.submitting') : $t('checkout.payButton', { amount: store.orderTotal }) }}
         </button>
       </div>
 
       <!-- Error Display -->
-      <div v-if="store.error" data-testid="checkout-error" class="error-message">
+      <div
+        v-if="store.error"
+        data-testid="checkout-error"
+        class="error-message"
+      >
         {{ store.error }}
       </div>
     </div>
 
     <!-- No Plan Selected -->
-    <div v-else class="no-plan">
-      <p>No plan selected. Please choose a plan first.</p>
-      <router-link to="/plans" class="btn primary">Browse Plans</router-link>
+    <div
+      v-else
+      class="no-plan"
+    >
+      <p>{{ $t('checkout.noPlanSelected') }}</p>
+      <router-link
+        to="/plans"
+        class="btn primary"
+      >
+        {{ $t('common.browsePlans') }}
+      </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useCheckoutStore } from '@/stores/checkout';
+import { isAuthenticated as checkAuth } from '@/api';
+import EmailBlock from '@/components/checkout/EmailBlock.vue';
+import PaymentMethodsBlock from '@/components/checkout/PaymentMethodsBlock.vue';
+import TermsCheckbox from '@/components/checkout/TermsCheckbox.vue';
+import BillingAddressBlock from '@/components/checkout/BillingAddressBlock.vue';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const store = useCheckoutStore();
+
+// Auth state
+const isAuthenticated = ref(checkAuth());
+const userEmail = ref(localStorage.getItem('user_email') || '');
+
+// Payment method state
+const selectedPaymentMethod = ref<string | null>(null);
+
+// Terms acceptance state
+const termsAccepted = ref(false);
+
+// Billing address state
+const billingAddressValid = ref(false);
+
+// Handle authentication from EmailBlock
+const handleAuthenticated = (_userId: string) => {
+  isAuthenticated.value = true;
+};
+
+// Handle logout from EmailBlock
+const handleLogout = () => {
+  isAuthenticated.value = false;
+  userEmail.value = '';
+};
+
+// Handle payment method selection
+const handlePaymentMethodSelected = (methodCode: string) => {
+  selectedPaymentMethod.value = methodCode;
+  store.setPaymentMethod(methodCode);
+};
+
+// Handle terms acceptance
+const handleTermsChange = (accepted: boolean) => {
+  termsAccepted.value = accepted;
+};
+
+// Handle billing address validity
+const handleBillingAddressValid = (isValid: boolean) => {
+  billingAddressValid.value = isValid;
+};
+
+// Computed: can checkout only if all conditions met
+const canCheckout = computed(() =>
+  isAuthenticated.value &&
+  selectedPaymentMethod.value &&
+  billingAddressValid.value &&
+  termsAccepted.value &&
+  !store.submitting
+);
+
+// Computed: missing requirements for checkout
+const missingRequirements = computed(() => {
+  const missing: string[] = [];
+  if (!isAuthenticated.value) missing.push(t('checkout.requirements.signIn'));
+  if (!billingAddressValid.value) missing.push(t('checkout.requirements.billingAddress'));
+  if (!selectedPaymentMethod.value) missing.push(t('checkout.requirements.paymentMethod'));
+  if (!termsAccepted.value) missing.push(t('checkout.requirements.acceptTerms'));
+  return missing;
+});
 
 onMounted(async () => {
   const planSlug = route.params.planSlug as string;
   if (planSlug) {
     await store.loadPlan(planSlug);
     await store.loadOptions();
+  } else if (route.name === 'checkout-cart') {
+    await store.loadFromCart();
   }
 });
 
@@ -211,14 +409,14 @@ function getPlanPrice(): number {
 }
 
 function formatBillingPeriod(period?: string): string {
-  if (!period) return 'month';
+  if (!period) return t('common.billingPeriods.month');
   const periodMap: Record<string, string> = {
-    monthly: 'month',
-    yearly: 'year',
-    annual: 'year',
-    weekly: 'week',
-    MONTHLY: 'month',
-    YEARLY: 'year',
+    monthly: t('common.billingPeriods.month'),
+    yearly: t('common.billingPeriods.year'),
+    annual: t('common.billingPeriods.year'),
+    weekly: t('common.billingPeriods.week'),
+    MONTHLY: t('common.billingPeriods.month'),
+    YEARLY: t('common.billingPeriods.year'),
   };
   return periodMap[period] || period.toLowerCase();
 }
@@ -233,11 +431,6 @@ function formatTypeForTestId(type: string): string {
 
 function formatItemTestId(name: string): string {
   return name;
-}
-
-function getTokenAmount(name: string): string {
-  const match = name.match(/(\d+)/);
-  return match ? match[1] : name;
 }
 
 function isSelectedBundle(bundleId: string): boolean {
@@ -506,6 +699,35 @@ h1 {
   padding: 15px;
   border-radius: 8px;
   margin-top: 15px;
+}
+
+/* Requirements Status */
+.requirements {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border: 1px solid #ffc107;
+}
+
+.requirements p {
+  margin: 0 0 8px 0;
+  color: #856404;
+}
+
+.requirements ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #856404;
+}
+
+.requirements li {
+  margin-bottom: 4px;
+}
+
+/* Pay Button */
+.pay-button {
+  min-width: 180px;
 }
 
 @media (max-width: 600px) {

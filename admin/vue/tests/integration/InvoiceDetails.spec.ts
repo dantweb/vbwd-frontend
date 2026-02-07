@@ -161,7 +161,7 @@ describe('InvoiceDetails.vue', () => {
 
   it('can void open invoice', async () => {
     vi.mocked(api.get).mockResolvedValue({
-      invoice: { ...mockInvoice, status: 'open' }
+      invoice: { ...mockInvoice, status: 'pending' }
     });
     vi.mocked(api.post).mockResolvedValue({ message: 'Invoice voided' });
 

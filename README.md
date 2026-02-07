@@ -55,6 +55,63 @@ vbwd-frontend/
 
 ---
 
+## Plugin System (Admin App)
+
+The admin app uses `PluginRegistry` and `PlatformSDK` from `@vbwd/view-component` to load plugins at runtime.
+
+### How It Works
+
+Plugins are initialized in `admin/vue/src/main.ts`:
+
+```typescript
+import { PluginRegistry, PlatformSDK } from '@vbwd/view-component';
+import { analyticsWidgetPlugin } from './plugins/analytics-widget';
+
+const registry = new PluginRegistry();
+const sdk = new PlatformSDK();
+
+registry.register(analyticsWidgetPlugin);
+await registry.installAll(sdk);
+await registry.activate('analytics-widget');
+
+// Inject plugin routes into Vue Router
+for (const route of sdk.getRoutes()) {
+  router.addRoute('admin', { ...route, path: route.path });
+}
+
+// Available to components via inject()
+app.provide('pluginRegistry', registry);
+app.provide('platformSDK', sdk);
+```
+
+### Creating a Plugin
+
+```typescript
+// src/plugins/my-plugin/index.ts
+import type { IPlugin, IPlatformSDK } from '@vbwd/view-component';
+
+export const myPlugin: IPlugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  install(sdk: IPlatformSDK) {
+    sdk.addComponent('MyWidget', () => import('./MyWidget.vue'));
+    sdk.addRoute({ path: '/my-page', name: 'MyPage', component: () => import('./MyPage.vue') });
+  },
+  activate() { /* called on enable */ },
+  deactivate() { /* called on disable */ },
+};
+```
+
+### Dashboard Dynamic Widgets
+
+The Dashboard renders plugin widgets dynamically from the SDK — no hard-coded imports:
+
+```vue
+<component v-for="widget in pluginWidgets" :key="widget.name" :is="widget.component" />
+```
+
+---
+
 ## Testing
 
 ### Unit Tests (Vitest)

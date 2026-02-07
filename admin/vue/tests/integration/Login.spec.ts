@@ -3,7 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import Login from '@/views/Login.vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore, configureAuthStore } from '@/stores/auth';
 import { api } from '@/api';
 
 // Mock the API module
@@ -20,28 +20,21 @@ vi.mock('@/api', () => ({
   clearApiAuth: vi.fn()
 }));
 
-// Mock localStorage
-const createLocalStorageMock = () => {
-  const store: Record<string, string> = {};
-  return {
-    store,
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: vi.fn((key: string) => { delete store[key]; }),
-    clear: vi.fn(() => { Object.keys(store).forEach(key => delete store[key]); })
-  };
-};
-
-const localStorageMock = createLocalStorageMock();
-Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
-
 describe('Login.vue', () => {
   let router: ReturnType<typeof createRouter>;
+  let pinia: ReturnType<typeof createPinia>;
 
   beforeEach(() => {
-    setActivePinia(createPinia());
-    localStorageMock.clear();
+    pinia = createPinia();
+    setActivePinia(pinia);
     vi.clearAllMocks();
+    localStorage.clear();
+
+    // Configure auth store to use our mocked api
+    configureAuthStore({
+      apiClient: api as Parameters<typeof configureAuthStore>[0]['apiClient'],
+      storageKey: 'admin_token',
+    });
 
     router = createRouter({
       history: createMemoryHistory(),
@@ -56,11 +49,11 @@ describe('Login.vue', () => {
   it('renders login form correctly', async () => {
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 
-    expect(wrapper.find('h1').text()).toContain('VBWD Admin');
+    expect(wrapper.find('h1').text()).toContain('Login');
     expect(wrapper.find('input#username').exists()).toBe(true);
     expect(wrapper.find('input#password').exists()).toBe(true);
     expect(wrapper.find('button[type="submit"]').exists()).toBe(true);
@@ -71,7 +64,7 @@ describe('Login.vue', () => {
 
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 
@@ -79,7 +72,7 @@ describe('Login.vue', () => {
     await wrapper.find('input#password').setValue('password');
     await wrapper.find('form').trigger('submit');
 
-    expect(wrapper.find('button[type="submit"]').text()).toContain('Logging in');
+    expect(wrapper.find('button[type="submit"]').text()).toContain('Signing in');
     expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined();
   });
 
@@ -88,7 +81,7 @@ describe('Login.vue', () => {
 
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 
@@ -117,7 +110,7 @@ describe('Login.vue', () => {
 
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 
@@ -145,7 +138,7 @@ describe('Login.vue', () => {
 
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 
@@ -169,9 +162,11 @@ describe('Login.vue', () => {
       }
     });
 
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 
@@ -181,7 +176,8 @@ describe('Login.vue', () => {
 
     await flushPromises();
 
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('admin_token', 'test-admin-token');
+    expect(setItemSpy).toHaveBeenCalledWith('admin_token', 'test-admin-token');
+    setItemSpy.mockRestore();
   });
 
   it('updates auth store on successful login', async () => {
@@ -197,7 +193,7 @@ describe('Login.vue', () => {
 
     const wrapper = mount(Login, {
       global: {
-        plugins: [router]
+        plugins: [pinia, router]
       }
     });
 

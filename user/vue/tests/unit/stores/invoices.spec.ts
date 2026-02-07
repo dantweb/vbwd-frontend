@@ -1,5 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { useInvoicesStore } from '../../../src/stores/invoices';
+import { api } from '../../../src/api';
+
+vi.mock('../../../src/api', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  },
+  isAuthenticated: vi.fn(() => true)
+}));
 
 describe('InvoicesStore', () => {
   beforeEach(() => {
@@ -7,8 +19,7 @@ describe('InvoicesStore', () => {
     vi.clearAllMocks();
   });
 
-  it('initializes with empty invoices list', async () => {
-    const { useInvoicesStore } = await import('../../../src/stores/invoices');
+  it('initializes with empty invoices list', () => {
     const store = useInvoicesStore();
 
     expect(store.invoices).toEqual([]);
@@ -17,7 +28,6 @@ describe('InvoicesStore', () => {
   });
 
   it('fetches invoices list', async () => {
-    const { useInvoicesStore, api } = await import('../../../src/stores/invoices');
     const store = useInvoicesStore();
 
     const mockInvoices = [
@@ -37,7 +47,7 @@ describe('InvoicesStore', () => {
       }
     ];
 
-    api.get = vi.fn().mockResolvedValue({ invoices: mockInvoices });
+    vi.mocked(api.get).mockResolvedValue({ invoices: mockInvoices });
 
     await store.fetchInvoices();
 
@@ -46,10 +56,9 @@ describe('InvoicesStore', () => {
   });
 
   it('handles fetch error gracefully', async () => {
-    const { useInvoicesStore, api } = await import('../../../src/stores/invoices');
     const store = useInvoicesStore();
 
-    api.get = vi.fn().mockRejectedValue(new Error('Network error'));
+    vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
 
     await expect(store.fetchInvoices()).rejects.toThrow();
     expect(store.error).toBe('Network error');
@@ -57,10 +66,9 @@ describe('InvoicesStore', () => {
   });
 
   it('downloads invoice PDF', async () => {
-    const { useInvoicesStore, api } = await import('../../../src/stores/invoices');
     const store = useInvoicesStore();
 
-    api.get = vi.fn().mockResolvedValue({
+    vi.mocked(api.get).mockResolvedValue({
       downloadUrl: 'https://example.com/invoices/inv_1.pdf'
     });
 
@@ -71,10 +79,9 @@ describe('InvoicesStore', () => {
   });
 
   it('sets loading state during fetch', async () => {
-    const { useInvoicesStore, api } = await import('../../../src/stores/invoices');
     const store = useInvoicesStore();
 
-    api.get = vi.fn().mockResolvedValue({ invoices: [] });
+    vi.mocked(api.get).mockResolvedValue({ invoices: [] });
 
     const promise = store.fetchInvoices();
     expect(store.loading).toBe(true);
@@ -83,10 +90,9 @@ describe('InvoicesStore', () => {
     expect(store.loading).toBe(false);
   });
 
-  it('resets store state', async () => {
-    const { useInvoicesStore } = await import('../../../src/stores/invoices');
+  it('resets store state', () => {
     const store = useInvoicesStore();
-    store.invoices = [{ id: 'inv_1', number: 'INV-001', date: '2025-01-01', amount: '$29.00', status: 'paid' }];
+    store.invoices = [{ id: 'inv_1', invoice_number: 'INV-001', invoiced_at: '2025-01-01', amount: '$29.00', status: 'paid' }] as never;
     store.error = 'Some error';
     store.loading = true;
 

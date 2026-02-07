@@ -1,33 +1,41 @@
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1>Login</h1>
+      <h1>{{ $t('login.title') }}</h1>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">{{ $t('login.emailLabel') }}</label>
           <input
             id="email"
             v-model="email"
             type="email"
             data-testid="email"
             required
-          />
+          >
         </div>
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">{{ $t('login.passwordLabel') }}</label>
           <input
             id="password"
             v-model="password"
             type="password"
             data-testid="password"
             required
-          />
+          >
         </div>
-        <div v-if="error" class="error" data-testid="error-message">
+        <div
+          v-if="error"
+          class="error"
+          data-testid="error-message"
+        >
           {{ error }}
         </div>
-        <button type="submit" data-testid="login-button" :disabled="loading">
-          {{ loading ? 'Logging in...' : 'Login' }}
+        <button
+          type="submit"
+          data-testid="login-button"
+          :disabled="loading"
+        >
+          {{ loading ? $t('login.loggingIn') : $t('login.loginButton') }}
         </button>
       </form>
     </div>
@@ -37,6 +45,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { api, clearSessionExpiry } from '@/api';
 
 const router = useRouter();
@@ -45,6 +54,7 @@ const email = ref('');
 const password = ref('');
 const error = ref('');
 const loading = ref(false);
+const { t } = useI18n();
 
 async function handleLogin() {
   loading.value = true;
@@ -57,7 +67,7 @@ async function handleLogin() {
     }) as { success: boolean; token: string; user_id: string; error?: string };
 
     if (!response.success) {
-      throw new Error(response.error || 'Login failed');
+      throw new Error(response.error || t('login.errors.loginFailed'));
     }
 
     localStorage.setItem('auth_token', response.token);
@@ -73,7 +83,7 @@ async function handleLogin() {
 
     router.push(redirectPath || '/dashboard');
   } catch (err) {
-    error.value = (err as Error).message || 'Invalid credentials';
+    error.value = (err as Error).message || t('login.errors.loginFailed');
   } finally {
     loading.value = false;
   }

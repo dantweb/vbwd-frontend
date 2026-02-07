@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { loginAsTestUser, navigateToCheckout } from '../fixtures/checkout.fixtures';
+import { loginAsTestUser, navigateToCheckout, fillCheckoutRequirements } from '../fixtures/checkout.fixtures';
 
 test.describe('Checkout Submission', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsTestUser(page);
     await navigateToCheckout(page, 'pro');
+    await fillCheckoutRequirements(page);
   });
 
   test('creates pending subscription on confirm', async ({ page }) => {
@@ -28,6 +29,7 @@ test.describe('Checkout Submission', () => {
   });
 
   test('shows invoice line items after checkout', async ({ page }) => {
+    // Note: fillCheckoutRequirements already called in beforeEach
     await page.click('[data-testid="token-bundle-1000"]');
     await page.click('[data-testid="addon-priority-support"]');
     await page.click('[data-testid="confirm-checkout"]');
@@ -44,7 +46,8 @@ test.describe('Checkout Submission', () => {
 
     await page.click('[data-testid="confirm-checkout"]');
 
-    await expect(page.locator('[data-testid="checkout-submitting"]')).toBeVisible();
+    // Button shows "Processing..." text during submission
+    await expect(page.locator('[data-testid="confirm-checkout"]')).toContainText('Processing');
   });
 
   test('handles API error gracefully', async ({ page }) => {

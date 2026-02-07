@@ -103,7 +103,7 @@ describe('PlanForm.vue', () => {
       // Fill form
       await wrapper.find('[data-testid="plan-name"]').setValue('New Plan');
       await wrapper.find('[data-testid="plan-price"]').setValue('19.99');
-      await wrapper.find('[data-testid="plan-billing"]').setValue('monthly');
+      await wrapper.find('[data-testid="plan-billing"]').setValue('MONTHLY');
 
       // Submit
       await wrapper.find('[data-testid="submit-button"]').trigger('click');
@@ -112,7 +112,7 @@ describe('PlanForm.vue', () => {
       expect(api.post).toHaveBeenCalledWith('/admin/tarif-plans', expect.objectContaining({
         name: 'New Plan',
         price: 19.99,
-        billing_period: 'monthly'
+        billing_period: 'MONTHLY'
       }));
     });
 
@@ -131,7 +131,7 @@ describe('PlanForm.vue', () => {
 
       await wrapper.find('[data-testid="plan-name"]').setValue('New Plan');
       await wrapper.find('[data-testid="plan-price"]').setValue('19.99');
-      await wrapper.find('[data-testid="plan-billing"]').setValue('monthly');
+      await wrapper.find('[data-testid="plan-billing"]').setValue('MONTHLY');
 
       await wrapper.find('[data-testid="submit-button"]').trigger('click');
       await flushPromises();
@@ -260,7 +260,7 @@ describe('PlanForm.vue', () => {
 
       await wrapper.find('[data-testid="plan-name"]').setValue('New Plan');
       await wrapper.find('[data-testid="plan-price"]').setValue('19.99');
-      await wrapper.find('[data-testid="plan-billing"]').setValue('monthly');
+      await wrapper.find('[data-testid="plan-billing"]').setValue('MONTHLY');
 
       await wrapper.find('[data-testid="submit-button"]').trigger('click');
       await flushPromises();
@@ -286,7 +286,7 @@ describe('PlanForm.vue', () => {
 
       await wrapper.find('[data-testid="plan-name"]').setValue('New Plan');
       await wrapper.find('[data-testid="plan-price"]').setValue('19.99');
-      await wrapper.find('[data-testid="plan-billing"]').setValue('monthly');
+      await wrapper.find('[data-testid="plan-billing"]').setValue('MONTHLY');
 
       await wrapper.find('[data-testid="submit-button"]').trigger('click');
       await wrapper.vm.$nextTick();

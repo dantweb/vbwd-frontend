@@ -1,31 +1,56 @@
 <template>
   <div class="dashboard">
-    <h1>Dashboard</h1>
+    <h1>{{ $t('dashboard.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" data-testid="dashboard-loading">
+    <div
+      v-if="loading"
+      class="loading-state"
+      data-testid="dashboard-loading"
+    >
       <div class="spinner" />
-      <p>Loading...</p>
+      <p>{{ $t('dashboard.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" data-testid="dashboard-error">
+    <div
+      v-else-if="error"
+      class="error-state"
+      data-testid="dashboard-error"
+    >
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="loadDashboardData">Retry</button>
+      <button
+        class="retry-btn"
+        @click="loadDashboardData"
+      >
+        {{ $t('common.retry') }}
+      </button>
     </div>
 
     <!-- Dashboard Content -->
-    <div v-else class="dashboard-grid">
+    <div
+      v-else
+      class="dashboard-grid"
+    >
       <!-- Profile Summary Card -->
-      <div class="card profile-card" data-testid="profile-summary">
-        <h3>Profile</h3>
+      <div
+        class="card profile-card"
+        data-testid="profile-summary"
+      >
+        <h3>{{ $t('dashboard.profileCard.title') }}</h3>
         <div class="profile-info">
           <div class="avatar">
             {{ userInitials }}
           </div>
           <div class="profile-details">
-            <span class="user-name" data-testid="user-name">{{ userName }}</span>
-            <span class="user-email" data-testid="user-email">{{ userEmail }}</span>
+            <span
+              class="user-name"
+              data-testid="user-name"
+            >{{ userName }}</span>
+            <span
+              class="user-email"
+              data-testid="user-email"
+            >{{ userEmail }}</span>
             <span
               class="user-status"
               :class="userStatus"
@@ -35,17 +60,29 @@
             </span>
           </div>
         </div>
-        <router-link to="/profile" class="card-link">
-          View Profile →
+        <router-link
+          to="/profile"
+          class="card-link"
+        >
+          {{ $t('dashboard.profileCard.viewProfile') }} →
         </router-link>
       </div>
 
       <!-- Subscription Card -->
-      <div class="card subscription-card" data-testid="subscription-summary">
-        <h3>Current Subscription</h3>
-        <div v-if="subscription" class="subscription-info">
+      <div
+        class="card subscription-card"
+        data-testid="subscription-summary"
+      >
+        <h3>{{ $t('dashboard.subscriptionCard.title') }}</h3>
+        <div
+          v-if="subscription"
+          class="subscription-info"
+        >
           <div class="plan-header">
-            <span class="plan-name" data-testid="plan-name">{{ subscription.plan?.name || 'No Plan' }}</span>
+            <span
+              class="plan-name"
+              data-testid="plan-name"
+            >{{ subscription.plan?.name || $t('dashboard.subscriptionCard.noPlan') }}</span>
             <span
               class="plan-status"
               :class="subscription.status"
@@ -56,32 +93,53 @@
           </div>
           <div class="subscription-details">
             <div class="detail-item">
-              <span class="label">Billing Period</span>
+              <span class="label">{{ $t('dashboard.subscriptionCard.billingPeriod') }}</span>
               <span class="value">{{ subscription.plan?.billing_period || '-' }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Next Billing</span>
+              <span class="label">{{ $t('dashboard.subscriptionCard.nextBilling') }}</span>
               <span class="value">{{ formatDate(subscription.expires_at) }}</span>
             </div>
-            <div class="detail-item token-balance" data-testid="token-balance">
-              <span class="label">Token Balance</span>
-              <span class="value highlight">{{ formatNumber(tokenBalance) }} TKN</span>
+            <div
+              class="detail-item token-balance"
+              data-testid="token-balance"
+            >
+              <span class="label">{{ $t('dashboard.subscriptionCard.tokenBalance') }}</span>
+              <span class="value highlight">{{ formatNumber(tokenBalance) }} {{ $t('common.tokenUnit') }}</span>
             </div>
           </div>
         </div>
-        <div v-else class="no-subscription">
-          <p>No active subscription</p>
-          <router-link to="/plans" class="btn primary">Browse Plans</router-link>
+        <div
+          v-else
+          class="no-subscription"
+        >
+          <p>{{ $t('dashboard.subscriptionCard.noActiveSubscription') }}</p>
+          <router-link
+            to="/plans"
+            class="btn primary"
+          >
+            {{ $t('common.browsePlans') }}
+          </router-link>
         </div>
-        <router-link v-if="subscription" to="/subscription" class="card-link">
-          Manage Subscription →
+        <router-link
+          v-if="subscription"
+          to="/subscription"
+          class="card-link"
+        >
+          {{ $t('dashboard.subscriptionCard.manageSubscription') }} →
         </router-link>
       </div>
 
       <!-- Recent Invoices Card -->
-      <div class="card invoices-card" data-testid="recent-invoices">
-        <h3>Recent Invoices</h3>
-        <div v-if="recentInvoices.length > 0" class="invoices-list">
+      <div
+        class="card invoices-card"
+        data-testid="recent-invoices"
+      >
+        <h3>{{ $t('dashboard.invoicesCard.title') }}</h3>
+        <div
+          v-if="recentInvoices.length > 0"
+          class="invoices-list"
+        >
           <div
             v-for="invoice in recentInvoices"
             :key="invoice.id"
@@ -103,29 +161,47 @@
             </div>
           </div>
         </div>
-        <div v-else class="no-invoices">
-          <p>No invoices yet</p>
+        <div
+          v-else
+          class="no-invoices"
+        >
+          <p>{{ $t('dashboard.invoicesCard.noInvoices') }}</p>
         </div>
-        <router-link to="/invoices" class="card-link">
-          View All Invoices →
+        <router-link
+          to="/invoices"
+          class="card-link"
+        >
+          {{ $t('dashboard.invoicesCard.viewAllInvoices') }} →
         </router-link>
       </div>
 
       <!-- Quick Actions Card -->
       <div class="card actions-card">
-        <h3>Quick Actions</h3>
+        <h3>{{ $t('dashboard.quickActions.title') }}</h3>
         <div class="actions">
-          <router-link to="/profile" class="action-btn">
-            Edit Profile
+          <router-link
+            to="/profile"
+            class="action-btn"
+          >
+            {{ $t('dashboard.quickActions.editProfile') }}
           </router-link>
-          <router-link to="/subscription" class="action-btn">
-            Manage Subscription
+          <router-link
+            to="/subscription"
+            class="action-btn"
+          >
+            {{ $t('dashboard.quickActions.manageSubscription') }}
           </router-link>
-          <router-link to="/plans" class="action-btn">
-            Browse Plans
+          <router-link
+            to="/plans"
+            class="action-btn"
+          >
+            {{ $t('dashboard.quickActions.browsePlans') }}
           </router-link>
-          <router-link to="/invoices" class="action-btn">
-            View Invoices
+          <router-link
+            to="/invoices"
+            class="action-btn"
+          >
+            {{ $t('dashboard.quickActions.viewInvoices') }}
           </router-link>
         </div>
       </div>
@@ -135,10 +211,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useProfileStore } from '../stores/profile';
 import { useSubscriptionStore } from '../stores/subscription';
 import { useInvoicesStore } from '../stores/invoices';
+import { api } from '@/api';
 
+const { t } = useI18n();
 const profileStore = useProfileStore();
 const subscriptionStore = useSubscriptionStore();
 const invoicesStore = useInvoicesStore();
@@ -161,10 +240,16 @@ const userInitials = computed(() => {
 
 // Subscription computed
 const subscription = computed(() => subscriptionStore.subscription);
-const tokenBalance = computed(() => {
-  // Token balance would come from user details
-  return 0; // Placeholder - will be fetched from profile details
-});
+const tokenBalance = ref(0);
+
+async function fetchTokenBalance(): Promise<void> {
+  try {
+    const response = await api.get('/user/tokens/balance') as { balance: number };
+    tokenBalance.value = response.balance || 0;
+  } catch {
+    tokenBalance.value = 0;
+  }
+}
 
 // Invoices computed
 const recentInvoices = computed(() => {
@@ -180,9 +265,10 @@ async function loadDashboardData(): Promise<void> {
       profileStore.fetchProfile(),
       subscriptionStore.fetchSubscription().catch(() => null), // Don't fail if no subscription
       invoicesStore.fetchInvoices().catch(() => null), // Don't fail if no invoices
+      fetchTokenBalance(),
     ]);
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to load dashboard data';
+    error.value = (err as Error).message || t('dashboard.errors.failedToLoad');
   } finally {
     loading.value = false;
   }

@@ -33,6 +33,7 @@
     "processing": "Verarbeite...",
     "saving": "Speichern...",
     "created": "Erstellt",
+    "type": "Typ",
     "description": "Beschreibung",
     "none": "Keine",
     "na": "N/V",
@@ -49,6 +50,8 @@
     "webhooks": "Webhooks",
     "analytics": "Analytik",
     "settings": "Einstellungen",
+    "paymentMethods": "Zahlungsmethoden",
+    "countries": "Länder",
     "profile": "Profil",
     "logout": "Abmelden"
   },
@@ -424,6 +427,20 @@
     "tab2": "Tab 2",
     "tab1Placeholder": "Tab 1 Inhalt folgt in Kürze...",
     "tab2Placeholder": "Tab 2 Inhalt folgt in Kürze..."
+  },
+  "countriesConfig": {
+    "title": "Länderkonfiguration",
+    "description": "Konfigurieren Sie, welche Länder für die Rechnungsadresse verfügbar sind. Ziehen Sie, um die Reihenfolge zu ändern.",
+    "enabledCountries": "Aktivierte Länder",
+    "disabledCountries": "Verfügbare Länder",
+    "noEnabledCountries": "Keine Länder aktiviert. Aktivieren Sie Länder aus der Liste rechts.",
+    "noDisabledCountries": "Alle Länder sind aktiviert.",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "countryEnabled": "Land erfolgreich aktiviert",
+    "countryDisabled": "Land erfolgreich deaktiviert",
+    "orderSaved": "Reihenfolge erfolgreich gespeichert",
+    "loadError": "Fehler beim Laden der Länder"
   },
   "profile": {
     "title": "Profil",

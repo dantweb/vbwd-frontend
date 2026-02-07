@@ -60,6 +60,26 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/AddOns.vue')
       },
       {
+        path: 'payment-methods',
+        name: 'payment-methods',
+        component: () => import('@/views/PaymentMethods.vue')
+      },
+      {
+        path: 'countries',
+        name: 'countries',
+        component: () => import('@/views/Countries.vue')
+      },
+      {
+        path: 'payment-methods/new',
+        name: 'payment-method-new',
+        component: () => import('@/views/PaymentMethodForm.vue')
+      },
+      {
+        path: 'payment-methods/:id/edit',
+        name: 'payment-method-edit',
+        component: () => import('@/views/PaymentMethodForm.vue')
+      },
+      {
         path: 'plans/new',
         name: 'plan-new',
         component: () => import('@/views/PlanForm.vue')

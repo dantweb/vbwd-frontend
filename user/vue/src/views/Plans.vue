@@ -1,66 +1,127 @@
 <template>
   <div class="plans">
-    <h1>Select a Plan</h1>
+    <h1>{{ $t('plans.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" data-testid="plans-loading">
+    <div
+      v-if="loading"
+      class="loading-state"
+      data-testid="plans-loading"
+    >
       <div class="spinner" />
-      <p>Loading plans...</p>
+      <p>{{ $t('plans.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" data-testid="plans-error">
+    <div
+      v-else-if="error"
+      class="error-state"
+      data-testid="plans-error"
+    >
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="loadPlans">Retry</button>
+      <button
+        class="retry-btn"
+        @click="loadPlans"
+      >
+        {{ $t('common.retry') }}
+      </button>
     </div>
 
     <!-- No Plans -->
-    <div v-else-if="plans.length === 0" class="no-plans" data-testid="no-plans">
-      <p>No plans available at this time.</p>
+    <div
+      v-else-if="plans.length === 0"
+      class="no-plans"
+      data-testid="no-plans"
+    >
+      <p>{{ $t('plans.noPlans') }}</p>
     </div>
 
     <!-- Plans Grid -->
-    <div v-else class="plans-grid" data-testid="plans-grid">
+    <div
+      v-else
+      class="plans-grid"
+      data-testid="plans-grid"
+    >
       <div
         v-for="plan in plans"
         :key="plan.id"
         :class="['plan-card', { popular: plan.popular, current: isCurrentPlan(plan.id) }]"
         :data-testid="`plan-${plan.slug}`"
       >
-        <div v-if="plan.popular" class="popular-badge">Most Popular</div>
-        <div v-if="isCurrentPlan(plan.id)" class="current-badge">Current Plan</div>
+        <div
+          v-if="plan.popular"
+          class="popular-badge"
+        >
+          {{ $t('plans.mostPopular') }}
+        </div>
+        <div
+          v-if="isCurrentPlan(plan.id)"
+          class="current-badge"
+        >
+          {{ $t('plans.currentPlan') }}
+        </div>
         <h2>{{ plan.name }}</h2>
         <div class="price">
           <span class="amount">{{ formatPrice(plan.display_price) }}</span>
           <span class="period">/{{ formatBillingPeriod(plan.billing_period) }}</span>
         </div>
-        <p v-if="plan.description" class="description">{{ plan.description }}</p>
-        <ul v-if="plan.features && plan.features.length > 0" class="features">
-          <li v-for="feature in plan.features" :key="feature">{{ feature }}</li>
+        <p
+          v-if="plan.description"
+          class="description"
+        >
+          {{ plan.description }}
+        </p>
+        <ul
+          v-if="plan.features && plan.features.length > 0"
+          class="features"
+        >
+          <li
+            v-for="feature in plan.features"
+            :key="feature"
+          >
+            {{ feature }}
+          </li>
         </ul>
-        <div v-if="plan.tax_rate !== undefined" class="tax-info">
-          <span class="tax-rate">incl. {{ plan.tax_rate }}% tax</span>
+        <div
+          v-if="plan.tax_rate !== undefined"
+          class="tax-info"
+        >
+          <span class="tax-rate">{{ $t('plans.taxIncluded', { rate: plan.tax_rate }) }}</span>
         </div>
         <button
           :class="['select-btn', { disabled: isCurrentPlan(plan.id) }]"
           :disabled="isCurrentPlan(plan.id) || subscribing"
-          @click="selectPlan(plan)"
           :data-testid="`select-plan-${plan.slug}`"
+          @click="selectPlan(plan)"
         >
-          <span v-if="subscribing && selectedPlanId === plan.id">Processing...</span>
-          <span v-else-if="isCurrentPlan(plan.id)">Current Plan</span>
-          <span v-else>Select Plan</span>
+          <span v-if="subscribing && selectedPlanId === plan.id">{{ $t('plans.processing') }}</span>
+          <span v-else-if="isCurrentPlan(plan.id)">{{ $t('plans.currentPlan') }}</span>
+          <span v-else>{{ $t('plans.selectPlan') }}</span>
         </button>
       </div>
     </div>
 
     <!-- Currency Selector -->
-    <div v-if="plans.length > 0" class="currency-selector">
-      <label for="currency">Display prices in:</label>
-      <select id="currency" v-model="selectedCurrency" @change="loadPlans" data-testid="currency-select">
-        <option value="EUR">EUR</option>
-        <option value="USD">USD</option>
-        <option value="GBP">GBP</option>
+    <div
+      v-if="plans.length > 0"
+      class="currency-selector"
+    >
+      <label for="currency">{{ $t('plans.currencyLabel') }}</label>
+      <select
+        id="currency"
+        v-model="selectedCurrency"
+        data-testid="currency-select"
+        @change="loadPlans"
+      >
+        <option value="EUR">
+          EUR
+        </option>
+        <option value="USD">
+          USD
+        </option>
+        <option value="GBP">
+          GBP
+        </option>
       </select>
     </div>
   </div>
@@ -69,10 +130,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { usePlansStore, type Plan } from '../stores/plans';
 import { useSubscriptionStore } from '../stores/subscription';
 
 const router = useRouter();
+const { t } = useI18n();
 const plansStore = usePlansStore();
 const subscriptionStore = useSubscriptionStore();
 
@@ -121,10 +184,10 @@ function formatPrice(price: number): string {
 function formatBillingPeriod(period?: string): string {
   if (!period) return 'month';
   const periodMap: Record<string, string> = {
-    monthly: 'month',
-    yearly: 'year',
-    annual: 'year',
-    weekly: 'week',
+    monthly: t('common.billingPeriods.month'),
+    yearly: t('common.billingPeriods.year'),
+    annual: t('common.billingPeriods.year'),
+    weekly: t('common.billingPeriods.week'),
   };
   return periodMap[period.toLowerCase()] || period;
 }

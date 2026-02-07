@@ -35,6 +35,8 @@ export interface InvoiceDetail extends Invoice {
 
 export interface LineItem {
   id?: string;
+  type?: string;
+  item_id?: string;
   description: string;
   quantity?: number;
   unit_price?: number;

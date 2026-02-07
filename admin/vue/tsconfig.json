@@ -16,7 +16,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@plugins/*": ["./plugins/*"]
     },
     "types": ["vite/client", "vitest/globals"]
   },
@@ -24,6 +25,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
+    "plugins/**/*.ts",
+    "plugins/**/*.vue",
     "tests/**/*.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]

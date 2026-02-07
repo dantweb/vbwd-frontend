@@ -1,26 +1,51 @@
 <template>
   <div class="subscription">
-    <h1>Subscription</h1>
+    <h1>{{ $t('subscription.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" data-testid="subscription-loading">
+    <div
+      v-if="loading"
+      class="loading-state"
+      data-testid="subscription-loading"
+    >
       <div class="spinner" />
-      <p>Loading subscription...</p>
+      <p>{{ $t('subscription.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" data-testid="subscription-error">
+    <div
+      v-else-if="error"
+      class="error-state"
+      data-testid="subscription-error"
+    >
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="loadData">Retry</button>
+      <button
+        class="retry-btn"
+        @click="loadData"
+      >
+        {{ $t('common.retry') }}
+      </button>
     </div>
 
-    <div v-else class="subscription-content">
+    <div
+      v-else
+      class="subscription-content"
+    >
       <!-- Current Subscription Card -->
-      <div class="card subscription-card" data-testid="current-subscription">
-        <h2>Current Plan</h2>
-        <div v-if="subscription" class="plan-info">
+      <div
+        class="card subscription-card"
+        data-testid="current-subscription"
+      >
+        <h2>{{ $t('subscription.currentPlan.title') }}</h2>
+        <div
+          v-if="subscription"
+          class="plan-info"
+        >
           <div class="plan-header">
-            <span class="plan-name" data-testid="plan-name">{{ subscription.plan?.name || 'No Plan' }}</span>
+            <span
+              class="plan-name"
+              data-testid="plan-name"
+            >{{ subscription.plan?.name || $t('subscription.currentPlan.noPlan') }}</span>
             <span
               class="plan-status"
               :class="subscription.status"
@@ -29,53 +54,109 @@
               {{ formatStatus(subscription.status) }}
             </span>
           </div>
-          <p v-if="subscription.plan?.description" class="plan-description">
+          <p
+            v-if="subscription.plan?.description"
+            class="plan-description"
+          >
             {{ subscription.plan.description }}
           </p>
           <div class="plan-details">
             <div class="detail-row">
-              <span class="label">Price</span>
+              <span class="label">{{ $t('subscription.currentPlan.price') }}</span>
               <span class="value">{{ formatPrice(subscription.plan?.price) }} / {{ subscription.plan?.billing_period || 'month' }}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Current Period</span>
+              <span class="label">{{ $t('subscription.currentPlan.currentPeriod') }}</span>
               <span class="value">
                 {{ formatDate(subscription.started_at) }} - {{ formatDate(subscription.expires_at) }}
               </span>
             </div>
             <div class="detail-row">
-              <span class="label">Next Billing Date</span>
+              <span class="label">{{ $t('subscription.currentPlan.nextBillingDate') }}</span>
               <span class="value">{{ formatDate(subscription.expires_at) }}</span>
             </div>
           </div>
         </div>
-        <div v-else class="no-subscription" data-testid="no-subscription">
-          <p>You don't have an active subscription.</p>
-          <router-link to="/plans" class="btn primary">Browse Plans</router-link>
+        <div
+          v-else
+          class="no-subscription"
+          data-testid="no-subscription"
+        >
+          <p>{{ $t('subscription.currentPlan.noActiveSubscription') }}</p>
+          <router-link
+            to="/plans"
+            class="btn primary"
+          >
+            {{ $t('common.browsePlans') }}
+          </router-link>
         </div>
       </div>
 
       <!-- Token Balance Card -->
-      <div class="card token-card" data-testid="token-balance-card">
-        <h2>Token Balance</h2>
+      <div
+        class="card token-card"
+        data-testid="token-balance-card"
+      >
+        <h2>{{ $t('subscription.tokenBalance.title') }}</h2>
         <div class="token-info">
           <div class="balance-display">
-            <span class="balance-amount" data-testid="token-balance">{{ formatNumber(tokenBalance) }}</span>
-            <span class="balance-label">TKN</span>
+            <span
+              class="balance-amount"
+              data-testid="token-balance"
+            >{{ formatNumber(tokenBalance) }}</span>
+            <span class="balance-label">{{ $t('common.tokenUnit') }}</span>
           </div>
-          <p class="balance-desc">Use tokens for API calls, features, and more.</p>
-          <button class="btn primary" data-testid="purchase-tokens-btn" @click="goToPurchaseTokens">
-            Purchase Tokens
+          <p class="balance-desc">
+            {{ $t('subscription.tokenBalance.description') }}
+          </p>
+          <button
+            class="btn primary"
+            data-testid="purchase-tokens-btn"
+            @click="goToPurchaseTokens"
+          >
+            {{ $t('subscription.tokenBalance.purchaseTokens') }}
           </button>
         </div>
       </div>
 
+      <!-- Usage Statistics Card -->
+      <div
+        v-if="subscription"
+        class="card usage-card"
+        data-testid="usage-statistics"
+      >
+        <h2>Usage Statistics</h2>
+        <div class="usage-grid">
+          <div
+            class="usage-item"
+            data-testid="usage-api"
+          >
+            <span class="usage-label">API Calls</span>
+            <span class="usage-value">{{ formatNumber(usageStats.apiCalls) }}</span>
+          </div>
+          <div
+            class="usage-item"
+            data-testid="usage-storage"
+          >
+            <span class="usage-label">Storage</span>
+            <span class="usage-value">{{ usageStats.storageMb }} MB</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Subscription Actions -->
-      <div v-if="subscription" class="card actions-card">
-        <h2>Manage Subscription</h2>
+      <div
+        v-if="subscription"
+        class="card actions-card"
+      >
+        <h2>{{ $t('subscription.manage.title') }}</h2>
         <div class="actions">
-          <router-link to="/plans" class="btn primary" data-testid="change-plan">
-            Change Plan
+          <router-link
+            to="/plans"
+            class="btn primary"
+            data-testid="change-plan"
+          >
+            {{ $t('subscription.manage.changePlan') }}
           </router-link>
           <button
             v-if="subscription.status === 'active'"
@@ -83,46 +164,79 @@
             data-testid="cancel-subscription"
             @click="showCancelModal = true"
           >
-            Cancel Subscription
+            {{ $t('subscription.manage.cancelSubscription') }}
           </button>
         </div>
       </div>
 
       <!-- Invoices Section -->
-      <div class="card invoices-card" data-testid="invoices-section">
+      <div
+        class="card invoices-card"
+        data-testid="invoices-section"
+      >
         <div class="section-header">
-          <h2>Invoices</h2>
+          <h2>{{ $t('subscription.invoices.title') }}</h2>
           <div class="search-box">
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search invoices..."
+              :placeholder="$t('subscription.invoices.searchPlaceholder')"
               data-testid="invoice-search"
-            />
+            >
           </div>
         </div>
 
-        <div v-if="filteredInvoices.length > 0" class="invoices-table-container">
-          <table class="invoices-table" data-testid="invoices-table">
+        <div
+          v-if="filteredInvoices.length > 0"
+          class="invoices-table-container"
+        >
+          <table
+            class="invoices-table"
+            data-testid="invoices-table"
+          >
             <thead>
               <tr>
-                <th @click="sortBy('invoice_number')" class="sortable">
-                  Invoice #
-                  <span v-if="sortField === 'invoice_number'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                <th
+                  class="sortable"
+                  @click="sortBy('invoice_number')"
+                >
+                  {{ $t('subscription.invoices.tableHeaders.invoiceNumber') }}
+                  <span
+                    v-if="sortField === 'invoice_number'"
+                    class="sort-icon"
+                  >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
                 </th>
-                <th @click="sortBy('invoiced_at')" class="sortable">
-                  Date
-                  <span v-if="sortField === 'invoiced_at'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                <th
+                  class="sortable"
+                  @click="sortBy('invoiced_at')"
+                >
+                  {{ $t('subscription.invoices.tableHeaders.date') }}
+                  <span
+                    v-if="sortField === 'invoiced_at'"
+                    class="sort-icon"
+                  >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
                 </th>
-                <th @click="sortBy('amount')" class="sortable">
-                  Amount
-                  <span v-if="sortField === 'amount'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                <th
+                  class="sortable"
+                  @click="sortBy('amount')"
+                >
+                  {{ $t('subscription.invoices.tableHeaders.amount') }}
+                  <span
+                    v-if="sortField === 'amount'"
+                    class="sort-icon"
+                  >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
                 </th>
-                <th @click="sortBy('status')" class="sortable">
-                  Status
-                  <span v-if="sortField === 'status'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                <th
+                  class="sortable"
+                  @click="sortBy('status')"
+                >
+                  {{ $t('subscription.invoices.tableHeaders.status') }}
+                  <span
+                    v-if="sortField === 'status'"
+                    class="sort-icon"
+                  >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
                 </th>
-                <th>Actions</th>
+                <th>{{ $t('subscription.invoices.tableHeaders.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,11 +245,18 @@
                 :key="invoice.id"
                 data-testid="invoice-row"
               >
-                <td class="invoice-number">{{ invoice.invoice_number }}</td>
+                <td class="invoice-number">
+                  {{ invoice.invoice_number }}
+                </td>
                 <td>{{ formatDate(invoice.invoiced_at) }}</td>
-                <td class="invoice-amount">{{ formatPrice(invoice.amount) }}</td>
+                <td class="invoice-amount">
+                  {{ formatPrice(invoice.amount) }}
+                </td>
                 <td>
-                  <span class="status-badge" :class="invoice.status">
+                  <span
+                    class="status-badge"
+                    :class="invoice.status"
+                  >
                     {{ invoice.status }}
                   </span>
                 </td>
@@ -145,14 +266,14 @@
                     data-testid="view-invoice"
                     @click="viewInvoice(invoice)"
                   >
-                    View
+                    {{ $t('common.view') }}
                   </button>
                   <button
                     class="action-btn download"
                     data-testid="download-invoice"
                     @click="downloadInvoice(invoice.id)"
                   >
-                    PDF
+                    {{ $t('common.pdf') }}
                   </button>
                   <button
                     v-if="invoice.status === 'pending'"
@@ -160,7 +281,7 @@
                     data-testid="pay-invoice"
                     @click="payInvoice(invoice)"
                   >
-                    Pay
+                    {{ $t('common.pay') }}
                   </button>
                 </td>
               </tr>
@@ -168,84 +289,134 @@
           </table>
 
           <!-- Pagination -->
-          <div v-if="totalPages > 1" class="pagination" data-testid="invoices-pagination">
+          <div
+            v-if="totalPages > 1"
+            class="pagination"
+            data-testid="invoices-pagination"
+          >
             <button
               class="page-btn"
               :disabled="currentPage <= 1"
               @click="currentPage--"
             >
-              Previous
+              {{ $t('common.previous') }}
             </button>
-            <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+            <span class="page-info">{{ $t('common.pageInfo', { currentPage, totalPages }) }}</span>
             <button
               class="page-btn"
               :disabled="currentPage >= totalPages"
               @click="currentPage++"
             >
-              Next
+              {{ $t('common.next') }}
             </button>
           </div>
         </div>
 
-        <div v-else class="no-invoices" data-testid="no-invoices">
-          <p>{{ searchQuery ? 'No invoices found matching your search.' : 'No invoices yet.' }}</p>
+        <div
+          v-else
+          class="no-invoices"
+          data-testid="no-invoices"
+        >
+          <p>{{ searchQuery ? $t('subscription.invoices.noInvoicesSearch') : $t('subscription.invoices.noInvoices') }}</p>
         </div>
       </div>
     </div>
 
     <!-- Cancel Modal -->
-    <div v-if="showCancelModal" class="modal-overlay">
-      <div class="modal" data-testid="cancel-modal">
-        <h3>Cancel Subscription</h3>
-        <p>Are you sure you want to cancel your subscription?</p>
-        <p class="warning">Your access will continue until {{ formatDate(subscription?.expires_at) }}.</p>
+    <div
+      v-if="showCancelModal"
+      class="modal-overlay"
+    >
+      <div
+        class="modal"
+        data-testid="cancel-modal"
+      >
+        <h3>{{ $t('subscription.cancelModal.title') }}</h3>
+        <p>{{ $t('subscription.cancelModal.confirmMessage') }}</p>
+        <p class="warning">
+          {{ $t('subscription.cancelModal.accessWarning', { date: formatDate(subscription?.expires_at) }) }}
+        </p>
         <div class="modal-actions">
-          <button class="btn" @click="showCancelModal = false">Keep Subscription</button>
+          <button
+            class="btn"
+            @click="showCancelModal = false"
+          >
+            {{ $t('subscription.cancelModal.keepSubscription') }}
+          </button>
           <button
             class="btn danger"
             data-testid="confirm-cancel"
             :disabled="cancelling"
             @click="confirmCancel"
           >
-            {{ cancelling ? 'Cancelling...' : 'Confirm Cancellation' }}
+            {{ cancelling ? $t('subscription.cancelModal.cancelling') : $t('subscription.cancelModal.confirmCancellation') }}
           </button>
         </div>
       </div>
     </div>
 
     <!-- Invoice Detail Modal -->
-    <div v-if="selectedInvoice" class="modal-overlay">
-      <div class="modal invoice-modal" data-testid="invoice-modal">
+    <div
+      v-if="selectedInvoice"
+      class="modal-overlay"
+    >
+      <div
+        class="modal invoice-modal"
+        data-testid="invoice-modal"
+      >
         <h3>Invoice {{ selectedInvoice.invoice_number }}</h3>
         <div class="invoice-detail">
           <div class="detail-row">
-            <span class="label">Date</span>
+            <span class="label">{{ $t('subscription.invoiceModal.date') }}</span>
             <span class="value">{{ formatDate(selectedInvoice.invoiced_at || selectedInvoice.created_at) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Status</span>
+            <span class="label">{{ $t('subscription.invoiceModal.status') }}</span>
             <span class="value">
-              <span class="status-badge" :class="selectedInvoice.status">
+              <span
+                class="status-badge"
+                :class="selectedInvoice.status"
+              >
                 {{ selectedInvoice.status }}
               </span>
             </span>
           </div>
           <div class="detail-row">
-            <span class="label">Amount</span>
+            <span class="label">{{ $t('subscription.invoiceModal.amount') }}</span>
             <span class="value amount">{{ formatPrice(selectedInvoice.amount) }}</span>
           </div>
         </div>
         <div class="modal-actions">
-          <button class="btn" @click="selectedInvoice = null">Close</button>
-          <button class="btn primary" @click="downloadInvoice(selectedInvoice.id)">
-            Download PDF
+          <button
+            class="btn"
+            @click="selectedInvoice = null"
+          >
+            {{ $t('common.close') }}
+          </button>
+          <button
+            class="btn primary"
+            @click="downloadInvoice(selectedInvoice.id)"
+          >
+            {{ $t('subscription.invoices.downloadPdf') }}
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Cancellation Notice -->
+    <div
+      v-if="cancellationNotice"
+      class="cancellation-notice"
+      data-testid="cancellation-notice"
+    >
+      {{ t('subscription.messages.subscriptionCancelled') }}
+    </div>
+
     <!-- Success/Error Toast -->
-    <div v-if="successMessage" class="toast success">
+    <div
+      v-if="successMessage"
+      class="toast success"
+    >
       {{ successMessage }}
     </div>
   </div>
@@ -254,11 +425,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useSubscriptionStore } from '../stores/subscription';
 import { useInvoicesStore, type Invoice } from '../stores/invoices';
 import { api } from '@/api';
 
 const router = useRouter();
+const { t } = useI18n();
 const subscriptionStore = useSubscriptionStore();
 const invoicesStore = useInvoicesStore();
 
@@ -269,6 +442,10 @@ const cancelling = ref(false);
 const successMessage = ref('');
 const selectedInvoice = ref<Invoice | null>(null);
 const tokenBalance = ref(0);
+const cancellationNotice = ref(false);
+
+// Usage statistics
+const usageStats = ref({ apiCalls: 0, storageMb: 0 });
 
 // Search and sorting
 const searchQuery = ref('');
@@ -342,11 +519,24 @@ async function loadData(): Promise<void> {
       subscriptionStore.fetchSubscription().catch(() => null),
       invoicesStore.fetchInvoices().catch(() => null),
       fetchTokenBalance(),
+      fetchUsageStats(),
     ]);
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to load subscription data';
+    error.value = (err as Error).message || t('subscription.errors.failedToLoad');
   } finally {
     loading.value = false;
+  }
+}
+
+async function fetchUsageStats(): Promise<void> {
+  try {
+    const response = await api.get('/user/usage') as { api_calls?: number; storage_mb?: number };
+    usageStats.value = {
+      apiCalls: response.api_calls || 0,
+      storageMb: response.storage_mb || 0,
+    };
+  } catch {
+    usageStats.value = { apiCalls: 0, storageMb: 0 };
   }
 }
 
@@ -376,16 +566,17 @@ async function confirmCancel(): Promise<void> {
   try {
     await subscriptionStore.cancelSubscription();
     showCancelModal.value = false;
-    showSuccess('Subscription cancelled successfully');
+    cancellationNotice.value = true;
+    showSuccess(t('subscription.messages.subscriptionCancelled'));
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to cancel subscription';
+    error.value = (err as Error).message || t('subscription.errors.failedToCancel');
   } finally {
     cancelling.value = false;
   }
 }
 
 function viewInvoice(invoice: Invoice): void {
-  router.push(`/invoices/${invoice.id}`);
+  selectedInvoice.value = invoice;
 }
 
 async function downloadInvoice(invoiceId: string): Promise<void> {
@@ -394,10 +585,10 @@ async function downloadInvoice(invoiceId: string): Promise<void> {
     if (result?.downloadUrl) {
       window.open(result.downloadUrl, '_blank');
     } else {
-      showSuccess('Invoice download initiated');
+      showSuccess(t('subscription.messages.invoiceDownloadInitiated'));
     }
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to download invoice';
+    error.value = (err as Error).message || t('subscription.errors.failedToDownload');
   }
 }
 
@@ -605,6 +796,34 @@ h1 {
 .balance-desc {
   color: #666;
   margin-bottom: 20px;
+}
+
+/* Usage Statistics */
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.usage-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.usage-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.usage-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 /* Actions */
@@ -877,6 +1096,17 @@ h1 {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+/* Cancellation Notice */
+.cancellation-notice {
+  background: #fff3cd;
+  color: #856404;
+  padding: 15px 25px;
+  border-radius: 4px;
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 500;
 }
 
 /* Toast */

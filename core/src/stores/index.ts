@@ -11,3 +11,6 @@ export type {
 
 export { useSubscriptionStore } from './subscription';
 export type { FeatureUsage, SubscriptionState, SubscriptionStore } from './subscription';
+
+export { useCartStore, createCartStore } from './cart';
+export type { ICartItem, CartItemType, CartItemInput } from './cart';

@@ -101,14 +101,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Plugin Widgets (dynamically loaded via SDK) -->
+    <div class="plugin-widgets">
+      <component
+        :is="widget.component"
+        v-for="widget in pluginWidgets"
+        :key="widget.name"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, inject, defineAsyncComponent } from 'vue'
 import { useAnalyticsStore } from '../stores/analytics'
+import type { IPlatformSDK } from '@vbwd/view-component'
 
 const analyticsStore = useAnalyticsStore()
+const sdk = inject<IPlatformSDK>('platformSDK')
+
+const pluginWidgets = computed(() => {
+  if (!sdk) return []
+  return Object.entries(sdk.getComponents()).map(([name, loader]) => ({
+    name,
+    component: defineAsyncComponent(loader as () => Promise<{ default: unknown }>)
+  }))
+})
 
 const dashboard = computed(() => analyticsStore.dashboard)
 
@@ -184,4 +203,11 @@ onMounted(async () => {
 .stat-change.positive { color: #28a745; }
 .stat-change.negative { color: #dc3545; }
 .stat-change.neutral { color: #6c757d; }
+
+.plugin-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
 </style>

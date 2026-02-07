@@ -1,45 +1,71 @@
 <template>
   <div class="invoice-pay">
-    <h1>Pay Invoice</h1>
+    <h1>{{ $t('invoices.pay.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" data-testid="invoice-loading">
+    <div
+      v-if="loading"
+      class="loading-state"
+      data-testid="invoice-loading"
+    >
       <div class="spinner" />
-      <p>Loading invoice...</p>
+      <p>{{ $t('invoices.pay.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" data-testid="invoice-error">
+    <div
+      v-else-if="error"
+      class="error-state"
+      data-testid="invoice-error"
+    >
       <p>{{ error }}</p>
-      <router-link to="/subscription" class="btn secondary">Back to Subscription</router-link>
+      <router-link
+        to="/subscription"
+        class="btn secondary"
+      >
+        {{ $t('common.backToSubscription') }}
+      </router-link>
     </div>
 
     <!-- Invoice Details -->
-    <div v-else-if="invoice" class="invoice-content">
+    <div
+      v-else-if="invoice"
+      class="invoice-content"
+    >
       <div class="card">
         <h2>Invoice {{ invoice.invoice_number }}</h2>
 
         <div class="invoice-details">
           <div class="detail-row">
-            <span class="label">Date</span>
+            <span class="label">{{ $t('invoices.pay.date') }}</span>
             <span class="value">{{ formatDate(invoice.invoiced_at || invoice.created_at) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Status</span>
+            <span class="label">{{ $t('invoices.pay.status') }}</span>
             <span class="value">
-              <span class="status-badge" :class="invoice.status">{{ invoice.status }}</span>
+              <span
+                class="status-badge"
+                :class="invoice.status"
+              >{{ invoice.status }}</span>
             </span>
           </div>
           <div class="detail-row">
-            <span class="label">Currency</span>
+            <span class="label">{{ $t('invoices.pay.currency') }}</span>
             <span class="value">{{ invoice.currency || 'USD' }}</span>
           </div>
         </div>
 
         <!-- Line Items -->
-        <div v-if="invoice.line_items?.length" class="line-items">
-          <h3>Items</h3>
-          <div v-for="(item, index) in invoice.line_items" :key="index" class="line-item">
+        <div
+          v-if="invoice.line_items?.length"
+          class="line-items"
+        >
+          <h3>{{ $t('invoices.pay.items') }}</h3>
+          <div
+            v-for="(item, index) in invoice.line_items"
+            :key="index"
+            class="line-item"
+          >
             <span>{{ item.description }}</span>
             <span>${{ item.total_price }}</span>
           </div>
@@ -47,7 +73,7 @@
 
         <div class="total-section">
           <div class="total-row">
-            <span class="total-label">Total Amount</span>
+            <span class="total-label">{{ $t('invoices.pay.totalAmount') }}</span>
             <span class="total-value">${{ invoice.total_amount || invoice.amount }}</span>
           </div>
         </div>
@@ -55,15 +81,30 @@
 
       <!-- Payment Actions -->
       <div class="card payment-card">
-        <h2>Payment</h2>
+        <h2>{{ $t('invoices.pay.paymentTitle') }}</h2>
 
-        <div v-if="invoice.status === 'paid'" class="paid-notice">
-          <p>This invoice has already been paid.</p>
-          <router-link to="/subscription" class="btn primary">Back to Subscription</router-link>
+        <div
+          v-if="invoice.status === 'paid'"
+          class="paid-notice"
+          data-testid="paid-notice"
+        >
+          <p>{{ $t('invoices.pay.alreadyPaid') }}</p>
+          <router-link
+            to="/subscription"
+            class="btn primary"
+          >
+            {{ $t('common.backToSubscription') }}
+          </router-link>
         </div>
 
-        <div v-else class="payment-actions">
-          <p class="payment-info">Click below to complete your payment securely.</p>
+        <div
+          v-else
+          class="payment-actions"
+          data-testid="payment-actions"
+        >
+          <p class="payment-info">
+            {{ $t('invoices.pay.paymentInfo') }}
+          </p>
 
           <button
             class="btn primary pay-btn"
@@ -71,19 +112,32 @@
             data-testid="pay-now-btn"
             @click="processPayment"
           >
-            {{ processing ? 'Processing...' : `Pay $${invoice.total_amount || invoice.amount}` }}
+            {{ processing ? $t('invoices.pay.processing') : $t('invoices.pay.payAmount', { amount: invoice.total_amount || invoice.amount }) }}
           </button>
 
-          <router-link to="/subscription" class="btn secondary">Cancel</router-link>
+          <router-link
+            to="/subscription"
+            class="btn secondary"
+          >
+            {{ $t('common.cancel') }}
+          </router-link>
         </div>
       </div>
 
       <!-- Success Message -->
-      <div v-if="paymentSuccess" class="success-card card">
-        <h2>Payment Successful!</h2>
-        <p>Your payment has been processed successfully.</p>
-        <p>Invoice {{ invoice.invoice_number }} is now paid.</p>
-        <router-link to="/subscription" class="btn primary">Back to Subscription</router-link>
+      <div
+        v-if="paymentSuccess"
+        class="success-card card"
+      >
+        <h2>{{ $t('invoices.pay.successTitle') }}</h2>
+        <p>{{ $t('invoices.pay.successMessage') }}</p>
+        <p>{{ $t('invoices.pay.invoiceNowPaid', { number: invoice.invoice_number }) }}</p>
+        <router-link
+          to="/subscription"
+          class="btn primary"
+        >
+          {{ $t('common.backToSubscription') }}
+        </router-link>
       </div>
     </div>
   </div>
@@ -92,6 +146,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { api } from '@/api';
 
 interface LineItem {
@@ -115,6 +170,7 @@ interface Invoice {
 }
 
 const route = useRoute();
+const { t } = useI18n();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -135,7 +191,7 @@ async function loadInvoice(): Promise<void> {
     const response = await api.get(`/user/invoices/${invoiceId}`) as { invoice: Invoice } | Invoice;
     invoice.value = (response as { invoice: Invoice }).invoice || response as Invoice;
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to load invoice';
+    error.value = (err as Error).message || t('invoices.pay.errors.failedToLoad');
   } finally {
     loading.value = false;
   }
@@ -155,7 +211,7 @@ async function processPayment(): Promise<void> {
     invoice.value.status = 'paid';
     paymentSuccess.value = true;
   } catch (err) {
-    error.value = (err as Error).message || 'Payment failed. Please try again.';
+    error.value = (err as Error).message || t('invoices.pay.errors.paymentFailed');
   } finally {
     processing.value = false;
   }

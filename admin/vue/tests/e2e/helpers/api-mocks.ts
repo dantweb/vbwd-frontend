@@ -172,6 +172,13 @@ export const mockAddons = [
   { id: '4', name: 'Legacy Addon', slug: 'legacy-addon', price: '4.99', currency: 'EUR', billing_period: 'monthly', is_active: false, description: 'Discontinued addon', config: {}, sort_order: 99, created_at: '2024-01-04' },
 ];
 
+export const mockPaymentMethods = [
+  { id: '1', code: 'invoice', name: 'Invoice', description: 'Pay by invoice within 14 days', short_description: 'Pay by invoice', icon: null, plugin_id: null, is_active: true, is_default: true, position: 0, min_amount: null, max_amount: null, currencies: [], countries: [], fee_type: 'none', fee_amount: null, fee_charged_to: 'customer', instructions: 'You will receive an invoice by email', config: {}, created_at: '2024-01-01' },
+  { id: '2', code: 'credit_card', name: 'Credit Card', description: 'Pay with Visa, MasterCard, or American Express', short_description: 'Credit/Debit Card', icon: 'credit-card', plugin_id: 'stripe', is_active: true, is_default: false, position: 1, min_amount: '1.00', max_amount: '10000.00', currencies: ['EUR', 'USD'], countries: [], fee_type: 'percentage', fee_amount: '2.90', fee_charged_to: 'customer', instructions: null, config: { provider: 'stripe' }, created_at: '2024-01-02' },
+  { id: '3', code: 'paypal', name: 'PayPal', description: 'Pay with your PayPal account', short_description: 'PayPal', icon: 'paypal', plugin_id: 'paypal', is_active: true, is_default: false, position: 2, min_amount: '5.00', max_amount: null, currencies: ['EUR', 'USD', 'GBP'], countries: [], fee_type: 'fixed', fee_amount: '0.50', fee_charged_to: 'merchant', instructions: 'You will be redirected to PayPal', config: { sandbox: false }, created_at: '2024-01-03' },
+  { id: '4', code: 'sepa', name: 'SEPA Direct Debit', description: 'Direct debit from your bank account', short_description: 'Bank Debit', icon: 'bank', plugin_id: null, is_active: false, is_default: false, position: 3, min_amount: '10.00', max_amount: '5000.00', currencies: ['EUR'], countries: ['DE', 'AT', 'NL'], fee_type: 'none', fee_amount: null, fee_charged_to: 'customer', instructions: 'Provide your IBAN', config: {}, created_at: '2024-01-04' },
+];
+
 // ============================================
 // MOCK SETUP FUNCTIONS
 // ============================================
@@ -589,6 +596,135 @@ export async function mockAddonsAPI(page: Page): Promise<void> {
   });
 }
 
+export async function mockPaymentMethodsAPI(page: Page): Promise<void> {
+  // Admin list endpoint
+  await page.route('**/api/v1/admin/payment-methods', async (route) => {
+    const method = route.request().method();
+
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ payment_methods: mockPaymentMethods })
+      });
+    } else if (method === 'POST') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          payment_method: { id: '5', ...body, is_active: true, position: 4 },
+          message: 'Payment method created successfully'
+        })
+      });
+    }
+  });
+
+  // Admin reorder endpoint
+  await page.route('**/api/v1/admin/payment-methods/reorder', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ payment_methods: mockPaymentMethods })
+    });
+  });
+
+  // Admin individual endpoints
+  await page.route('**/api/v1/admin/payment-methods/*', async (route) => {
+    const method = route.request().method();
+    const url = route.request().url();
+    const pathParts = url.split('/');
+    const lastPart = pathParts[pathParts.length - 1].split('?')[0];
+
+    // Handle special endpoints
+    if (lastPart === 'activate') {
+      const methodId = pathParts[pathParts.length - 2];
+      const paymentMethod = mockPaymentMethods.find(m => m.id === methodId) || mockPaymentMethods[0];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ payment_method: { ...paymentMethod, is_active: true }, message: 'Activated' })
+      });
+      return;
+    }
+
+    if (lastPart === 'deactivate') {
+      const methodId = pathParts[pathParts.length - 2];
+      const paymentMethod = mockPaymentMethods.find(m => m.id === methodId) || mockPaymentMethods[0];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ payment_method: { ...paymentMethod, is_active: false }, message: 'Deactivated' })
+      });
+      return;
+    }
+
+    if (lastPart === 'set-default') {
+      const methodId = pathParts[pathParts.length - 2];
+      const paymentMethod = mockPaymentMethods.find(m => m.id === methodId) || mockPaymentMethods[0];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ payment_method: { ...paymentMethod, is_default: true }, message: 'Set as default' })
+      });
+      return;
+    }
+
+    if (lastPart === 'translations') {
+      if (method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ translations: [] })
+        });
+      } else if (method === 'POST') {
+        const body = JSON.parse(route.request().postData() || '{}');
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ translation: { id: '1', ...body } })
+        });
+      }
+      return;
+    }
+
+    // Regular CRUD operations
+    const id = lastPart;
+    const paymentMethod = mockPaymentMethods.find(m => m.id === id) || mockPaymentMethods[0];
+
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ payment_method: paymentMethod })
+      });
+    } else if (method === 'PUT') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ payment_method: { ...paymentMethod, ...body } })
+      });
+    } else if (method === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Payment method deleted successfully' })
+      });
+    }
+  });
+
+  // Public settings/payment-methods endpoint
+  await page.route('**/api/v1/settings/payment-methods', async (route) => {
+    const activeMethods = mockPaymentMethods.filter(m => m.is_active);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ methods: activeMethods })
+    });
+  });
+}
+
 /**
  * Set up all admin API mocks
  */
@@ -602,4 +738,5 @@ export async function mockAllAdminAPIs(page: Page): Promise<void> {
   await mockSettingsAPI(page);
   await mockTokenBundlesAPI(page);
   await mockAddonsAPI(page);
+  await mockPaymentMethodsAPI(page);
 }

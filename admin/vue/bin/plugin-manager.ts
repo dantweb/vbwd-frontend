@@ -20,7 +20,7 @@ const registry = new PluginRegistry();
 
 // Initialize CLI with configuration
 const cli = new PluginManagerCLI(registry, {
-  pluginsDir: './src/plugins',
+  pluginsDir: './plugins',
   configFile: './plugins.json'
 });
 

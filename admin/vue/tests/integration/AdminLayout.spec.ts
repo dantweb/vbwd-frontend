@@ -3,15 +3,16 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore, configureAuthStore } from '@/stores/auth';
+import { api } from '@/api';
 
 // Mock the API module
 vi.mock('@/api', () => ({
   api: {
-    post: vi.fn(),
-    get: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
+    post: vi.fn().mockResolvedValue({}),
+    get: vi.fn().mockResolvedValue({}),
+    put: vi.fn().mockResolvedValue({}),
+    delete: vi.fn().mockResolvedValue({}),
     setToken: vi.fn(),
     clearToken: vi.fn()
   },
@@ -19,37 +20,30 @@ vi.mock('@/api', () => ({
   clearApiAuth: vi.fn()
 }));
 
-// Mock localStorage
-const createLocalStorageMock = () => {
-  const store: Record<string, string> = {};
-  return {
-    store,
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: vi.fn((key: string) => { delete store[key]; }),
-    clear: vi.fn(() => { Object.keys(store).forEach(key => delete store[key]); })
-  };
-};
-
-const localStorageMock = createLocalStorageMock();
-Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
-
 describe('AdminLayout.vue', () => {
   let router: ReturnType<typeof createRouter>;
+  let pinia: ReturnType<typeof createPinia>;
 
   beforeEach(() => {
-    setActivePinia(createPinia());
-    localStorageMock.clear();
+    pinia = createPinia();
+    setActivePinia(pinia);
     vi.clearAllMocks();
+
+    // Configure auth store to use our mocked api
+    configureAuthStore({
+      apiClient: api as Parameters<typeof configureAuthStore>[0]['apiClient'],
+      storageKey: 'admin_token',
+    });
 
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
         { path: '/admin/login', name: 'login', component: { template: '<div>Login</div>' } },
-        { path: '/admin/dashboard', name: 'dashboard', component: { template: '<div>Dashboard</div>' } },
+        { path: '/admin/dashboard', name: 'dashboard', component: { template: '<div class="test-content">Dashboard Content</div>' } },
         { path: '/admin/users', name: 'users', component: { template: '<div>Users</div>' } },
         { path: '/admin/plans', name: 'plans', component: { template: '<div>Plans</div>' } },
-        { path: '/admin/analytics', name: 'analytics', component: { template: '<div>Analytics</div>' } }
+        { path: '/admin/analytics', name: 'analytics', component: { template: '<div>Analytics</div>' } },
+        { path: '/admin/profile', name: 'profile', component: { template: '<div>Profile</div>' } }
       ]
     });
 
@@ -67,14 +61,11 @@ describe('AdminLayout.vue', () => {
   it('renders admin layout with sidebar and topbar', async () => {
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router],
+        plugins: [pinia, router],
         stubs: {
           AdminSidebar: true,
           AdminTopbar: true
         }
-      },
-      slots: {
-        default: '<div class="test-content">Test Content</div>'
       }
     });
 
@@ -83,31 +74,25 @@ describe('AdminLayout.vue', () => {
     expect(wrapper.findComponent({ name: 'AdminTopbar' }).exists()).toBe(true);
   });
 
-  it('renders slot content in main area', async () => {
+  it('renders route content in main area', async () => {
+    await router.push('/admin/dashboard');
+
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router],
-        stubs: {
-          AdminSidebar: true,
-          AdminTopbar: true
-        }
-      },
-      slots: {
-        default: '<div class="test-content">Test Content</div>'
+        plugins: [pinia, router]
       }
     });
 
+    await flushPromises();
+
     expect(wrapper.find('.test-content').exists()).toBe(true);
-    expect(wrapper.find('.test-content').text()).toBe('Test Content');
+    expect(wrapper.find('.test-content').text()).toBe('Dashboard Content');
   });
 
   it('displays user email in sidebar', async () => {
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router]
-      },
-      slots: {
-        default: '<div>Content</div>'
+        plugins: [pinia, router]
       }
     });
 
@@ -117,10 +102,7 @@ describe('AdminLayout.vue', () => {
   it('has navigation links to admin sections', async () => {
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router]
-      },
-      slots: {
-        default: '<div>Content</div>'
+        plugins: [pinia, router]
       }
     });
 
@@ -134,20 +116,23 @@ describe('AdminLayout.vue', () => {
   });
 
   it('logs out when logout button is clicked', async () => {
+    await router.push('/admin/dashboard');
+
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router]
-      },
-      slots: {
-        default: '<div>Content</div>'
+        plugins: [pinia, router]
       }
     });
 
-    await router.push('/admin/dashboard');
     await flushPromises();
 
     const authStore = useAuthStore();
     expect(authStore.isAuthenticated).toBe(true);
+
+    // Open user menu first (logout is in a dropdown)
+    const userMenu = wrapper.find('[data-testid="user-menu"]');
+    await userMenu.trigger('click');
+    await flushPromises();
 
     // Find and click logout button
     const logoutBtn = wrapper.find('[data-testid="logout-button"]');
@@ -163,10 +148,7 @@ describe('AdminLayout.vue', () => {
 
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router]
-      },
-      slots: {
-        default: '<div>Content</div>'
+        plugins: [pinia, router]
       }
     });
 
@@ -179,10 +161,7 @@ describe('AdminLayout.vue', () => {
   it('shows admin brand in sidebar', async () => {
     const wrapper = mount(AdminLayout, {
       global: {
-        plugins: [router]
-      },
-      slots: {
-        default: '<div>Content</div>'
+        plugins: [pinia, router]
       }
     });
 

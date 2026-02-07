@@ -26,8 +26,8 @@ describe('Plans.vue', () => {
     {
       id: '1',
       name: 'Free',
-      price: 0,
-      currency: 'USD',
+      price: { currency_code: 'USD' },
+      price_float: 0,
       billing_period: 'monthly',
       features: ['Basic features'],
       is_active: true,
@@ -37,8 +37,8 @@ describe('Plans.vue', () => {
     {
       id: '2',
       name: 'Pro',
-      price: 29.99,
-      currency: 'USD',
+      price: { currency_code: 'USD' },
+      price_float: 29.99,
       billing_period: 'monthly',
       features: ['All features', 'Priority support'],
       is_active: true,
@@ -48,8 +48,8 @@ describe('Plans.vue', () => {
     {
       id: '3',
       name: 'Enterprise',
-      price: 99.99,
-      currency: 'USD',
+      price: { currency_code: 'USD' },
+      price_float: 99.99,
       billing_period: 'monthly',
       features: ['Everything', 'Dedicated support'],
       is_active: false,

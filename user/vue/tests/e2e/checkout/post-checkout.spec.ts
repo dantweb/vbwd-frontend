@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { loginAsTestUser, navigateToCheckout } from '../fixtures/checkout.fixtures';
+import { loginAsTestUser, navigateToCheckout, fillCheckoutRequirements } from '../fixtures/checkout.fixtures';
 
 test.describe('Post-Checkout Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsTestUser(page);
     await navigateToCheckout(page, 'pro');
+    await fillCheckoutRequirements(page);
     await page.click('[data-testid="confirm-checkout"]');
     await page.waitForSelector('[data-testid="checkout-success"]');
   });

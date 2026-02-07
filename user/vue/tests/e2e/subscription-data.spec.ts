@@ -212,7 +212,7 @@ test.describe('Subscription Data Visibility', () => {
       const amountCell = firstRow.locator('td').nth(2);
       const amountText = await amountCell.textContent();
       expect(amountText).toBeTruthy();
-      expect(amountText).toMatch(/[\$\€\£]?\d+/); // Should contain currency/numbers
+      expect(amountText).toMatch(/[$€£]?\d+/); // Should contain currency/numbers
 
       // Verify status column
       const statusCell = firstRow.locator('td').nth(3);

@@ -1,154 +1,189 @@
 <template>
   <div class="profile">
-    <h1>Profile</h1>
+    <h1>{{ $t('profile.title') }}</h1>
 
-    <div v-if="loading" class="loading" data-testid="profile-loading">
+    <div
+      v-if="loading"
+      class="loading"
+      data-testid="profile-loading"
+    >
       <div class="spinner" />
-      <p>Loading profile...</p>
+      <p>{{ $t('profile.loading') }}</p>
     </div>
 
-    <div v-else-if="error" class="error" data-testid="profile-error">
+    <div
+      v-else-if="error"
+      class="error"
+      data-testid="profile-error"
+    >
       {{ error }}
-      <button class="retry-btn" @click="loadProfile">Retry</button>
+      <button
+        class="retry-btn"
+        @click="loadProfile"
+      >
+        {{ $t('common.retry') }}
+      </button>
     </div>
 
-    <div v-else class="profile-content">
+    <div
+      v-else
+      class="profile-content"
+    >
       <!-- Account Info Card -->
       <div class="card">
-        <h2>Account Information</h2>
+        <h2>{{ $t('profile.accountInfo.title') }}</h2>
         <div class="info-grid">
           <div class="info-item">
-            <label>Email</label>
+            <label>{{ $t('profile.personalInfo.firstName') }} {{ $t('profile.personalInfo.lastName') }}</label>
+            <span data-testid="profile-name">{{ profileName }}</span>
+          </div>
+          <div class="info-item">
+            <label>{{ $t('profile.accountInfo.email') }}</label>
             <span data-testid="profile-email">{{ userEmail }}</span>
           </div>
           <div class="info-item">
-            <label>Account Status</label>
-            <span class="status-badge active" data-testid="account-status">Active</span>
+            <label>{{ $t('profile.accountInfo.accountStatus') }}</label>
+            <span
+              class="status-badge active"
+              data-testid="account-status"
+            >{{ $t('profile.accountInfo.statusActive') }}</span>
           </div>
           <div class="info-item">
-            <label>Token Balance</label>
-            <span class="balance" data-testid="token-balance">{{ formatNumber(tokenBalance) }} TKN</span>
+            <label>{{ $t('profile.accountInfo.tokenBalance') }}</label>
+            <span
+              class="balance"
+              data-testid="token-balance"
+            >{{ formatNumber(tokenBalance) }} {{ $t('common.tokenUnit') }}</span>
           </div>
         </div>
       </div>
 
       <!-- Personal Information Card -->
       <div class="card">
-        <h2>Personal Information</h2>
+        <h2>{{ $t('profile.personalInfo.title') }}</h2>
         <form @submit.prevent="handleUpdateProfile">
           <div class="form-row">
             <div class="form-group">
-              <label for="firstName">First Name</label>
+              <label for="firstName">{{ $t('profile.personalInfo.firstName') }}</label>
               <input
                 id="firstName"
                 v-model="formData.first_name"
                 type="text"
-                data-testid="first-name-input"
-                placeholder="John"
-              />
+                data-testid="name-input"
+                :placeholder="$t('profile.personalInfo.firstNamePlaceholder')"
+              >
             </div>
             <div class="form-group">
-              <label for="lastName">Last Name</label>
+              <label for="lastName">{{ $t('profile.personalInfo.lastName') }}</label>
               <input
                 id="lastName"
                 v-model="formData.last_name"
                 type="text"
                 data-testid="last-name-input"
-                placeholder="Doe"
-              />
+                :placeholder="$t('profile.personalInfo.lastNamePlaceholder')"
+              >
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="company">Company</label>
+              <label for="company">{{ $t('profile.personalInfo.company') }}</label>
               <input
                 id="company"
                 v-model="formData.company"
                 type="text"
                 data-testid="company-input"
-                placeholder="Acme Inc."
-              />
+                :placeholder="$t('profile.personalInfo.companyPlaceholder')"
+              >
             </div>
             <div class="form-group">
-              <label for="taxNumber">Tax Number / VAT ID</label>
+              <label for="taxNumber">{{ $t('profile.personalInfo.taxNumber') }}</label>
               <input
                 id="taxNumber"
                 v-model="formData.tax_number"
                 type="text"
                 data-testid="tax-number-input"
-                placeholder="DE123456789"
-              />
+                :placeholder="$t('profile.personalInfo.taxNumberPlaceholder')"
+              >
             </div>
           </div>
 
           <div class="form-group">
-            <label for="phone">Phone</label>
+            <label for="phone">{{ $t('profile.personalInfo.phone') }}</label>
             <input
               id="phone"
               v-model="formData.phone"
               type="tel"
               data-testid="phone-input"
-              placeholder="+49 123 456 7890"
-            />
+              :placeholder="$t('profile.personalInfo.phonePlaceholder')"
+            >
           </div>
 
-          <h3>Address</h3>
+          <h3>{{ $t('profile.address.title') }}</h3>
 
           <div class="form-group">
-            <label for="addressLine1">Address Line 1</label>
+            <label for="addressLine1">{{ $t('profile.address.addressLine1') }}</label>
             <input
               id="addressLine1"
               v-model="formData.address_line_1"
               type="text"
               data-testid="address-line1-input"
-              placeholder="123 Main Street"
-            />
+              :placeholder="$t('profile.address.addressLine1Placeholder')"
+            >
           </div>
 
           <div class="form-group">
-            <label for="addressLine2">Address Line 2</label>
+            <label for="addressLine2">{{ $t('profile.address.addressLine2') }}</label>
             <input
               id="addressLine2"
               v-model="formData.address_line_2"
               type="text"
               data-testid="address-line2-input"
-              placeholder="Apt 4B"
-            />
+              :placeholder="$t('profile.address.addressLine2Placeholder')"
+            >
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="city">City</label>
+              <label for="city">{{ $t('profile.address.city') }}</label>
               <input
                 id="city"
                 v-model="formData.city"
                 type="text"
                 data-testid="city-input"
-                placeholder="Berlin"
-              />
+                :placeholder="$t('profile.address.cityPlaceholder')"
+              >
             </div>
             <div class="form-group">
-              <label for="postalCode">Postal Code</label>
+              <label for="postalCode">{{ $t('profile.address.postalCode') }}</label>
               <input
                 id="postalCode"
                 v-model="formData.postal_code"
                 type="text"
                 data-testid="postal-code-input"
-                placeholder="10115"
-              />
+                :placeholder="$t('profile.address.postalCodePlaceholder')"
+              >
             </div>
           </div>
 
           <div class="form-group">
-            <label for="country">Country</label>
-            <input
+            <label for="country">{{ $t('profile.address.country') }}</label>
+            <select
               id="country"
               v-model="formData.country"
-              type="text"
               data-testid="country-input"
-              placeholder="Germany"
-            />
+            >
+              <option value="">
+                {{ $t('profile.address.countryPlaceholder') }}
+              </option>
+              <option
+                v-for="c in countries"
+                :key="c.code"
+                :value="c.code"
+              >
+                {{ c.name }}
+              </option>
+            </select>
           </div>
 
           <div class="form-actions">
@@ -158,7 +193,7 @@
               data-testid="save-profile"
               :disabled="saving"
             >
-              {{ saving ? 'Saving...' : 'Save Changes' }}
+              {{ saving ? $t('profile.actions.saving') : $t('profile.actions.saveChanges') }}
             </button>
           </div>
         </form>
@@ -166,39 +201,42 @@
 
       <!-- Change Password Card -->
       <div class="card">
-        <h2>Change Password</h2>
+        <h2>{{ $t('profile.changePassword.title') }}</h2>
         <form @submit.prevent="handleChangePassword">
           <div class="form-group">
-            <label for="currentPassword">Current Password</label>
+            <label for="currentPassword">{{ $t('profile.changePassword.currentPassword') }}</label>
             <input
               id="currentPassword"
               v-model="passwordData.currentPassword"
               type="password"
               data-testid="current-password"
               required
-            />
+            >
           </div>
           <div class="form-group">
-            <label for="newPassword">New Password</label>
+            <label for="newPassword">{{ $t('profile.changePassword.newPassword') }}</label>
             <input
               id="newPassword"
               v-model="passwordData.newPassword"
               type="password"
               data-testid="new-password"
               required
-            />
+            >
           </div>
           <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
+            <label for="confirmPassword">{{ $t('profile.changePassword.confirmPassword') }}</label>
             <input
               id="confirmPassword"
               v-model="passwordData.confirmPassword"
               type="password"
               data-testid="confirm-password"
               required
-            />
+            >
           </div>
-          <div v-if="passwordError" class="field-error">
+          <div
+            v-if="passwordError"
+            class="field-error"
+          >
             {{ passwordError }}
           </div>
           <div class="form-actions">
@@ -208,7 +246,7 @@
               data-testid="change-password"
               :disabled="changingPassword"
             >
-              {{ changingPassword ? 'Changing...' : 'Change Password' }}
+              {{ changingPassword ? $t('profile.changePassword.changing') : $t('profile.changePassword.changePassword') }}
             </button>
           </div>
         </form>
@@ -216,7 +254,11 @@
     </div>
 
     <!-- Success Toast -->
-    <div v-if="successMessage" class="toast success" data-testid="success-toast">
+    <div
+      v-if="successMessage"
+      class="toast success"
+      data-testid="success-toast"
+    >
       {{ successMessage }}
     </div>
   </div>
@@ -224,14 +266,22 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useProfileStore } from '../stores/profile';
 import { api } from '../api';
 
+const { t } = useI18n();
 const profileStore = useProfileStore();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
 const saving = ref(false);
+
+interface Country {
+  code: string;
+  name: string;
+}
+const countries = ref<Country[]>([]);
 const changingPassword = ref(false);
 const successMessage = ref('');
 const passwordError = ref('');
@@ -269,13 +319,46 @@ const passwordData = reactive({
 });
 
 const userEmail = computed(() => profileStore.profile?.email || '');
-const tokenBalance = computed(() => 0); // Will be fetched from user details
+const profileName = computed(() => {
+  const first = formData.first_name || '';
+  const last = formData.last_name || '';
+  return (first + ' ' + last).trim() || userEmail.value;
+});
+const tokenBalance = ref(0);
+
+async function fetchTokenBalance(): Promise<void> {
+  try {
+    const response = await api.get('/user/tokens/balance') as { balance: number };
+    tokenBalance.value = response.balance || 0;
+  } catch {
+    tokenBalance.value = 0;
+  }
+}
+
+async function loadCountries(): Promise<void> {
+  try {
+    const response = await api.get('/settings/countries') as { countries: Country[] };
+    countries.value = response.countries;
+  } catch {
+    countries.value = [
+      { code: 'DE', name: 'Germany' },
+      { code: 'AT', name: 'Austria' },
+      { code: 'CH', name: 'Switzerland' },
+      { code: 'US', name: 'United States' },
+      { code: 'GB', name: 'United Kingdom' },
+    ];
+  }
+}
 
 async function loadProfile(): Promise<void> {
   loading.value = true;
   error.value = null;
 
   try {
+    // Fetch token balance and countries in parallel
+    fetchTokenBalance();
+    loadCountries();
+
     // Fetch full profile with details
     const response = await api.get('/user/profile') as {
       user: { id: string; email: string };
@@ -311,7 +394,7 @@ async function loadProfile(): Promise<void> {
       formData.country = response.details.country || '';
     }
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to load profile';
+    error.value = (err as Error).message || t('profile.errors.failedToLoad');
   } finally {
     loading.value = false;
   }
@@ -338,9 +421,9 @@ async function handleUpdateProfile(): Promise<void> {
     // Refresh profile store
     await profileStore.fetchProfile();
 
-    showSuccess('Profile updated successfully');
+    showSuccess(t('profile.messages.profileUpdated'));
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to update profile';
+    error.value = (err as Error).message || t('profile.errors.failedToUpdate');
   } finally {
     saving.value = false;
   }
@@ -350,12 +433,12 @@ async function handleChangePassword(): Promise<void> {
   passwordError.value = '';
 
   if (passwordData.newPassword !== passwordData.confirmPassword) {
-    passwordError.value = 'Passwords do not match';
+    passwordError.value = t('profile.messages.passwordsDoNotMatch');
     return;
   }
 
   if (passwordData.newPassword.length < 8) {
-    passwordError.value = 'Password must be at least 8 characters';
+    passwordError.value = t('profile.messages.passwordMinLength');
     return;
   }
 
@@ -372,9 +455,9 @@ async function handleChangePassword(): Promise<void> {
     passwordData.newPassword = '';
     passwordData.confirmPassword = '';
 
-    showSuccess('Password changed successfully');
+    showSuccess(t('profile.messages.passwordChanged'));
   } catch (err) {
-    passwordError.value = (err as Error).message || 'Failed to change password';
+    passwordError.value = (err as Error).message || t('profile.errors.failedToChangePassword');
   } finally {
     changingPassword.value = false;
   }

@@ -137,7 +137,7 @@ run_admin_style() {
 
     # ESLint
     echo "Running ESLint for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install --silent && npm run lint 2>&1" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npm run lint" ; then
         print_success "ESLint passed"
     else
         print_error "ESLint failed"
@@ -147,7 +147,7 @@ run_admin_style() {
     # TypeScript check
     echo ""
     echo "Running TypeScript check for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install --silent && npx vue-tsc --noEmit 2>&1" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx vue-tsc --noEmit" ; then
         print_success "TypeScript check passed"
     else
         print_error "TypeScript check failed"
@@ -163,7 +163,7 @@ run_user_style() {
 
     # ESLint
     echo "Running ESLint for user..."
-    if docker-compose run --rm user-test sh -c "npm install --silent && npm run lint 2>&1" ; then
+    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npm run lint" ; then
         print_success "ESLint passed"
     else
         print_error "ESLint failed"
@@ -173,7 +173,7 @@ run_user_style() {
     # TypeScript check
     echo ""
     echo "Running TypeScript check for user..."
-    if docker-compose run --rm user-test sh -c "npm install --silent && npx vue-tsc --noEmit 2>&1" ; then
+    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx vue-tsc --noEmit" ; then
         print_success "TypeScript check passed"
     else
         print_error "TypeScript check failed"
@@ -188,7 +188,7 @@ run_admin_unit() {
     cd "$FRONTEND_DIR"
 
     echo "Running unit tests for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install --silent && npx vitest run tests/unit/ 2>&1" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx vitest run tests/unit/" ; then
         print_success "Unit tests passed"
     else
         print_error "Unit tests failed"
@@ -203,7 +203,7 @@ run_user_unit() {
     cd "$FRONTEND_DIR"
 
     echo "Running unit tests for user..."
-    if docker-compose run --rm user-test sh -c "npm install --silent && npx vitest run vue/tests/unit/ 2>&1" ; then
+    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx vitest run vue/tests/unit/" ; then
         print_success "Unit tests passed"
     else
         print_error "Unit tests failed"
@@ -218,7 +218,7 @@ run_admin_integration() {
     cd "$FRONTEND_DIR"
 
     echo "Running integration tests for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install --silent && npx vitest run tests/integration/ 2>&1" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx vitest run tests/integration/" ; then
         print_success "Integration tests passed"
     else
         print_error "Integration tests failed"
@@ -233,16 +233,16 @@ run_user_integration() {
     cd "$FRONTEND_DIR"
 
     echo "Running integration tests for user..."
-    # Check if user has integration tests directory
-    if docker-compose run --rm user-test sh -c "test -d vue/tests/integration" 2>/dev/null; then
-        if docker-compose run --rm user-test sh -c "npm install --silent && npx vitest run vue/tests/integration/ 2>&1" ; then
+    # Check if user has actual integration test files (not just empty directory)
+    if docker-compose run --rm user-test sh -c "ls vue/tests/integration/*.spec.ts vue/tests/integration/**/*.spec.ts 2>/dev/null | head -1 | grep -q ." 2>/dev/null; then
+        if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx vitest run vue/tests/integration/" ; then
             print_success "Integration tests passed"
         else
             print_error "Integration tests failed"
             OVERALL_EXIT=1
         fi
     else
-        print_warning "No integration tests directory found for user"
+        print_warning "No integration test files found for user (skipped)"
     fi
 }
 
@@ -258,8 +258,8 @@ run_admin_e2e() {
         -v "$FRONTEND_DIR/admin/vue:/app" \
         -v "$FRONTEND_DIR/core:/core" \
         -w /app \
-        mcr.microsoft.com/playwright:v1.40.0-jammy \
-        sh -c "npm install --silent && npx playwright install --with-deps chromium && npx playwright test 2>&1" ; then
+        mcr.microsoft.com/playwright:v1.57.0-jammy \
+        sh -c "npm install 2>&1 || true; npx playwright install --with-deps chromium && npx playwright test" ; then
         print_success "E2E tests passed"
     else
         print_error "E2E tests failed"
@@ -279,8 +279,8 @@ run_user_e2e() {
         -v "$FRONTEND_DIR/user:/app" \
         -v "$FRONTEND_DIR/core:/core" \
         -w /app \
-        mcr.microsoft.com/playwright:v1.40.0-jammy \
-        sh -c "npm install --silent && npx playwright install --with-deps chromium && npx playwright test 2>&1" ; then
+        mcr.microsoft.com/playwright:v1.57.0-jammy \
+        sh -c "npm install 2>&1 || true; npx playwright install --with-deps chromium && npx playwright test" ; then
         print_success "E2E tests passed"
     else
         print_error "E2E tests failed"

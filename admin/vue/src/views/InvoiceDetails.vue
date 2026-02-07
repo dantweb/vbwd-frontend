@@ -103,6 +103,7 @@
           >
             <thead>
               <tr>
+                <th>{{ $t('common.type') || 'Type' }}</th>
                 <th>{{ $t('common.description') }}</th>
                 <th>{{ $t('invoices.qty') }}</th>
                 <th>{{ $t('invoices.unitPrice') }}</th>
@@ -114,7 +115,21 @@
                 v-for="item in invoice.line_items"
                 :key="item.id || item.description"
               >
-                <td>{{ item.description }}</td>
+                <td>
+                  <span
+                    class="type-badge"
+                    :class="item.type"
+                  >{{ itemTypeLabel(item.type) }}</span>
+                </td>
+                <td>
+                  <router-link
+                    v-if="itemLink(item)"
+                    :to="itemLink(item)!"
+                  >
+                    {{ item.description }}
+                  </router-link>
+                  <span v-else>{{ item.description }}</span>
+                </td>
                 <td>{{ item.quantity || 1 }}</td>
                 <td>{{ formatAmount(item.unit_price || item.amount, invoice.currency) }}</td>
                 <td>{{ formatAmount(item.amount, invoice.currency) }}</td>
@@ -123,7 +138,7 @@
             <tfoot>
               <tr>
                 <td
-                  colspan="3"
+                  colspan="4"
                   class="total-label"
                 >
                   {{ $t('invoices.total') }}
@@ -140,41 +155,6 @@
           >
             {{ $t('invoices.noLineItems') }}
           </p>
-        </div>
-
-        <div
-          v-if="invoice.plan_name"
-          class="info-section"
-          data-testid="plan-info"
-        >
-          <h3>{{ $t('invoices.planInfo') }}</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <label>{{ $t('plans.name') }}</label>
-              <span>{{ invoice.plan_name }}</span>
-            </div>
-            <div
-              v-if="invoice.plan_description"
-              class="info-item"
-            >
-              <label>{{ $t('plans.description') }}</label>
-              <span>{{ invoice.plan_description }}</span>
-            </div>
-            <div
-              v-if="invoice.plan_billing_period"
-              class="info-item"
-            >
-              <label>{{ $t('plans.billingPeriod') }}</label>
-              <span>{{ invoice.plan_billing_period }}</span>
-            </div>
-            <div
-              v-if="invoice.plan_price"
-              class="info-item"
-            >
-              <label>{{ $t('invoices.planPrice') }}</label>
-              <span>{{ formatAmount(parseFloat(invoice.plan_price), invoice.currency) }}</span>
-            </div>
-          </div>
         </div>
 
         <div
@@ -417,6 +397,29 @@ function formatAmount(amount?: number, currency?: string): string {
   }).format(amount);
 }
 
+function itemTypeLabel(type?: string): string {
+  const labels: Record<string, string> = {
+    subscription: 'Plan',
+    token_bundle: 'Token Bundle',
+    add_on: 'Add-On',
+  };
+  return labels[type || ''] || type || 'Item';
+}
+
+function itemLink(item: { type?: string; item_id?: string }): string | null {
+  if (!item.item_id) return null;
+  switch (item.type) {
+    case 'subscription':
+      return `/admin/plans/${item.item_id}/edit`;
+    case 'token_bundle':
+      return `/admin/settings/token-bundles/${item.item_id}`;
+    case 'add_on':
+      return '/admin/add-ons';
+    default:
+      return null;
+  }
+}
+
 onMounted(() => {
   fetchInvoice();
 });
@@ -593,6 +596,28 @@ onMounted(() => {
 .no-items {
   color: #666;
   font-style: italic;
+}
+
+.type-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.type-badge.subscription {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.type-badge.token_bundle {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.type-badge.add_on {
+  background: #fce4ec;
+  color: #c62828;
 }
 
 .address p {

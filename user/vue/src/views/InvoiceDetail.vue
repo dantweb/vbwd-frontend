@@ -1,57 +1,97 @@
 <template>
   <div class="invoice-detail">
-    <h1>Invoice Details</h1>
+    <h1>{{ $t('invoices.detail.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" data-testid="invoice-loading">
+    <div
+      v-if="loading"
+      class="loading-state"
+      data-testid="invoice-loading"
+    >
       <div class="spinner" />
-      <p>Loading invoice...</p>
+      <p>{{ $t('invoices.detail.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" data-testid="invoice-error">
+    <div
+      v-else-if="error"
+      class="error-state"
+      data-testid="invoice-error"
+    >
       <p>{{ error }}</p>
-      <router-link to="/subscription" class="btn secondary">Back to Subscription</router-link>
+      <router-link
+        to="/subscription"
+        class="btn secondary"
+      >
+        {{ $t('common.backToSubscription') }}
+      </router-link>
     </div>
 
     <!-- Invoice Details -->
-    <div v-else-if="invoice" class="invoice-content">
+    <div
+      v-else-if="invoice"
+      class="invoice-content"
+    >
       <div class="card">
         <div class="invoice-header">
           <h2>Invoice {{ invoice.invoice_number }}</h2>
-          <span class="status-badge" :class="invoice.status">{{ invoice.status }}</span>
+          <span
+            class="status-badge"
+            :class="invoice.status"
+          >{{ invoice.status }}</span>
         </div>
 
         <div class="invoice-info">
           <div class="detail-row">
-            <span class="label">Date</span>
+            <span class="label">{{ $t('invoices.detail.date') }}</span>
             <span class="value">{{ formatDate(invoice.invoiced_at || invoice.created_at) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Due Date</span>
+            <span class="label">{{ $t('invoices.detail.dueDate') }}</span>
             <span class="value">{{ formatDate(invoice.due_date) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Currency</span>
+            <span class="label">{{ $t('invoices.detail.currency') }}</span>
             <span class="value">{{ invoice.currency || 'USD' }}</span>
           </div>
         </div>
 
         <!-- Line Items -->
-        <div v-if="invoice.line_items?.length" class="line-items">
-          <h3>Items</h3>
+        <div
+          v-if="invoice.line_items?.length"
+          class="line-items"
+        >
+          <h3>{{ $t('invoices.detail.items') }}</h3>
           <table class="items-table">
             <thead>
               <tr>
-                <th>Description</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Total</th>
+                <th>{{ $t('invoices.detail.itemsTableHeaders.type') || 'Type' }}</th>
+                <th>{{ $t('invoices.detail.itemsTableHeaders.description') }}</th>
+                <th>{{ $t('invoices.detail.itemsTableHeaders.qty') }}</th>
+                <th>{{ $t('invoices.detail.itemsTableHeaders.unitPrice') }}</th>
+                <th>{{ $t('invoices.detail.itemsTableHeaders.total') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, index) in invoice.line_items" :key="index">
-                <td>{{ item.description }}</td>
+              <tr
+                v-for="(item, index) in invoice.line_items"
+                :key="index"
+              >
+                <td>
+                  <span
+                    class="type-badge"
+                    :class="item.type"
+                  >{{ itemTypeLabel(item.type) }}</span>
+                </td>
+                <td>
+                  <router-link
+                    v-if="itemLink(item)"
+                    :to="itemLink(item)!"
+                  >
+                    {{ item.description }}
+                  </router-link>
+                  <span v-else>{{ item.description }}</span>
+                </td>
                 <td>{{ item.quantity }}</td>
                 <td>${{ item.unit_price }}</td>
                 <td>${{ item.total_price }}</td>
@@ -62,21 +102,31 @@
 
         <div class="total-section">
           <div class="total-row">
-            <span class="total-label">Total Amount</span>
+            <span class="total-label">{{ $t('invoices.detail.totalAmount') }}</span>
             <span class="total-value">${{ invoice.total_amount || invoice.amount }}</span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="actions">
-          <router-link to="/subscription" class="btn secondary">Back</router-link>
-          <button class="btn secondary" @click="downloadInvoice">Download PDF</button>
+          <router-link
+            to="/subscription"
+            class="btn secondary"
+          >
+            {{ $t('common.back') }}
+          </router-link>
+          <button
+            class="btn secondary"
+            @click="downloadInvoice"
+          >
+            {{ $t('invoices.detail.downloadPdf') }}
+          </button>
           <router-link
             v-if="invoice.status === 'pending'"
             :to="`/invoices/${invoice.id}/pay`"
             class="btn primary"
           >
-            Pay Now
+            {{ $t('invoices.detail.payNow') }}
           </router-link>
         </div>
       </div>
@@ -87,10 +137,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { api } from '@/api';
 
 interface LineItem {
   type: string;
+  item_id?: string;
   description: string;
   quantity: number;
   unit_price: string;
@@ -111,6 +163,7 @@ interface Invoice {
 }
 
 const route = useRoute();
+const { t } = useI18n();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -129,7 +182,7 @@ async function loadInvoice(): Promise<void> {
     const response = await api.get(`/user/invoices/${invoiceId}`) as { invoice: Invoice } | Invoice;
     invoice.value = (response as { invoice: Invoice }).invoice || response as Invoice;
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to load invoice';
+    error.value = (err as Error).message || t('invoices.detail.errors.failedToLoad');
   } finally {
     loading.value = false;
   }
@@ -144,7 +197,7 @@ async function downloadInvoice(): Promise<void> {
       window.open(response.downloadUrl, '_blank');
     }
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to download invoice';
+    error.value = (err as Error).message || t('invoices.detail.errors.failedToDownload');
   }
 }
 
@@ -158,6 +211,29 @@ function formatDate(dateStr: string | null | undefined): string {
     });
   } catch {
     return dateStr;
+  }
+}
+
+function itemTypeLabel(type?: string): string {
+  const labels: Record<string, string> = {
+    subscription: 'Plan',
+    token_bundle: 'Token Bundle',
+    add_on: 'Add-On',
+  };
+  return labels[type || ''] || type || 'Item';
+}
+
+function itemLink(item: { type?: string; item_id?: string }): string | null {
+  if (!item.item_id) return null;
+  switch (item.type) {
+    case 'subscription':
+      return '/plans';
+    case 'token_bundle':
+      return '/tokens';
+    case 'add_on':
+      return '/addons';
+    default:
+      return null;
   }
 }
 </script>
@@ -296,6 +372,28 @@ h1 {
 .items-table td:last-child,
 .items-table th:last-child {
   text-align: right;
+}
+
+.type-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.type-badge.subscription {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.type-badge.token_bundle {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.type-badge.add_on {
+  background: #fce4ec;
+  color: #c62828;
 }
 
 .total-section {

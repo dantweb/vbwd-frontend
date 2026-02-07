@@ -7,3 +7,6 @@ export type { AdminPlan, CreatePlanData } from './planAdmin';
 
 export { useAnalyticsStore } from './analytics';
 export type { DashboardData, MetricData, MetricPoint, ActivityItem, DateRange } from './analytics';
+
+export { usePaymentMethodsStore } from './paymentMethods';
+export type { PaymentMethod, PaymentMethodTranslation, CreatePaymentMethodData, UpdatePaymentMethodData, CreateTranslationData } from './paymentMethods';

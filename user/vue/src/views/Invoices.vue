@@ -1,67 +1,126 @@
 <template>
   <div class="invoices">
-    <h1>Invoices</h1>
+    <h1>{{ $t('invoices.title') }}</h1>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" data-testid="invoices-loading">
+    <div
+      v-if="loading"
+      class="loading-state"
+      data-testid="invoices-loading"
+    >
       <div class="spinner" />
-      <p>Loading invoices...</p>
+      <p>{{ $t('invoices.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" data-testid="invoices-error">
+    <div
+      v-else-if="error"
+      class="error-state"
+      data-testid="invoices-error"
+    >
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="loadInvoices">Retry</button>
+      <button
+        class="retry-btn"
+        @click="loadInvoices"
+      >
+        {{ $t('common.retry') }}
+      </button>
     </div>
 
     <!-- Invoices Content -->
-    <div v-else class="card">
+    <div
+      v-else
+      class="card"
+    >
       <!-- Search and Filter -->
       <div class="toolbar">
         <div class="search-box">
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search invoices..."
+            :placeholder="$t('invoices.searchPlaceholder')"
             data-testid="invoice-search"
-          />
+          >
         </div>
         <div class="filter-box">
-          <select v-model="statusFilter" data-testid="status-filter">
-            <option value="">All Statuses</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="overdue">Overdue</option>
+          <select
+            v-model="statusFilter"
+            data-testid="status-filter"
+          >
+            <option value="">
+              {{ $t('invoices.filters.allStatuses') }}
+            </option>
+            <option value="paid">
+              {{ $t('invoices.filters.paid') }}
+            </option>
+            <option value="pending">
+              {{ $t('invoices.filters.pending') }}
+            </option>
+            <option value="overdue">
+              {{ $t('invoices.filters.overdue') }}
+            </option>
           </select>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div v-if="filteredInvoices.length === 0" class="empty" data-testid="no-invoices">
-        <p>{{ searchQuery || statusFilter ? 'No invoices match your filters.' : 'No invoices yet.' }}</p>
+      <div
+        v-if="filteredInvoices.length === 0"
+        class="empty"
+        data-testid="no-invoices"
+      >
+        <p>{{ searchQuery || statusFilter ? $t('invoices.noInvoicesFiltered') : $t('invoices.noInvoices') }}</p>
       </div>
 
       <!-- Invoices Table -->
-      <table v-else class="invoice-table" data-testid="invoices-table">
+      <table
+        v-else
+        class="invoice-table"
+        data-testid="invoices-table"
+      >
         <thead>
           <tr>
-            <th @click="sortBy('invoiced_at')" class="sortable">
-              Date
-              <span v-if="sortField === 'invoiced_at'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            <th
+              class="sortable"
+              @click="sortBy('invoiced_at')"
+            >
+              {{ $t('invoices.tableHeaders.date') }}
+              <span
+                v-if="sortField === 'invoiced_at'"
+                class="sort-icon"
+              >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th @click="sortBy('invoice_number')" class="sortable">
-              Invoice #
-              <span v-if="sortField === 'invoice_number'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            <th
+              class="sortable"
+              @click="sortBy('invoice_number')"
+            >
+              {{ $t('invoices.tableHeaders.invoiceNumber') }}
+              <span
+                v-if="sortField === 'invoice_number'"
+                class="sort-icon"
+              >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th @click="sortBy('amount')" class="sortable">
-              Amount
-              <span v-if="sortField === 'amount'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            <th
+              class="sortable"
+              @click="sortBy('amount')"
+            >
+              {{ $t('invoices.tableHeaders.amount') }}
+              <span
+                v-if="sortField === 'amount'"
+                class="sort-icon"
+              >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th @click="sortBy('status')" class="sortable">
-              Status
-              <span v-if="sortField === 'status'" class="sort-icon">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+            <th
+              class="sortable"
+              @click="sortBy('status')"
+            >
+              {{ $t('invoices.tableHeaders.status') }}
+              <span
+                v-if="sortField === 'status'"
+                class="sort-icon"
+              >{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th>Actions</th>
+            <th>{{ $t('invoices.tableHeaders.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -73,27 +132,41 @@
             @click="viewInvoice(invoice)"
           >
             <td>{{ formatDate(invoice.invoiced_at || invoice.created_at) }}</td>
-            <td class="invoice-number" data-testid="invoice-number">{{ invoice.invoice_number }}</td>
-            <td class="invoice-amount">{{ formatPrice(invoice.amount) }}</td>
+            <td
+              class="invoice-number"
+              data-testid="invoice-number"
+            >
+              {{ invoice.invoice_number }}
+            </td>
+            <td class="invoice-amount">
+              {{ formatPrice(invoice.amount) }}
+            </td>
             <td>
-              <span class="status" :class="invoice.status" :data-testid="`invoice-status-${invoice.id}`">
+              <span
+                class="status"
+                :class="invoice.status"
+                :data-testid="`invoice-status-${invoice.id}`"
+              >
                 {{ invoice.status }}
               </span>
             </td>
-            <td class="actions-cell" @click.stop>
+            <td
+              class="actions-cell"
+              @click.stop
+            >
               <button
                 class="action-btn view"
                 data-testid="view-invoice-btn"
                 @click="viewInvoice(invoice)"
               >
-                View
+                {{ $t('common.view') }}
               </button>
               <button
                 class="action-btn download"
                 data-testid="download-invoice-btn"
                 @click="downloadInvoice(invoice.id)"
               >
-                PDF
+                {{ $t('common.pdf') }}
               </button>
               <button
                 v-if="invoice.status === 'pending'"
@@ -101,7 +174,7 @@
                 data-testid="pay-invoice-btn"
                 @click="payInvoice(invoice)"
               >
-                Pay
+                {{ $t('common.pay') }}
               </button>
             </td>
           </tr>
@@ -109,29 +182,40 @@
       </table>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="pagination" data-testid="invoices-pagination">
+      <div
+        v-if="totalPages > 1"
+        class="pagination"
+        data-testid="invoices-pagination"
+      >
         <button
           class="page-btn"
           :disabled="currentPage <= 1"
           data-testid="prev-page"
           @click="currentPage--"
         >
-          Previous
+          {{ $t('common.previous') }}
         </button>
-        <span class="page-info" data-testid="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+        <span
+          class="page-info"
+          data-testid="page-info"
+        >{{ $t('common.pageInfo', { currentPage, totalPages }) }}</span>
         <button
           class="page-btn"
           :disabled="currentPage >= totalPages"
           data-testid="next-page"
           @click="currentPage++"
         >
-          Next
+          {{ $t('common.next') }}
         </button>
       </div>
     </div>
 
     <!-- Success Toast -->
-    <div v-if="successMessage" class="toast success" data-testid="success-toast">
+    <div
+      v-if="successMessage"
+      class="toast success"
+      data-testid="success-toast"
+    >
       {{ successMessage }}
     </div>
   </div>
@@ -140,9 +224,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useInvoicesStore, type Invoice } from '../stores/invoices';
 
 const router = useRouter();
+const { t } = useI18n();
 const invoicesStore = useInvoicesStore();
 
 const loading = ref(true);
@@ -221,7 +307,7 @@ async function loadInvoices(): Promise<void> {
   try {
     await invoicesStore.fetchInvoices();
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to load invoices';
+    error.value = (err as Error).message || t('invoices.errors.failedToLoad');
   } finally {
     loading.value = false;
   }
@@ -247,10 +333,10 @@ async function downloadInvoice(invoiceId: string): Promise<void> {
     if (result?.downloadUrl) {
       window.open(result.downloadUrl, '_blank');
     } else {
-      showSuccess('Invoice download initiated');
+      showSuccess(t('invoices.messages.downloadInitiated'));
     }
   } catch (err) {
-    error.value = (err as Error).message || 'Failed to download invoice';
+    error.value = (err as Error).message || t('invoices.errors.failedToDownload');
   }
 }
 

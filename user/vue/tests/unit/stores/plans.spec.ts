@@ -1,5 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { usePlansStore } from '../../../src/stores/plans';
+import { api } from '../../../src/api';
+
+vi.mock('../../../src/api', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  },
+  isAuthenticated: vi.fn(() => true)
+}));
 
 describe('PlansStore', () => {
   beforeEach(() => {
@@ -7,8 +19,7 @@ describe('PlansStore', () => {
     vi.clearAllMocks();
   });
 
-  it('initializes with empty plans list', async () => {
-    const { usePlansStore } = await import('../../../src/stores/plans');
+  it('initializes with empty plans list', () => {
     const store = usePlansStore();
 
     expect(store.plans).toEqual([]);
@@ -18,27 +29,26 @@ describe('PlansStore', () => {
   });
 
   it('fetches available plans', async () => {
-    const { usePlansStore, api } = await import('../../../src/stores/plans');
     const store = usePlansStore();
 
     const mockPlans = [
       {
         id: 'free',
         name: 'Free',
-        price: '$0',
-        features: ['1,000 API calls', '100 MB storage'],
-        popular: false
+        slug: 'free',
+        display_price: 0,
+        display_currency: 'EUR'
       },
       {
         id: 'pro',
         name: 'Pro',
-        price: '$29',
-        features: ['50,000 API calls', '10 GB storage'],
-        popular: true
+        slug: 'pro',
+        display_price: 29,
+        display_currency: 'EUR'
       }
     ];
 
-    api.get = vi.fn().mockResolvedValue({ plans: mockPlans });
+    vi.mocked(api.get).mockResolvedValue({ plans: mockPlans, currency: 'EUR', country: null });
 
     await store.fetchPlans();
 
@@ -47,77 +57,71 @@ describe('PlansStore', () => {
   });
 
   it('handles fetch error gracefully', async () => {
-    const { usePlansStore, api } = await import('../../../src/stores/plans');
     const store = usePlansStore();
 
-    api.get = vi.fn().mockRejectedValue(new Error('Network error'));
+    vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
 
     await expect(store.fetchPlans()).rejects.toThrow();
     expect(store.error).toBe('Network error');
     expect(store.loading).toBe(false);
   });
 
-  it('selects a plan', async () => {
-    const { usePlansStore } = await import('../../../src/stores/plans');
+  it('selects a plan', () => {
     const store = usePlansStore();
     store.plans = [
-      { id: 'free', name: 'Free', price: '$0', features: [], popular: false },
-      { id: 'pro', name: 'Pro', price: '$29', features: [], popular: true }
-    ];
+      { id: 'free', name: 'Free', slug: 'free', display_price: 0, display_currency: 'EUR' },
+      { id: 'pro', name: 'Pro', slug: 'pro', display_price: 29, display_currency: 'EUR' }
+    ] as never;
 
     store.selectPlan('pro');
 
-    expect(store.selectedPlan).toEqual({ id: 'pro', name: 'Pro', price: '$29', features: [], popular: true });
+    expect(store.selectedPlan?.id).toBe('pro');
   });
 
   it('subscribes to a plan', async () => {
-    const { usePlansStore, api } = await import('../../../src/stores/plans');
     const store = usePlansStore();
     store.plans = [
-      { id: 'pro', name: 'Pro', price: '$29', features: [], popular: true }
-    ];
+      { id: 'pro', name: 'Pro', slug: 'pro', display_price: 29, display_currency: 'EUR' }
+    ] as never;
 
-    api.post = vi.fn().mockResolvedValue({
-      subscriptionId: 'sub_123',
-      checkoutUrl: 'https://checkout.example.com/session_123'
+    vi.mocked(api.post).mockResolvedValue({
+      subscription_id: 'sub_123',
+      checkout_url: 'https://checkout.example.com/session_123'
     });
 
     const result = await store.subscribe('pro');
 
-    expect(api.post).toHaveBeenCalledWith('/tarif-plans/subscribe', { planId: 'pro' });
-    expect(result.checkoutUrl).toBeDefined();
+    expect(api.post).toHaveBeenCalledWith('/subscriptions', { plan_id: 'pro' });
+    expect(result.subscription_id).toBe('sub_123');
   });
 
-  it('gets plan by ID', async () => {
-    const { usePlansStore } = await import('../../../src/stores/plans');
+  it('gets plan by ID', () => {
     const store = usePlansStore();
     store.plans = [
-      { id: 'free', name: 'Free', price: '$0', features: [], popular: false },
-      { id: 'pro', name: 'Pro', price: '$29', features: [], popular: true }
-    ];
+      { id: 'free', name: 'Free', slug: 'free', display_price: 0, display_currency: 'EUR' },
+      { id: 'pro', name: 'Pro', slug: 'pro', display_price: 29, display_currency: 'EUR' }
+    ] as never;
 
     const plan = store.getPlanById('pro');
 
-    expect(plan).toEqual({ id: 'pro', name: 'Pro', price: '$29', features: [], popular: true });
+    expect(plan?.id).toBe('pro');
   });
 
-  it('returns undefined for non-existent plan', async () => {
-    const { usePlansStore } = await import('../../../src/stores/plans');
+  it('returns undefined for non-existent plan', () => {
     const store = usePlansStore();
     store.plans = [
-      { id: 'free', name: 'Free', price: '$0', features: [], popular: false }
-    ];
+      { id: 'free', name: 'Free', slug: 'free', display_price: 0, display_currency: 'EUR' }
+    ] as never;
 
     const plan = store.getPlanById('enterprise');
 
     expect(plan).toBeUndefined();
   });
 
-  it('resets store state', async () => {
-    const { usePlansStore } = await import('../../../src/stores/plans');
+  it('resets store state', () => {
     const store = usePlansStore();
-    store.plans = [{ id: 'free', name: 'Free', price: '$0', features: [], popular: false }];
-    store.selectedPlan = { id: 'free', name: 'Free', price: '$0', features: [], popular: false };
+    store.plans = [{ id: 'free', name: 'Free', slug: 'free', display_price: 0, display_currency: 'EUR' }] as never;
+    store.selectedPlan = { id: 'free', name: 'Free', slug: 'free', display_price: 0, display_currency: 'EUR' } as never;
     store.error = 'Some error';
     store.loading = true;
 

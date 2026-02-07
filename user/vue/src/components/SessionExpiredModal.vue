@@ -1,17 +1,39 @@
 <template>
   <Teleport to="body">
-    <div v-if="show" class="modal-overlay" data-testid="session-expired-modal">
+    <div
+      v-if="show"
+      class="modal-overlay"
+      data-testid="session-expired-modal"
+    >
       <div class="modal">
         <div class="modal-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
-        <h2>Session Expired</h2>
-        <p>{{ message || 'Your session has expired. Please log in again to continue.' }}</p>
-        <button class="btn primary" @click="handleLogin" data-testid="session-login-btn">
-          Log In
+        <h2>{{ $t('components.sessionExpiredModal.title') }}</h2>
+        <p>{{ message || $t('components.sessionExpiredModal.defaultMessage') }}</p>
+        <button
+          class="btn primary"
+          data-testid="session-login-btn"
+          @click="handleLogin"
+        >
+          {{ $t('components.sessionExpiredModal.loginButton') }}
         </button>
       </div>
     </div>

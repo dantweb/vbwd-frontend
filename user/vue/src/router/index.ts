@@ -43,6 +43,24 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/tokens',
+    name: 'tokens',
+    component: () => import('../views/Tokens.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/add-ons',
+    name: 'add-ons',
+    component: () => import('../views/AddOns.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/checkout/cart',
+    name: 'checkout-cart',
+    component: () => import('../views/Checkout.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/checkout/:planSlug',
     name: 'checkout',
     component: () => import('../views/Checkout.vue'),
@@ -78,11 +96,11 @@ router.beforeEach((to, _from, next) => {
   }
 
   if (to.meta.requiresAuth && !authenticated) {
-    // Store the intended destination for redirect after login
-    if (to.fullPath !== '/') {
-      sessionStorage.setItem('redirect_after_login', to.fullPath);
-    }
-    next({ name: 'login' });
+    // Pass the intended destination as query param for redirect after login
+    next({
+      name: 'login',
+      query: to.fullPath !== '/' ? { redirect: to.fullPath } : undefined
+    });
   } else if (to.name === 'login' && authenticated) {
     next({ name: 'dashboard' });
   } else {

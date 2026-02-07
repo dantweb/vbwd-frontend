@@ -8,7 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'vue/src')
-    }
+    },
+    dedupe: ['pinia', 'vue']
   },
   server: {
     proxy: {

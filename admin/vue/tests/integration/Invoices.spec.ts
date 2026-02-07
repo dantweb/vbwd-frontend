@@ -60,7 +60,7 @@ describe('Invoices.vue', () => {
 
     expect(wrapper.find('[data-testid="invoices-table"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Invoice #');
-    expect(wrapper.text()).toContain('Customer');
+    expect(wrapper.text()).toContain('User');
     expect(wrapper.text()).toContain('Amount');
     expect(wrapper.text()).toContain('Status');
   });

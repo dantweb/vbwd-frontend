@@ -18,7 +18,8 @@ test.describe('Checkout Page Display', () => {
     await navigateToCheckout(page, 'pro');
 
     await expect(page.locator('[data-testid="confirm-checkout"]')).toBeVisible();
-    await expect(page.locator('[data-testid="confirm-checkout"]')).toBeEnabled();
+    // Button is disabled until all requirements are met (billing, payment, terms)
+    await expect(page.locator('[data-testid="confirm-checkout"]')).toBeDisabled();
   });
 
   test('shows loading state while fetching plan', async ({ page }) => {
@@ -49,8 +50,9 @@ test.describe('Checkout Page Display', () => {
     // Navigate to checkout without auth
     await page.goto('/checkout/pro');
 
-    // Wait for redirect to login page
+    // Wait for redirect to login page with redirect param
     await page.waitForURL(/\/login/, { timeout: 10000 });
     await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/redirect=.*checkout.*pro/);
   });
 });

@@ -6,8 +6,11 @@ import { api } from '@/api';
 import {
   configureAuthStore,
   configureEventBus,
-  useAuthStore
+  useAuthStore,
+  PluginRegistry,
+  PlatformSDK
 } from '@vbwd/view-component';
+import { analyticsWidgetPlugin } from '@plugins/analytics-widget';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
 
 // Configure auth store with admin-specific settings
@@ -34,15 +37,33 @@ app.use(pinia);
 app.use(router);
 app.use(i18n);
 
-// Initialize auth state from localStorage
-const authStore = useAuthStore();
-authStore.initAuth();
+// Initialize plugin system
+const registry = new PluginRegistry();
+const sdk = new PlatformSDK();
 
-// Initialize locale from stored preference
-initLocale();
+registry.register(analyticsWidgetPlugin);
 
-// Load user's language preference from backend if authenticated
-async function loadUserLanguagePreference(): Promise<void> {
+(async () => {
+  await registry.installAll(sdk);
+  await registry.activate('analytics-widget');
+
+  // Inject plugin routes into Vue Router
+  for (const route of sdk.getRoutes()) {
+    router.addRoute('admin', route as unknown as import('vue-router').RouteRecordRaw);
+  }
+
+  // Make available via provide/inject
+  app.provide('pluginRegistry', registry);
+  app.provide('platformSDK', sdk);
+
+  // Initialize auth state from localStorage
+  const authStore = useAuthStore();
+  authStore.initAuth();
+
+  // Initialize locale from stored preference
+  initLocale();
+
+  // Load user's language preference from backend if authenticated
   if (authStore.isAuthenticated) {
     try {
       const response = await api.get('/admin/profile') as { user: { details?: { config?: { language?: string } } } };
@@ -54,8 +75,6 @@ async function loadUserLanguagePreference(): Promise<void> {
       // Ignore errors - use localStorage preference
     }
   }
-}
 
-loadUserLanguagePreference();
-
-app.mount('#app');
+  app.mount('#app');
+})();

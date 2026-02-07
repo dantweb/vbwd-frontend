@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { api } from '@/api';
+import { useCartStore } from '@vbwd/view-component';
 
 export interface Plan {
   id: string;
@@ -44,7 +45,7 @@ export interface LineItem {
 }
 
 export interface CheckoutResult {
-  subscription: {
+  subscription?: {
     id: string;
     status: string;
     plan: Plan;
@@ -82,12 +83,14 @@ export const useCheckoutStore = defineStore('checkout', () => {
   const submitting = ref(false);
   const error = ref<string | null>(null);
   const checkoutResult = ref<CheckoutResult | null>(null);
+  const isCartCheckout = ref(false);
+  const paymentMethodCode = ref<string | null>(null);
 
   // Computed
   const orderTotal = computed(() => {
-    let total = plan.value?.price || plan.value?.display_price || 0;
-    total += selectedBundles.value.reduce((sum, b) => sum + b.price, 0);
-    total += selectedAddons.value.reduce((sum, a) => sum + a.price, 0);
+    let total = Number(plan.value?.price || plan.value?.display_price || 0);
+    total += selectedBundles.value.reduce((sum, b) => sum + Number(b.price), 0);
+    total += selectedAddons.value.reduce((sum, a) => sum + Number(a.price), 0);
     return total;
   });
 
@@ -169,9 +172,66 @@ export const useCheckoutStore = defineStore('checkout', () => {
     selectedAddons.value = selectedAddons.value.filter((a) => a.id !== addonId);
   }
 
+  async function loadFromCart() {
+    loading.value = true;
+    error.value = null;
+    isCartCheckout.value = true;
+
+    try {
+      const cartStore = useCartStore();
+      const cartItems = cartStore.items;
+
+      if (cartItems.length === 0) {
+        error.value = 'Cart is empty';
+        return;
+      }
+
+      // Map cart items to checkout selections
+      const planItem = cartItems.find(item => item.type === 'plan');
+      const bundleItems = cartItems.filter(item => item.type === 'token_bundle');
+      const addonItems = cartItems.filter(item => item.type === 'addon');
+
+      // If cart has a plan, load the full plan data
+      if (planItem) {
+        await loadPlan(planItem.id);
+      }
+
+      // Map token bundles from cart
+      selectedBundles.value = bundleItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        token_amount: (item.metadata?.token_amount as number) || 0,
+        price: item.price,
+        currency: (item.metadata?.currency as string) || 'USD',
+        is_active: true,
+      }));
+
+      // Map addons from cart
+      selectedAddons.value = addonItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        slug: (item.metadata?.slug as string) || item.name.toLowerCase().replace(/\s+/g, '-'),
+        description: (item.metadata?.description as string) || '',
+        price: item.price,
+        currency: (item.metadata?.currency as string) || 'USD',
+        billing_period: (item.metadata?.billing_period as string) || 'monthly',
+        is_active: true,
+      }));
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } }; message?: string };
+      error.value = err.response?.data?.error || err.message || 'Failed to load cart';
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function setPaymentMethod(code: string) {
+    paymentMethodCode.value = code;
+  }
+
   async function submitCheckout() {
-    if (!plan.value) {
-      error.value = 'No plan selected';
+    if (!plan.value && selectedBundles.value.length === 0 && selectedAddons.value.length === 0) {
+      error.value = 'No items selected';
       return;
     }
 
@@ -179,12 +239,27 @@ export const useCheckoutStore = defineStore('checkout', () => {
     error.value = null;
 
     try {
-      const response = await api.post('/user/checkout', {
-        plan_id: plan.value.id,
+      const payload: Record<string, unknown> = {
         token_bundle_ids: selectedBundles.value.map((b) => b.id),
         add_on_ids: selectedAddons.value.map((a) => a.id),
-      }) as CheckoutResult;
+      };
+
+      if (plan.value) {
+        payload.plan_id = plan.value.id;
+      }
+
+      if (paymentMethodCode.value) {
+        payload.payment_method_code = paymentMethodCode.value;
+      }
+
+      const response = await api.post('/user/checkout', payload) as CheckoutResult;
       checkoutResult.value = response;
+
+      // Clear cart after successful checkout
+      if (isCartCheckout.value) {
+        const cartStore = useCartStore();
+        cartStore.clearCart();
+      }
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } }; message?: string };
       error.value = err.response?.data?.error || err.message || 'Checkout failed';
@@ -203,6 +278,8 @@ export const useCheckoutStore = defineStore('checkout', () => {
     checkoutResult.value = null;
     loading.value = false;
     submitting.value = false;
+    isCartCheckout.value = false;
+    paymentMethodCode.value = null;
   }
 
   return {
@@ -216,12 +293,16 @@ export const useCheckoutStore = defineStore('checkout', () => {
     submitting,
     error,
     checkoutResult,
+    isCartCheckout,
+    paymentMethodCode,
     // Computed
     orderTotal,
     lineItems,
     // Actions
     loadPlan,
     loadOptions,
+    loadFromCart,
+    setPaymentMethod,
     addBundle,
     removeBundle,
     addAddon,
