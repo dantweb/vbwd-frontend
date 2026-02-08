@@ -118,12 +118,21 @@ export class PluginRegistry implements IPluginRegistry {
 
   /**
    * Deactivate a plugin
+   * @throws Error if active dependents exist
    */
   async deactivate(name: string): Promise<void> {
     const plugin = this.plugins.get(name);
 
     if (!plugin) {
       throw new Error(`Plugin "${name}" not found`);
+    }
+
+    // Check for active dependents (matches backend PluginManager.disable_plugin pattern)
+    const activeDependents = this.getActiveDependents(name);
+    if (activeDependents.length > 0) {
+      throw new Error(
+        `Cannot deactivate "${name}": active dependents: ${activeDependents.join(', ')}`
+      );
     }
 
     // Call deactivate hook if present
@@ -154,6 +163,28 @@ export class PluginRegistry implements IPluginRegistry {
     plugin.status = PluginStatus.REGISTERED;
     plugin.installedAt = undefined;
     plugin.activatedAt = undefined;
+  }
+
+  /**
+   * Find active plugins that depend on the given plugin
+   */
+  private getActiveDependents(name: string): string[] {
+    const dependents: string[] = [];
+
+    for (const [pluginName, metadata] of this.plugins) {
+      if (pluginName === name || metadata.status !== PluginStatus.ACTIVE) {
+        continue;
+      }
+
+      if (metadata.dependencies) {
+        const deps = this.normalizeDependencies(metadata.dependencies);
+        if (name in deps) {
+          dependents.push(pluginName);
+        }
+      }
+    }
+
+    return dependents;
   }
 
   /**

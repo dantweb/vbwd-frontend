@@ -60,6 +60,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/AddOns.vue')
       },
       {
+        path: 'add-ons/new',
+        name: 'addon-new',
+        component: () => import('@/views/AddonForm.vue')
+      },
+      {
+        path: 'add-ons/:id/edit',
+        name: 'addon-edit',
+        component: () => import('@/views/AddonForm.vue')
+      },
+      {
         path: 'payment-methods',
         name: 'payment-methods',
         component: () => import('@/views/PaymentMethods.vue')

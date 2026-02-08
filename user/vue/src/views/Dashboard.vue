@@ -130,6 +130,144 @@
         </router-link>
       </div>
 
+      <!-- Subscription History Card -->
+      <div
+        class="card history-card"
+        data-testid="subscription-history"
+      >
+        <h3>{{ $t('dashboard.historyCard.title') }}</h3>
+        <div
+          v-if="subscriptionHistory.length > 0"
+          class="history-list"
+        >
+          <div
+            v-for="sub in subscriptionHistory"
+            :key="sub.id"
+            class="history-item"
+            data-testid="history-item"
+          >
+            <div class="history-info">
+              <span class="history-plan">{{ sub.plan?.name || 'Unknown Plan' }}</span>
+              <span class="history-dates">
+                {{ formatDate(sub.started_at) }} — {{ sub.cancelled_at ? formatDate(sub.cancelled_at) : $t('common.present') }}
+              </span>
+            </div>
+            <span
+              class="history-status"
+              :class="sub.status"
+              data-testid="history-status"
+            >
+              {{ formatStatus(sub.status) }}
+            </span>
+          </div>
+        </div>
+        <div
+          v-else
+          class="empty-state"
+        >
+          <p>{{ $t('dashboard.historyCard.noHistory') }}</p>
+        </div>
+      </div>
+
+      <!-- Add-ons Card -->
+      <div
+        class="card addons-card"
+        data-testid="user-addons"
+      >
+        <h3>{{ $t('dashboard.addonsCard.title') }}</h3>
+        <div v-if="activeAddons.length > 0 || inactiveAddons.length > 0">
+          <div
+            v-if="activeAddons.length > 0"
+            class="addons-section"
+          >
+            <h4>{{ $t('dashboard.addonsCard.active') }}</h4>
+            <router-link
+              v-for="addon in activeAddons"
+              :key="addon.id"
+              :to="`/add-ons/${addon.id}`"
+              class="addon-item addon-item-link"
+              data-testid="addon-item"
+            >
+              <span class="addon-name">{{ addon.addon?.name || 'Add-on' }}</span>
+              <span class="addon-status active">{{ formatStatus(addon.status) }}</span>
+            </router-link>
+          </div>
+          <div
+            v-if="inactiveAddons.length > 0"
+            class="addons-section"
+          >
+            <h4>{{ $t('dashboard.addonsCard.expired') }}</h4>
+            <router-link
+              v-for="addon in inactiveAddons"
+              :key="addon.id"
+              :to="`/add-ons/${addon.id}`"
+              class="addon-item addon-item-link"
+              data-testid="addon-item-inactive"
+            >
+              <span class="addon-name">{{ addon.addon?.name || 'Add-on' }}</span>
+              <span
+                class="addon-status"
+                :class="addon.status"
+              >{{ formatStatus(addon.status) }}</span>
+            </router-link>
+          </div>
+        </div>
+        <div
+          v-else
+          class="empty-state"
+        >
+          <p>{{ $t('dashboard.addonsCard.noAddons') }}</p>
+        </div>
+        <router-link
+          to="/add-ons"
+          class="card-link"
+        >
+          {{ $t('dashboard.addonsCard.browseAddons') }} →
+        </router-link>
+      </div>
+
+      <!-- Token Top-up History Card -->
+      <div
+        class="card token-history-card"
+        data-testid="token-history"
+      >
+        <h3>{{ $t('dashboard.tokenHistoryCard.title') }}</h3>
+        <div
+          v-if="tokenTransactions.length > 0"
+          class="token-list"
+        >
+          <div
+            v-for="tx in tokenTransactions"
+            :key="tx.id"
+            class="token-item"
+            data-testid="token-item"
+          >
+            <div class="token-info">
+              <span class="token-type">{{ formatTransactionType(tx.transaction_type) }}</span>
+              <span class="token-date">{{ formatDate(tx.created_at) }}</span>
+            </div>
+            <span
+              class="token-amount"
+              :class="tx.amount > 0 ? 'credit' : 'debit'"
+            >
+              {{ tx.amount > 0 ? '+' : '' }}{{ formatNumber(tx.amount) }}
+            </span>
+          </div>
+        </div>
+        <div
+          v-else
+          class="empty-state"
+        >
+          <p>{{ $t('dashboard.tokenHistoryCard.noActivity') }}</p>
+        </div>
+        <router-link
+          to="/tokens"
+          class="card-link"
+        >
+          {{ $t('dashboard.tokenHistoryCard.purchaseTokens') }} →
+        </router-link>
+      </div>
+
       <!-- Recent Invoices Card -->
       <div
         class="card invoices-card"
@@ -176,7 +314,7 @@
       </div>
 
       <!-- Quick Actions Card -->
-      <div class="card actions-card">
+      <div class="card actions-card full-width">
         <h3>{{ $t('dashboard.quickActions.title') }}</h3>
         <div class="actions">
           <router-link
@@ -214,6 +352,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useProfileStore } from '../stores/profile';
 import { useSubscriptionStore } from '../stores/subscription';
+import type { TokenTransaction } from '../stores/subscription';
 import { useInvoicesStore } from '../stores/invoices';
 import { api } from '@/api';
 
@@ -240,7 +379,11 @@ const userInitials = computed(() => {
 
 // Subscription computed
 const subscription = computed(() => subscriptionStore.subscription);
+const subscriptionHistory = computed(() => subscriptionStore.history);
+const activeAddons = computed(() => subscriptionStore.activeAddons);
+const inactiveAddons = computed(() => subscriptionStore.inactiveAddons);
 const tokenBalance = ref(0);
+const tokenTransactions = ref<TokenTransaction[]>([]);
 
 async function fetchTokenBalance(): Promise<void> {
   try {
@@ -248,6 +391,15 @@ async function fetchTokenBalance(): Promise<void> {
     tokenBalance.value = response.balance || 0;
   } catch {
     tokenBalance.value = 0;
+  }
+}
+
+async function fetchTokenTransactions(): Promise<void> {
+  try {
+    const response = await api.get('/user/tokens/transactions?limit=10') as { transactions: TokenTransaction[] };
+    tokenTransactions.value = response.transactions || [];
+  } catch {
+    tokenTransactions.value = [];
   }
 }
 
@@ -263,9 +415,12 @@ async function loadDashboardData(): Promise<void> {
   try {
     await Promise.all([
       profileStore.fetchProfile(),
-      subscriptionStore.fetchSubscription().catch(() => null), // Don't fail if no subscription
-      invoicesStore.fetchInvoices().catch(() => null), // Don't fail if no invoices
+      subscriptionStore.fetchSubscription().catch(() => null),
+      subscriptionStore.fetchHistory().catch(() => null),
+      subscriptionStore.fetchUserAddons().catch(() => null),
+      invoicesStore.fetchInvoices().catch(() => null),
       fetchTokenBalance(),
+      fetchTokenTransactions(),
     ]);
   } catch (err) {
     error.value = (err as Error).message || t('dashboard.errors.failedToLoad');
@@ -302,6 +457,17 @@ function formatPrice(amount: string | number | null | undefined): string {
 
 function formatNumber(num: number): string {
   return num.toLocaleString();
+}
+
+function formatTransactionType(type: string): string {
+  const map: Record<string, string> = {
+    purchase: 'Purchase',
+    credit: 'Credit',
+    refund: 'Refund',
+    usage: 'Usage',
+    bonus: 'Bonus',
+  };
+  return map[type] || type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 onMounted(() => {
@@ -598,6 +764,183 @@ h1 {
   text-align: center;
   padding: 20px;
   color: #666;
+}
+
+/* Full Width Card */
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+/* Subscription History Card */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-plan {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.history-dates {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.history-status {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.history-status.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.history-status.cancelled,
+.history-status.cancelling {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.history-status.expired {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.history-status.paused {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Add-ons Card */
+.addons-section {
+  margin-bottom: 15px;
+}
+
+.addons-section h4 {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.addon-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.addon-item-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.addon-item-link:hover {
+  background-color: #e9ecef;
+}
+
+.addon-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.addon-status {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.addon-status.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.addon-status.cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.addon-status.expired {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* Token History Card */
+.token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.token-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.token-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.token-type {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.token-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.token-amount {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.token-amount.credit {
+  color: #27ae60;
+}
+
+.token-amount.debit {
+  color: #e74c3c;
 }
 
 /* Actions Card */

@@ -19,9 +19,11 @@
     "backToSubscription": "Back to Subscription",
     "browsePlans": "Browse Plans",
     "processing": "Processing...",
+    "confirm": "Confirm",
     "noData": "-",
     "tokenUnit": "TKN",
     "pageInfo": "Page {currentPage} of {totalPages}",
+    "present": "Present",
     "item": "item",
     "items": "items",
     "status": {
@@ -84,6 +86,22 @@
       "title": "Recent Invoices",
       "noInvoices": "No invoices yet",
       "viewAllInvoices": "View All Invoices"
+    },
+    "historyCard": {
+      "title": "Subscription History",
+      "noHistory": "No subscription history yet."
+    },
+    "addonsCard": {
+      "title": "Add-ons",
+      "active": "Active",
+      "expired": "Expired / Cancelled",
+      "noAddons": "No add-ons yet.",
+      "browseAddons": "Browse Add-ons"
+    },
+    "tokenHistoryCard": {
+      "title": "Token Activity",
+      "noActivity": "No token activity yet.",
+      "purchaseTokens": "Purchase Tokens"
     },
     "quickActions": {
       "title": "Quick Actions",
@@ -260,6 +278,21 @@
     "backToPlans": "Back to Plans",
     "errors": {
       "failedToLoad": "Failed to load add-ons"
+    },
+    "detail": {
+      "title": "Add-on Details",
+      "status": "Status",
+      "startDate": "Start Date",
+      "expiryDate": "Expiry Date",
+      "cancelledDate": "Cancelled Date",
+      "price": "Price",
+      "billingPeriod": "Billing Period",
+      "invoice": "Invoice",
+      "cancelAddon": "Cancel Add-on",
+      "cancelConfirm": "Are you sure you want to cancel this add-on?",
+      "cancelSuccess": "Add-on cancelled successfully.",
+      "backToDashboard": "Back to Dashboard",
+      "alreadyCancelled": "This add-on has been cancelled."
     }
   },
   "invoices": {

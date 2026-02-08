@@ -19,9 +19,11 @@
     "backToSubscription": "Zurück zum Abonnement",
     "browsePlans": "Tarife durchsuchen",
     "processing": "Verarbeite...",
+    "confirm": "Bestätigen",
     "noData": "-",
     "tokenUnit": "TKN",
     "pageInfo": "Seite {currentPage} von {totalPages}",
+    "present": "Aktuell",
     "item": "Artikel",
     "items": "Artikel",
     "status": {
@@ -84,6 +86,22 @@
       "title": "Letzte Rechnungen",
       "noInvoices": "Noch keine Rechnungen",
       "viewAllInvoices": "Alle Rechnungen anzeigen"
+    },
+    "historyCard": {
+      "title": "Abo-Verlauf",
+      "noHistory": "Noch kein Abo-Verlauf."
+    },
+    "addonsCard": {
+      "title": "Zusatzoptionen",
+      "active": "Aktiv",
+      "expired": "Abgelaufen / Gekündigt",
+      "noAddons": "Noch keine Zusatzoptionen.",
+      "browseAddons": "Zusatzoptionen durchsuchen"
+    },
+    "tokenHistoryCard": {
+      "title": "Token-Aktivität",
+      "noActivity": "Noch keine Token-Aktivität.",
+      "purchaseTokens": "Tokens kaufen"
     },
     "quickActions": {
       "title": "Schnellaktionen",
@@ -260,6 +278,21 @@
     "backToPlans": "Zurück zu den Tarifen",
     "errors": {
       "failedToLoad": "Add-ons konnten nicht geladen werden"
+    },
+    "detail": {
+      "title": "Add-on-Details",
+      "status": "Status",
+      "startDate": "Startdatum",
+      "expiryDate": "Ablaufdatum",
+      "cancelledDate": "Kündigungsdatum",
+      "price": "Preis",
+      "billingPeriod": "Abrechnungszeitraum",
+      "invoice": "Rechnung",
+      "cancelAddon": "Add-on kündigen",
+      "cancelConfirm": "Möchten Sie dieses Add-on wirklich kündigen?",
+      "cancelSuccess": "Add-on erfolgreich gekündigt.",
+      "backToDashboard": "Zurück zum Dashboard",
+      "alreadyCancelled": "Dieses Add-on wurde gekündigt."
     }
   },
   "invoices": {

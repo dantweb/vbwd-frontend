@@ -57,13 +57,21 @@ export const test = base.extend<AuthenticatedFixtures>({
 export { expect } from '@playwright/test';
 
 /**
- * Helper to set up authentication for a page
+ * Helper to set up authentication for a page via mock login.
+ * Performs a real login flow through the UI with mocked API endpoints,
+ * which properly sets both token and user in the Pinia auth store.
  */
 export async function setupAuth(page: Page, user: AdminUser = defaultAdminUser): Promise<void> {
-  await page.addInitScript((_userData) => {
-    localStorage.setItem('admin_token', 'test-admin-token');
-  }, user);
+  // Mock login endpoint
+  await page.route('**/api/v1/auth/login', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ token: 'test-admin-token', user })
+    });
+  });
 
+  // Mock auth verification endpoint (used on page reloads)
   await page.route('**/api/v1/auth/me', async (route) => {
     await route.fulfill({
       status: 200,
@@ -71,6 +79,24 @@ export async function setupAuth(page: Page, user: AdminUser = defaultAdminUser):
       body: JSON.stringify(user)
     });
   });
+
+  // Mock admin profile endpoint (used for language preferences)
+  await page.route('**/api/v1/admin/profile', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ user: { details: {} } })
+    });
+  });
+
+  // Navigate to login page and perform mock login
+  await page.goto('/admin/login');
+  await page.locator('[data-testid="username-input"]').fill(user.email);
+  await page.locator('[data-testid="password-input"]').fill('TestPass123@');
+  await page.locator('[data-testid="login-button"]').click();
+
+  // Wait for redirect to dashboard (auth state is now fully set)
+  await page.waitForURL(/\/admin\/(dashboard)?$/, { timeout: 10000 });
 }
 
 /**

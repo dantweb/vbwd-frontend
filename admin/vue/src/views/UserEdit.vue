@@ -70,6 +70,14 @@
         >
           {{ $t('nav.invoices') }}
         </button>
+        <button
+          data-testid="tab-addons"
+          class="tab-btn"
+          :class="{ active: activeTab === 'addons' }"
+          @click="switchToAddons"
+        >
+          {{ $t('users.addons') }}
+        </button>
       </div>
 
       <!-- Account Tab Content -->
@@ -434,6 +442,103 @@
           </button>
         </div>
       </div>
+
+      <!-- Addons Tab Content -->
+      <div
+        v-show="activeTab === 'addons'"
+        data-testid="tab-content-addons"
+        class="tab-content"
+      >
+        <div class="tab-filters">
+          <input
+            v-model="addonSearch"
+            type="text"
+            data-testid="addons-search-input"
+            :placeholder="$t('common.search')"
+            class="search-input"
+          >
+        </div>
+
+        <div
+          v-if="addonsLoading"
+          class="loading-state"
+        >
+          <div class="spinner" />
+          <p>{{ $t('common.loading') }}</p>
+        </div>
+
+        <div
+          v-else-if="filteredAddons.length === 0"
+          data-testid="addons-empty-state"
+          class="empty-state"
+        >
+          <p>{{ $t('users.noAddonsForUser') }}</p>
+        </div>
+
+        <table
+          v-else
+          data-testid="user-addons-table"
+          class="data-table"
+        >
+          <thead>
+            <tr>
+              <th>{{ $t('users.addonName') }}</th>
+              <th>{{ $t('users.paymentStatus') }}</th>
+              <th>{{ $t('common.status') }}</th>
+              <th>{{ $t('users.firstInvoice') }}</th>
+              <th>{{ $t('users.lastInvoice') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="addon in filteredAddons"
+              :key="addon.id"
+            >
+              <td>{{ addon.addon_name }}</td>
+              <td>
+                <span
+                  v-if="addon.invoice_status"
+                  class="status-badge"
+                  :class="addon.invoice_status"
+                >
+                  {{ formatInvoiceStatus(addon.invoice_status) }}
+                </span>
+                <span v-else>-</span>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  :class="addon.status"
+                >
+                  {{ formatStatus(addon.status) }}
+                </span>
+              </td>
+              <td>
+                <a
+                  v-if="addon.first_invoice"
+                  class="invoice-link"
+                  data-testid="first-invoice-link"
+                  @click="navigateToInvoice(addon.first_invoice.id)"
+                >
+                  {{ formatDate(addon.first_invoice.created_at) }}
+                </a>
+                <span v-else>-</span>
+              </td>
+              <td>
+                <a
+                  v-if="addon.last_invoice"
+                  class="invoice-link"
+                  data-testid="last-invoice-link"
+                  @click="navigateToInvoice(addon.last_invoice.id)"
+                >
+                  {{ formatDate(addon.last_invoice.created_at) }}
+                </a>
+                <span v-else>-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
   </div>
 </template>
@@ -445,6 +550,7 @@ import { useI18n } from 'vue-i18n';
 import { useUsersStore } from '@/stores/users';
 import { useSubscriptionsStore, type Subscription } from '@/stores/subscriptions';
 import { useInvoicesStore, type Invoice } from '@/stores/invoices';
+import { api } from '@/api';
 
 const route = useRoute();
 const router = useRouter();
@@ -454,7 +560,7 @@ const subscriptionsStore = useSubscriptionsStore();
 const invoicesStore = useInvoicesStore();
 
 // Tab state
-const activeTab = ref<'account' | 'subscriptions' | 'invoices'>('account');
+const activeTab = ref<'account' | 'subscriptions' | 'invoices' | 'addons'>('account');
 
 // User form state
 const loadingUser = ref(true);
@@ -503,6 +609,27 @@ const invoicesPage = ref(1);
 const invoiceSearch = ref('');
 const invoicesPerPage = 10;
 
+// Addons state
+interface AddonInvoice {
+  id: string;
+  invoice_number: string;
+  created_at: string | null;
+}
+interface UserAddonSub {
+  id: string;
+  addon_name: string;
+  status: string;
+  invoice_status: string | null;
+  first_invoice: AddonInvoice | null;
+  last_invoice: AddonInvoice | null;
+  starts_at: string | null;
+  expires_at: string | null;
+  created_at: string | null;
+}
+const addonsLoading = ref(false);
+const userAddonSubs = ref<UserAddonSub[]>([]);
+const addonSearch = ref('');
+
 // Computed
 const subscriptionsTotalPages = computed(() =>
   Math.ceil(subscriptionsTotal.value / subscriptionsPerPage)
@@ -530,6 +657,17 @@ const filteredInvoices = computed(() => {
   return userInvoices.value.filter(inv =>
     inv.invoice_number?.toLowerCase().includes(query) ||
     inv.status?.toLowerCase().includes(query)
+  );
+});
+
+const filteredAddons = computed(() => {
+  if (!addonSearch.value.trim()) {
+    return userAddonSubs.value;
+  }
+  const query = addonSearch.value.toLowerCase();
+  return userAddonSubs.value.filter(a =>
+    a.addon_name?.toLowerCase().includes(query) ||
+    a.status?.toLowerCase().includes(query)
   );
 });
 
@@ -652,6 +790,25 @@ async function switchToInvoices(): Promise<void> {
   activeTab.value = 'invoices';
   if (userInvoices.value.length === 0) {
     await fetchUserInvoices();
+  }
+}
+
+async function switchToAddons(): Promise<void> {
+  activeTab.value = 'addons';
+  if (userAddonSubs.value.length === 0) {
+    await fetchUserAddons();
+  }
+}
+
+async function fetchUserAddons(): Promise<void> {
+  addonsLoading.value = true;
+  try {
+    const response = await api.get(`/admin/users/${userId}/addons`) as { addon_subscriptions: UserAddonSub[] };
+    userAddonSubs.value = response.addon_subscriptions || [];
+  } catch {
+    // Error handled silently
+  } finally {
+    addonsLoading.value = false;
   }
 }
 
@@ -1073,5 +1230,15 @@ onMounted(() => {
 .pagination-info {
   color: #666;
   font-size: 0.9rem;
+}
+
+.invoice-link {
+  color: #3498db;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.invoice-link:hover {
+  text-decoration: underline;
 }
 </style>

@@ -55,6 +55,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/add-ons/:id',
+    name: 'addon-detail',
+    component: () => import('../views/AddonDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/checkout/cart',
     name: 'checkout-cart',
     component: () => import('../views/Checkout.vue'),

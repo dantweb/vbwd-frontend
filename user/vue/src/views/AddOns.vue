@@ -199,6 +199,8 @@ interface AddOn {
   currency: string;
   billing_period: string;
   is_active: boolean;
+  tarif_plan_ids?: string[];
+  tarif_plans?: { id: string; name: string }[];
   conditions?: {
     subscription_parent?: string | null;
   };
@@ -217,18 +219,17 @@ const hasActiveSubscription = computed(() => {
   return subscriptionStore.subscription?.status === 'active';
 });
 
-// Subscription-dependent add-ons (have subscription_parent set)
+// Plan-specific add-ons (bound to one or more tariff plans)
 const subscriptionAddons = computed(() => {
   return allAddons.value.filter(addon =>
-    addon.conditions?.subscription_parent !== null &&
-    addon.conditions?.subscription_parent !== undefined
+    addon.tarif_plan_ids && addon.tarif_plan_ids.length > 0
   );
 });
 
-// Global add-ons (no subscription_parent or null)
+// Independent add-ons (available to all users, no plan restriction)
 const globalAddons = computed(() => {
   return allAddons.value.filter(addon =>
-    !addon.conditions?.subscription_parent
+    !addon.tarif_plan_ids || addon.tarif_plan_ids.length === 0
   );
 });
 
