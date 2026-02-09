@@ -12,37 +12,37 @@
           {{ $t('nav.dashboard') }}
         </router-link>
         <router-link
-          to="/profile"
+          to="/dashboard/profile"
           class="nav-item"
         >
           {{ $t('nav.profile') }}
         </router-link>
         <router-link
-          to="/subscription"
+          to="/dashboard/subscription"
           class="nav-item"
         >
           {{ $t('nav.subscription') }}
         </router-link>
         <router-link
-          to="/invoices"
+          to="/dashboard/invoices"
           class="nav-item"
         >
           {{ $t('nav.invoices') }}
         </router-link>
         <router-link
-          to="/plans"
+          to="/dashboard/plans"
           class="nav-item"
         >
           {{ $t('nav.plans') }}
         </router-link>
         <router-link
-          to="/tokens"
+          to="/dashboard/tokens"
           class="nav-item"
         >
           {{ $t('nav.tokens') }}
         </router-link>
         <router-link
-          to="/add-ons"
+          to="/dashboard/add-ons"
           class="nav-item"
         >
           {{ $t('nav.addons') }}
@@ -231,7 +231,7 @@ function goToCheckout() {
     router.push({ name: 'checkout', params: { planSlug: planItems[0].id } });
   } else {
     // Just tokens/add-ons, go to a generic checkout
-    router.push('/checkout/cart');
+    router.push('/dashboard/checkout/cart');
   }
 }
 

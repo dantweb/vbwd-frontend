@@ -353,7 +353,6 @@
     },
     "tabs": {
       "coreSettings": "Основные настройки",
-      "payments": "Платежи",
       "tokens": "Пакеты токенов"
     },
     "coreSettings": {
@@ -382,14 +381,6 @@
       "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
       "bic": "БИК/SWIFT",
       "bicPlaceholder": "COBADEFFXXX"
-    },
-    "payments": {
-      "title": "Платежи",
-      "paymentMethods": "Способы оплаты",
-      "paymentMethodsDesc": "Настройте доступные способы оплаты",
-      "tab2": "Вкладка 2",
-      "tab2Placeholder": "Содержимое скоро появится...",
-      "noPaymentMethods": "Способы оплаты пока не настроены"
     },
     "tokens": {
       "title": "Пакеты токенов",

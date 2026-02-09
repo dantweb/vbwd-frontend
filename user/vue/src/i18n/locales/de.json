@@ -419,6 +419,10 @@
     "billingAddress": {
       "title": "Rechnungsadresse",
       "loading": "Laden...",
+      "firstNameLabel": "Vorname",
+      "firstNamePlaceholder": "Vorname",
+      "lastNameLabel": "Nachname",
+      "lastNamePlaceholder": "Nachname",
       "companyLabel": "Unternehmen (optional)",
       "companyPlaceholder": "Firmenname",
       "streetLabel": "Straße *",
@@ -430,6 +434,8 @@
       "countryLabel": "Land *",
       "countryPlaceholder": "Land auswählen",
       "errors": {
+        "firstNameRequired": "Vorname ist erforderlich",
+        "lastNameRequired": "Nachname ist erforderlich",
         "streetRequired": "Straße ist erforderlich",
         "cityRequired": "Stadt ist erforderlich",
         "zipRequired": "Postleitzahl ist erforderlich",
@@ -457,6 +463,7 @@
       },
       "loggedIn": {
         "loggedInAs": "Angemeldet als {email}",
+        "loggedInAsName": "Angemeldet als {name}, E-Mail {email}",
         "logoutButton": "Abmelden"
       },
       "passwordStrength": {
@@ -484,5 +491,11 @@
       "defaultMessage": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an, um fortzufahren.",
       "loginButton": "Anmelden"
     }
+  },
+  "landing1": {
+    "title": "Wählen Sie Ihren Tarif",
+    "subtitle": "Wählen Sie den Tarif, der am besten zu Ihnen passt",
+    "noPlans": "Derzeit sind keine Tarife verfügbar.",
+    "choosePlan": "Tarif wählen"
   }
 }

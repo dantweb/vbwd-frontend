@@ -20,7 +20,7 @@
     >
       <p>{{ error }}</p>
       <router-link
-        to="/subscription"
+        to="/dashboard/subscription"
         class="btn secondary"
       >
         {{ $t('common.backToSubscription') }}
@@ -90,7 +90,7 @@
         >
           <p>{{ $t('invoices.pay.alreadyPaid') }}</p>
           <router-link
-            to="/subscription"
+            to="/dashboard/subscription"
             class="btn primary"
           >
             {{ $t('common.backToSubscription') }}
@@ -116,7 +116,7 @@
           </button>
 
           <router-link
-            to="/subscription"
+            to="/dashboard/subscription"
             class="btn secondary"
           >
             {{ $t('common.cancel') }}
@@ -133,7 +133,7 @@
         <p>{{ $t('invoices.pay.successMessage') }}</p>
         <p>{{ $t('invoices.pay.invoiceNowPaid', { number: invoice.invoice_number }) }}</p>
         <router-link
-          to="/subscription"
+          to="/dashboard/subscription"
           class="btn primary"
         >
           {{ $t('common.backToSubscription') }}

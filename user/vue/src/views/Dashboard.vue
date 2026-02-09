@@ -61,7 +61,7 @@
           </div>
         </div>
         <router-link
-          to="/profile"
+          to="/dashboard/profile"
           class="card-link"
         >
           {{ $t('dashboard.profileCard.viewProfile') }} →
@@ -115,7 +115,7 @@
         >
           <p>{{ $t('dashboard.subscriptionCard.noActiveSubscription') }}</p>
           <router-link
-            to="/plans"
+            to="/dashboard/plans"
             class="btn primary"
           >
             {{ $t('common.browsePlans') }}
@@ -123,7 +123,7 @@
         </div>
         <router-link
           v-if="subscription"
-          to="/subscription"
+          to="/dashboard/subscription"
           class="card-link"
         >
           {{ $t('dashboard.subscriptionCard.manageSubscription') }} →
@@ -184,7 +184,7 @@
             <router-link
               v-for="addon in activeAddons"
               :key="addon.id"
-              :to="`/add-ons/${addon.id}`"
+              :to="`/dashboard/add-ons/${addon.id}`"
               class="addon-item addon-item-link"
               data-testid="addon-item"
             >
@@ -200,7 +200,7 @@
             <router-link
               v-for="addon in inactiveAddons"
               :key="addon.id"
-              :to="`/add-ons/${addon.id}`"
+              :to="`/dashboard/add-ons/${addon.id}`"
               class="addon-item addon-item-link"
               data-testid="addon-item-inactive"
             >
@@ -219,7 +219,7 @@
           <p>{{ $t('dashboard.addonsCard.noAddons') }}</p>
         </div>
         <router-link
-          to="/add-ons"
+          to="/dashboard/add-ons"
           class="card-link"
         >
           {{ $t('dashboard.addonsCard.browseAddons') }} →
@@ -261,7 +261,7 @@
           <p>{{ $t('dashboard.tokenHistoryCard.noActivity') }}</p>
         </div>
         <router-link
-          to="/tokens"
+          to="/dashboard/tokens"
           class="card-link"
         >
           {{ $t('dashboard.tokenHistoryCard.purchaseTokens') }} →
@@ -306,7 +306,7 @@
           <p>{{ $t('dashboard.invoicesCard.noInvoices') }}</p>
         </div>
         <router-link
-          to="/invoices"
+          to="/dashboard/invoices"
           class="card-link"
         >
           {{ $t('dashboard.invoicesCard.viewAllInvoices') }} →
@@ -318,25 +318,25 @@
         <h3>{{ $t('dashboard.quickActions.title') }}</h3>
         <div class="actions">
           <router-link
-            to="/profile"
+            to="/dashboard/profile"
             class="action-btn"
           >
             {{ $t('dashboard.quickActions.editProfile') }}
           </router-link>
           <router-link
-            to="/subscription"
+            to="/dashboard/subscription"
             class="action-btn"
           >
             {{ $t('dashboard.quickActions.manageSubscription') }}
           </router-link>
           <router-link
-            to="/plans"
+            to="/dashboard/plans"
             class="action-btn"
           >
             {{ $t('dashboard.quickActions.browsePlans') }}
           </router-link>
           <router-link
-            to="/invoices"
+            to="/dashboard/invoices"
             class="action-btn"
           >
             {{ $t('dashboard.quickActions.viewInvoices') }}

@@ -353,7 +353,6 @@
     },
     "tabs": {
       "coreSettings": "Paramètres principaux",
-      "payments": "Paiements",
       "tokens": "Forfaits de jetons"
     },
     "coreSettings": {
@@ -382,14 +381,6 @@
       "ibanPlaceholder": "FR76 3000 6000 0112 3456 7890 189",
       "bic": "BIC/SWIFT",
       "bicPlaceholder": "BNPAFRPP"
-    },
-    "payments": {
-      "title": "Paiements",
-      "paymentMethods": "Modes de paiement",
-      "paymentMethodsDesc": "Configurez les modes de paiement disponibles",
-      "tab2": "Onglet 2",
-      "tab2Placeholder": "Contenu à venir...",
-      "noPaymentMethods": "Aucun mode de paiement configuré"
     },
     "tokens": {
       "title": "Forfaits de jetons",

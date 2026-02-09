@@ -353,7 +353,6 @@
     },
     "tabs": {
       "coreSettings": "基本設定",
-      "payments": "支払い",
       "tokens": "トークンバンドル"
     },
     "coreSettings": {
@@ -382,14 +381,6 @@
       "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
       "bic": "BIC/SWIFT",
       "bicPlaceholder": "BOABORPP"
-    },
-    "payments": {
-      "title": "支払い",
-      "paymentMethods": "支払い方法",
-      "paymentMethodsDesc": "利用可能な支払い方法を設定",
-      "tab2": "タブ2",
-      "tab2Placeholder": "コンテンツ準備中...",
-      "noPaymentMethods": "支払い方法が設定されていません"
     },
     "tokens": {
       "title": "トークンバンドル",

@@ -118,7 +118,8 @@
     >
       <div class="logged-in-info">
         <span class="checkmark">✓</span>
-        {{ $t('components.emailBlock.loggedIn.loggedInAs', { email: displayEmail }) }}
+        <span v-if="userName">{{ $t('components.emailBlock.loggedIn.loggedInAsName', { name: userName, email: displayEmail }) }}</span>
+        <span v-else>{{ $t('components.emailBlock.loggedIn.loggedInAs', { email: displayEmail }) }}</span>
       </div>
       <button
         class="btn secondary logout-btn"
@@ -168,6 +169,7 @@ const passwordConfirm = ref('');
 const isLoggedIn = ref(false);
 const authError = ref<string | null>(null);
 const submitting = ref(false);
+const userName = ref('');
 
 const displayEmail = computed(() => emailCheck.email.value || emailInput.value);
 
@@ -284,6 +286,7 @@ const handleLogout = () => {
   analytics.track('logout-clicked', { timestamp: Date.now() });
   clearApiAuth();
   isLoggedIn.value = false;
+  userName.value = '';
   emailCheck.reset();
   emailInput.value = '';
   password.value = '';
@@ -292,10 +295,19 @@ const handleLogout = () => {
 };
 
 // Check if already logged in on mount
-onMounted(() => {
+onMounted(async () => {
   if (props.isAuthenticated || checkApiAuth()) {
     isLoggedIn.value = true;
     emailInput.value = props.initialEmail || localStorage.getItem('user_email') || '';
+    // Fetch user name for display
+    try {
+      const details = await api.get('/user/details') as Record<string, string | null>;
+      const parts = [details.first_name, details.last_name].filter(Boolean);
+      if (parts.length > 0) userName.value = parts.join(' ');
+      if (details.email) emailInput.value = details.email;
+    } catch {
+      // Not critical, email-only display is fine
+    }
   }
 });
 

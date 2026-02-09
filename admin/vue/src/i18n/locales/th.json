@@ -353,7 +353,6 @@
     },
     "tabs": {
       "coreSettings": "การตั้งค่าหลัก",
-      "payments": "การชำระเงิน",
       "tokens": "แพ็คเกจโทเค็น"
     },
     "coreSettings": {
@@ -382,14 +381,6 @@
       "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
       "bic": "BIC/SWIFT",
       "bicPlaceholder": "COBADEFFXXX"
-    },
-    "payments": {
-      "title": "การชำระเงิน",
-      "paymentMethods": "วิธีการชำระเงิน",
-      "paymentMethodsDesc": "กำหนดค่าวิธีการชำระเงินที่มี",
-      "tab2": "แท็บ 2",
-      "tab2Placeholder": "เนื้อหาเร็วๆ นี้...",
-      "noPaymentMethods": "ยังไม่มีการกำหนดค่าวิธีการชำระเงิน"
     },
     "tokens": {
       "title": "แพ็คเกจโทเค็น",

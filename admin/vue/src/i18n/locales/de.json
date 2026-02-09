@@ -356,7 +356,6 @@
     },
     "tabs": {
       "coreSettings": "Kerneinstellungen",
-      "payments": "Zahlungen",
       "tokens": "Token-Pakete"
     },
     "coreSettings": {
@@ -385,14 +384,6 @@
       "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
       "bic": "BIC/SWIFT",
       "bicPlaceholder": "COBADEFFXXX"
-    },
-    "payments": {
-      "title": "Zahlungen",
-      "paymentMethods": "Zahlungsmethoden",
-      "paymentMethodsDesc": "Konfigurieren Sie verfügbare Zahlungsmethoden für die Kasse",
-      "tab2": "Tab 2",
-      "tab2Placeholder": "Inhalt folgt in Kürze...",
-      "noPaymentMethods": "Noch keine Zahlungsmethoden konfiguriert"
     },
     "tokens": {
       "title": "Token-Pakete",

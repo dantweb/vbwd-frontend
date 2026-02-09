@@ -13,6 +13,51 @@
     </div>
 
     <div v-else>
+      <!-- First Name + Last Name -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">{{ $t('components.billingAddress.firstNameLabel') }} *</label>
+          <input
+            id="firstName"
+            v-model="address.firstName"
+            type="text"
+            :placeholder="$t('components.billingAddress.firstNamePlaceholder')"
+            data-testid="billing-first-name"
+            :disabled="props.readonly"
+            :class="{ error: touched.firstName && errors.firstName, disabled: props.readonly }"
+            @blur="touched.firstName = true; validate()"
+          >
+          <span
+            v-if="touched.firstName && errors.firstName"
+            data-testid="billing-first-name-error"
+            class="error-text"
+          >
+            {{ errors.firstName }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">{{ $t('components.billingAddress.lastNameLabel') }} *</label>
+          <input
+            id="lastName"
+            v-model="address.lastName"
+            type="text"
+            :placeholder="$t('components.billingAddress.lastNamePlaceholder')"
+            data-testid="billing-last-name"
+            :disabled="props.readonly"
+            :class="{ error: touched.lastName && errors.lastName, disabled: props.readonly }"
+            @blur="touched.lastName = true; validate()"
+          >
+          <span
+            v-if="touched.lastName && errors.lastName"
+            data-testid="billing-last-name-error"
+            class="error-text"
+          >
+            {{ errors.lastName }}
+          </span>
+        </div>
+      </div>
+
       <!-- Company (optional) -->
       <div class="form-group">
         <label for="company">{{ $t('components.billingAddress.companyLabel') }}</label>
@@ -50,7 +95,7 @@
       </div>
 
       <!-- City + ZIP -->
-      <div class="form-row">
+      <div class="form-row city-zip">
         <div class="form-group">
           <label for="city">{{ $t('components.billingAddress.cityLabel') }}</label>
           <input
@@ -134,6 +179,8 @@ import { useI18n } from 'vue-i18n';
 import { api, isAuthenticated } from '@/api';
 
 export interface BillingAddressData {
+  firstName: string;
+  lastName: string;
   company: string;
   street: string;
   city: string;
@@ -161,6 +208,8 @@ const loading = ref(true);
 const countries = ref<Country[]>([]);
 
 const address = reactive<BillingAddressData>({
+  firstName: '',
+  lastName: '',
   company: '',
   street: '',
   city: '',
@@ -169,6 +218,8 @@ const address = reactive<BillingAddressData>({
 });
 
 const touched = reactive({
+  firstName: false,
+  lastName: false,
   street: false,
   city: false,
   zip: false,
@@ -178,12 +229,14 @@ const touched = reactive({
 const errors = reactive<Record<string, string>>({});
 
 const isValid = computed(() =>
-  !errors.street && !errors.city && !errors.zip && !errors.country &&
-  address.street && address.city && address.zip && address.country
+  !errors.firstName && !errors.lastName && !errors.street && !errors.city && !errors.zip && !errors.country &&
+  address.firstName && address.lastName && address.street && address.city && address.zip && address.country
 );
 
 const validate = () => {
   // Only validate required fields
+  errors.firstName = !address.firstName ? t('components.billingAddress.errors.firstNameRequired') : '';
+  errors.lastName = !address.lastName ? t('components.billingAddress.errors.lastNameRequired') : '';
   errors.street = !address.street ? t('components.billingAddress.errors.streetRequired') : '';
   errors.city = !address.city ? t('components.billingAddress.errors.cityRequired') : '';
   errors.zip = !address.zip ? t('components.billingAddress.errors.zipRequired') : '';
@@ -214,14 +267,18 @@ const loadSavedAddress = async () => {
 
   try {
     const saved = await api.get('/user/details') as Record<string, string | null>;
+    address.firstName = saved.first_name || '';
+    address.lastName = saved.last_name || '';
     address.company = saved.company || '';
     address.street = saved.address_line_1 || '';
     address.city = saved.city || '';
     address.zip = saved.postal_code || '';
     address.country = saved.country || '';
 
-    // In readonly mode, auto-validate immediately so the form emits valid
-    if (props.readonly) {
+    // Auto-validate when address was loaded from server
+    if (address.street || address.city || address.firstName) {
+      touched.firstName = true;
+      touched.lastName = true;
       touched.street = true;
       touched.city = true;
       touched.zip = true;
@@ -273,8 +330,12 @@ h3 {
 
 .form-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 15px;
+}
+
+.form-row.city-zip {
+  grid-template-columns: 2fr 1fr;
 }
 
 @media (max-width: 480px) {

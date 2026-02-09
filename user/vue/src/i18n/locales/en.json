@@ -419,6 +419,10 @@
     "billingAddress": {
       "title": "Billing Address",
       "loading": "Loading...",
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "First name",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "Last name",
       "companyLabel": "Company (optional)",
       "companyPlaceholder": "Company name",
       "streetLabel": "Street Address *",
@@ -430,6 +434,8 @@
       "countryLabel": "Country *",
       "countryPlaceholder": "Select country",
       "errors": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
         "streetRequired": "Street is required",
         "cityRequired": "City is required",
         "zipRequired": "ZIP code is required",
@@ -457,6 +463,7 @@
       },
       "loggedIn": {
         "loggedInAs": "Logged in as {email}",
+        "loggedInAsName": "Logged in as {name}, email {email}",
         "logoutButton": "Logout"
       },
       "passwordStrength": {
@@ -484,5 +491,11 @@
       "defaultMessage": "Your session has expired. Please log in again to continue.",
       "loginButton": "Log In"
     }
+  },
+  "landing1": {
+    "title": "Choose Your Plan",
+    "subtitle": "Select the plan that works best for you",
+    "noPlans": "No plans available at this time.",
+    "choosePlan": "Choose Plan"
   }
 }

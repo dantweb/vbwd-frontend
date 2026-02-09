@@ -59,7 +59,6 @@ describe('Settings.vue', () => {
 
     expect(wrapper.find('[data-testid="settings-tabs"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-core-settings"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="tab-payments"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-tokens"]').exists()).toBe(true);
   });
 
@@ -152,10 +151,6 @@ describe('Settings.vue', () => {
     // Initially core settings tab should be visible
     expect(wrapper.find('[data-testid="core-settings-content"]').isVisible()).toBe(true);
 
-    // Click on payments tab
-    await wrapper.find('[data-testid="tab-payments"]').trigger('click');
-    expect(wrapper.find('[data-testid="payments-content"]').isVisible()).toBe(true);
-
     // Click on tokens tab
     await wrapper.find('[data-testid="tab-tokens"]').trigger('click');
     expect(wrapper.find('[data-testid="tokens-content"]').isVisible()).toBe(true);
@@ -175,21 +170,6 @@ describe('Settings.vue', () => {
     expect(wrapper.text()).toContain('Failed to load settings');
 
     consoleSpy.mockRestore();
-  });
-
-  it('displays payments subtabs', async () => {
-    const wrapper = mount(Settings, {
-      global: { plugins: [router] }
-    });
-
-    await flushPromises();
-
-    // Switch to payments tab
-    await wrapper.find('[data-testid="tab-payments"]').trigger('click');
-
-    expect(wrapper.find('[data-testid="payments-subtabs"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="subtab-payment-methods"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="subtab-payments-tab2"]').exists()).toBe(true);
   });
 
   it('displays token bundles section in tokens tab', async () => {

@@ -353,7 +353,6 @@
     },
     "tabs": {
       "coreSettings": "核心设置",
-      "payments": "支付",
       "tokens": "代币包"
     },
     "coreSettings": {
@@ -382,14 +381,6 @@
       "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
       "bic": "BIC/SWIFT",
       "bicPlaceholder": "COBADEFFXXX"
-    },
-    "payments": {
-      "title": "支付",
-      "paymentMethods": "支付方式",
-      "paymentMethodsDesc": "配置可用的支付方式",
-      "tab2": "标签页2",
-      "tab2Placeholder": "内容即将推出...",
-      "noPaymentMethods": "尚未配置支付方式"
     },
     "tokens": {
       "title": "代币包",

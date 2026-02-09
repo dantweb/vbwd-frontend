@@ -878,7 +878,7 @@ function formatInvoiceStatus(status: string): string {
   return translated === statusKey ? status : translated;
 }
 
-function formatDate(dateString?: string): string {
+function formatDate(dateString?: string | null): string {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString();
 }

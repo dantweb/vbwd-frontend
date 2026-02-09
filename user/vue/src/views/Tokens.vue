@@ -3,7 +3,7 @@
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
       <router-link
-        to="/plans"
+        to="/dashboard/plans"
         data-testid="breadcrumb-plans"
       >
         {{ $t('tokens.breadcrumbPlans') }}
@@ -96,7 +96,7 @@
     <!-- Back to Plans -->
     <div class="page-footer">
       <router-link
-        to="/plans"
+        to="/dashboard/plans"
         class="back-link"
         data-testid="back-to-plans"
       >

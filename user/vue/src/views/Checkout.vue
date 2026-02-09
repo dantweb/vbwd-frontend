@@ -20,7 +20,7 @@
     >
       <p>{{ store.error }}</p>
       <router-link
-        to="/plans"
+        to="/dashboard/plans"
         class="btn secondary"
       >
         {{ $t('common.backToPlans') }}
@@ -274,7 +274,7 @@
       <!-- Confirm Section -->
       <div class="checkout-actions">
         <router-link
-          to="/plans"
+          to="/dashboard/plans"
           class="btn secondary"
         >
           {{ $t('common.backToPlans') }}
@@ -306,7 +306,7 @@
     >
       <p>{{ $t('checkout.noPlanSelected') }}</p>
       <router-link
-        to="/plans"
+        to="/dashboard/plans"
         class="btn primary"
       >
         {{ $t('common.browsePlans') }}
@@ -442,20 +442,20 @@ function isSelectedAddon(addonId: string): boolean {
 }
 
 function goToSubscription() {
-  router.push('/subscription');
+  router.push('/dashboard/subscription');
 }
 
 function goToInvoice() {
   const invoiceId = store.checkoutResult?.invoice?.id;
   if (invoiceId) {
-    router.push(`/invoices/${invoiceId}`);
+    router.push(`/dashboard/invoices/${invoiceId}`);
   } else {
-    router.push('/invoices');
+    router.push('/dashboard/invoices');
   }
 }
 
 function goToPlans() {
-  router.push('/plans');
+  router.push('/dashboard/plans');
 }
 </script>
 

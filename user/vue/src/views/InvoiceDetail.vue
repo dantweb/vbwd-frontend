@@ -20,7 +20,7 @@
     >
       <p>{{ error }}</p>
       <router-link
-        to="/subscription"
+        to="/dashboard/subscription"
         class="btn secondary"
       >
         {{ $t('common.backToSubscription') }}
@@ -110,7 +110,7 @@
         <!-- Actions -->
         <div class="actions">
           <router-link
-            to="/subscription"
+            to="/dashboard/subscription"
             class="btn secondary"
           >
             {{ $t('common.back') }}
@@ -123,7 +123,7 @@
           </button>
           <router-link
             v-if="invoice.status === 'pending'"
-            :to="`/invoices/${invoice.id}/pay`"
+            :to="`/dashboard/invoices/${invoice.id}/pay`"
             class="btn primary"
           >
             {{ $t('invoices.detail.payNow') }}
@@ -227,11 +227,11 @@ function itemLink(item: { type?: string; item_id?: string }): string | null {
   if (!item.item_id) return null;
   switch (item.type) {
     case 'subscription':
-      return '/plans';
+      return '/dashboard/plans';
     case 'token_bundle':
-      return '/tokens';
+      return '/dashboard/tokens';
     case 'add_on':
-      return '/addons';
+      return '/dashboard/add-ons';
     default:
       return null;
   }

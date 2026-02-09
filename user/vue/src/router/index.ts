@@ -19,67 +19,67 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/profile',
+    path: '/dashboard/profile',
     name: 'profile',
     component: () => import('../views/Profile.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/subscription',
+    path: '/dashboard/subscription',
     name: 'subscription',
     component: () => import('../views/Subscription.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/invoices',
+    path: '/dashboard/invoices',
     name: 'invoices',
     component: () => import('../views/Invoices.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/plans',
+    path: '/dashboard/plans',
     name: 'plans',
     component: () => import('../views/Plans.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/tokens',
+    path: '/dashboard/tokens',
     name: 'tokens',
     component: () => import('../views/Tokens.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/add-ons',
+    path: '/dashboard/add-ons',
     name: 'add-ons',
     component: () => import('../views/AddOns.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/add-ons/:id',
+    path: '/dashboard/add-ons/:id',
     name: 'addon-detail',
     component: () => import('../views/AddonDetail.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/checkout/cart',
+    path: '/dashboard/checkout/cart',
     name: 'checkout-cart',
     component: () => import('../views/Checkout.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/checkout/:planSlug',
+    path: '/dashboard/checkout/:planSlug',
     name: 'checkout',
     component: () => import('../views/Checkout.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/invoices/:invoiceId',
+    path: '/dashboard/invoices/:invoiceId',
     name: 'invoice-detail',
     component: () => import('../views/InvoiceDetail.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/invoices/:invoiceId/pay',
+    path: '/dashboard/invoices/:invoiceId/pay',
     name: 'invoice-pay',
     component: () => import('../views/InvoicePay.vue'),
     meta: { requiresAuth: true }

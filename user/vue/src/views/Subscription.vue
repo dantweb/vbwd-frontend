@@ -84,7 +84,7 @@
         >
           <p>{{ $t('subscription.currentPlan.noActiveSubscription') }}</p>
           <router-link
-            to="/plans"
+            to="/dashboard/plans"
             class="btn primary"
           >
             {{ $t('common.browsePlans') }}
@@ -152,7 +152,7 @@
         <h2>{{ $t('subscription.manage.title') }}</h2>
         <div class="actions">
           <router-link
-            to="/plans"
+            to="/dashboard/plans"
             class="btn primary"
             data-testid="change-plan"
           >
@@ -594,12 +594,12 @@ async function downloadInvoice(invoiceId: string): Promise<void> {
 
 function payInvoice(invoice: Invoice): void {
   // Navigate to invoice payment page
-  router.push(`/invoices/${invoice.id}/pay`);
+  router.push(`/dashboard/invoices/${invoice.id}/pay`);
 }
 
 function goToPurchaseTokens(): void {
   // Navigate to plans page where users can select token bundles during checkout
-  router.push('/plans');
+  router.push('/dashboard/plans');
 }
 
 function showSuccess(message: string): void {

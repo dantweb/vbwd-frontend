@@ -353,7 +353,6 @@
     },
     "tabs": {
       "coreSettings": "Configuración Principal",
-      "payments": "Pagos",
       "tokens": "Paquetes de Tokens"
     },
     "coreSettings": {
@@ -382,14 +381,6 @@
       "ibanPlaceholder": "ES91 2100 0418 4502 0005 1332",
       "bic": "BIC/SWIFT",
       "bicPlaceholder": "CAIXESBBXXX"
-    },
-    "payments": {
-      "title": "Pagos",
-      "paymentMethods": "Métodos de Pago",
-      "paymentMethodsDesc": "Configure los métodos de pago disponibles",
-      "tab2": "Pestaña 2",
-      "tab2Placeholder": "Contenido próximamente...",
-      "noPaymentMethods": "No hay métodos de pago configurados"
     },
     "tokens": {
       "title": "Paquetes de Tokens",

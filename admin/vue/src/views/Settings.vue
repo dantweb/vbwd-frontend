@@ -18,14 +18,6 @@
         {{ $t('settings.tabs.coreSettings') }}
       </button>
       <button
-        data-testid="tab-payments"
-        class="tab-btn"
-        :class="{ active: activeTab === 'payments' }"
-        @click="activeTab = 'payments'"
-      >
-        {{ $t('settings.tabs.payments') }}
-      </button>
-      <button
         data-testid="tab-tokens"
         class="tab-btn"
         :class="{ active: activeTab === 'tokens' }"
@@ -250,87 +242,6 @@
         </div>
       </div>
 
-      <!-- Payments Tab -->
-      <div
-        v-show="activeTab === 'payments'"
-        data-testid="payments-content"
-        class="payments-tab"
-      >
-        <!-- Payments Subtabs -->
-        <div
-          class="subtabs-container"
-          data-testid="payments-subtabs"
-        >
-          <button
-            data-testid="subtab-payment-methods"
-            class="subtab-btn"
-            :class="{ active: paymentsSubtab === 'methods' }"
-            @click="paymentsSubtab = 'methods'"
-          >
-            {{ $t('settings.payments.paymentMethods') }}
-          </button>
-          <button
-            data-testid="subtab-payments-tab2"
-            class="subtab-btn"
-            :class="{ active: paymentsSubtab === 'tab2' }"
-            @click="paymentsSubtab = 'tab2'"
-          >
-            {{ $t('settings.payments.tab2') }}
-          </button>
-        </div>
-
-        <!-- Payment Methods Subtab -->
-        <div
-          v-show="paymentsSubtab === 'methods'"
-          data-testid="payment-methods-content"
-          class="subtab-content"
-        >
-          <div class="form-section">
-            <h3>{{ $t('settings.payments.paymentMethods') }}</h3>
-            <p class="section-description">
-              {{ $t('settings.payments.paymentMethodsDesc') }}
-            </p>
-
-            <div
-              v-if="paymentMethods.length === 0"
-              class="empty-state"
-            >
-              <p>{{ $t('settings.payments.noPaymentMethods') }}</p>
-            </div>
-
-            <div
-              v-else
-              class="payment-methods-list"
-            >
-              <div
-                v-for="method in paymentMethods"
-                :key="method.id"
-                class="payment-method-item"
-              >
-                <span class="method-name">{{ method.name }}</span>
-                <span
-                  class="method-status"
-                  :class="{ active: method.is_active }"
-                >
-                  {{ method.is_active ? $t('common.active') : $t('common.inactive') }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab2 Subtab (Placeholder) -->
-        <div
-          v-show="paymentsSubtab === 'tab2'"
-          data-testid="payments-tab2-content"
-          class="subtab-content"
-        >
-          <div class="placeholder-content">
-            <p>{{ $t('settings.payments.tab2Placeholder') }}</p>
-          </div>
-        </div>
-      </div>
-
       <!-- Tokens Tab -->
       <div
         v-show="activeTab === 'tokens'"
@@ -517,11 +428,9 @@ const { t } = useI18n();
 const tokenBundlesStore = useTokenBundlesStore();
 
 // Tab state
-type MainTab = 'core' | 'payments' | 'tokens';
-type PaymentsSubtab = 'methods' | 'tab2';
+type MainTab = 'core' | 'tokens';
 
 const activeTab = ref<MainTab>('core');
-const paymentsSubtab = ref<PaymentsSubtab>('methods');
 
 // Loading/error states
 const loading = ref(true);
@@ -559,15 +468,6 @@ const coreSettingsData = reactive<CoreSettings>({
   bank_bic: '',
 });
 
-// Payment methods
-interface PaymentMethod {
-  id: string;
-  name: string;
-  is_active: boolean;
-}
-
-const paymentMethods = ref<PaymentMethod[]>([]);
-
 async function fetchSettings(): Promise<void> {
   loading.value = true;
   fetchError.value = null;
@@ -588,15 +488,6 @@ async function fetchSettings(): Promise<void> {
     coreSettingsData.bank_name = (settings.bank_name as string) || '';
     coreSettingsData.bank_iban = (settings.bank_iban as string) || '';
     coreSettingsData.bank_bic = (settings.bank_bic as string) || '';
-
-    // Fetch payment methods if available
-    try {
-      const methodsResponse = await api.get('/admin/payment-methods') as { payment_methods: PaymentMethod[] };
-      paymentMethods.value = methodsResponse.payment_methods || [];
-    } catch {
-      // Payment methods endpoint may not exist yet
-      paymentMethods.value = [];
-    }
   } catch (error) {
     fetchError.value = (error as Error).message || 'Failed to load settings';
   } finally {
@@ -763,40 +654,6 @@ onMounted(() => {
   border-bottom-color: #3498db;
 }
 
-/* Subtabs */
-.subtabs-container {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid #e9ecef;
-  margin-bottom: 20px;
-}
-
-.subtab-btn {
-  padding: 10px 20px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: #888;
-  transition: all 0.2s;
-}
-
-.subtab-btn:hover {
-  color: #3498db;
-}
-
-.subtab-btn.active {
-  color: #3498db;
-  border-bottom-color: #3498db;
-}
-
-.subtab-content {
-  padding: 10px 0;
-}
-
 /* Loading/Error States */
 .loading-state,
 .error-state {
@@ -945,41 +802,6 @@ onMounted(() => {
 .save-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
-}
-
-/* Payment Methods List */
-.payment-methods-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.payment-method-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  background: #f8f9fa;
-  border-radius: 4px;
-}
-
-.method-name {
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-.method-status {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  background: #e9ecef;
-  color: #666;
-}
-
-.method-status.active {
-  background: #d4edda;
-  color: #155724;
 }
 
 /* Empty/Placeholder States */
