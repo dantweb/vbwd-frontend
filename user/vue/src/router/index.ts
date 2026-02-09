@@ -43,15 +43,33 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/dashboard/plans/:planId',
+    name: 'plan-detail',
+    component: () => import('../views/PlanDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/dashboard/tokens',
     name: 'tokens',
     component: () => import('../views/Tokens.vue'),
     meta: { requiresAuth: true }
   },
   {
+    path: '/dashboard/tokens/:bundleId',
+    name: 'token-bundle-detail',
+    component: () => import('../views/TokenBundleDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/dashboard/add-ons',
     name: 'add-ons',
     component: () => import('../views/AddOns.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/add-ons/info/:addonId',
+    name: 'addon-info',
+    component: () => import('../views/AddonInfoView.vue'),
     meta: { requiresAuth: true }
   },
   {

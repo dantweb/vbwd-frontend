@@ -497,5 +497,40 @@
     "subtitle": "Wählen Sie den Tarif, der am besten zu Ihnen passt",
     "noPlans": "Derzeit sind keine Tarife verfügbar.",
     "choosePlan": "Tarif wählen"
+  },
+  "planDetail": {
+    "title": "Tarifdetails",
+    "loading": "Tarifdetails werden geladen...",
+    "error": "Tarifdetails konnten nicht geladen werden.",
+    "backLink": "Zurück",
+    "name": "Name",
+    "price": "Preis",
+    "billingPeriod": "Abrechnungszeitraum",
+    "description": "Beschreibung",
+    "features": "Funktionen",
+    "status": "Status",
+    "active": "Aktiv",
+    "archived": "Archiviert"
+  },
+  "tokenBundleDetail": {
+    "title": "Token-Paket-Details",
+    "loading": "Token-Paket wird geladen...",
+    "error": "Token-Paket konnte nicht geladen werden.",
+    "backLink": "Zurück",
+    "name": "Name",
+    "tokenAmount": "Token-Anzahl",
+    "price": "Preis",
+    "description": "Beschreibung"
+  },
+  "addonInfo": {
+    "title": "Add-on-Details",
+    "loading": "Add-on-Details werden geladen...",
+    "error": "Add-on-Details konnten nicht geladen werden.",
+    "backLink": "Zurück",
+    "name": "Name",
+    "price": "Preis",
+    "currency": "Währung",
+    "billingPeriod": "Abrechnungszeitraum",
+    "description": "Beschreibung"
   }
 }

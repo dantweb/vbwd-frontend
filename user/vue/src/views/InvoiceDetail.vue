@@ -143,6 +143,7 @@ import { api } from '@/api';
 interface LineItem {
   type: string;
   item_id?: string;
+  catalog_item_id?: string;
   description: string;
   quantity: number;
   unit_price: string;
@@ -223,15 +224,16 @@ function itemTypeLabel(type?: string): string {
   return labels[type || ''] || type || 'Item';
 }
 
-function itemLink(item: { type?: string; item_id?: string }): string | null {
-  if (!item.item_id) return null;
+function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: string }): string | null {
+  const catalogId = item.catalog_item_id || item.item_id;
+  if (!catalogId) return null;
   switch (item.type) {
     case 'subscription':
-      return '/dashboard/plans';
+      return `/dashboard/plans/${catalogId}`;
     case 'token_bundle':
-      return '/dashboard/tokens';
+      return `/dashboard/tokens/${catalogId}`;
     case 'add_on':
-      return '/dashboard/add-ons';
+      return `/dashboard/add-ons/info/${catalogId}`;
     default:
       return null;
   }

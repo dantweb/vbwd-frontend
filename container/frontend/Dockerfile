@@ -34,6 +34,7 @@ WORKDIR /app/admin/vue
 COPY admin/vue/package*.json ./
 RUN npm install
 COPY admin/vue/ ./
+COPY admin/plugins/ /app/admin/plugins/
 # Skip type check for production build (run in CI instead)
 RUN npx vite build
 

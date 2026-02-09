@@ -278,10 +278,11 @@
           v-if="recentInvoices.length > 0"
           class="invoices-list"
         >
-          <div
+          <router-link
             v-for="invoice in recentInvoices"
             :key="invoice.id"
-            class="invoice-item"
+            :to="`/dashboard/invoices/${invoice.id}`"
+            class="invoice-item invoice-item-link"
             data-testid="invoice-item"
           >
             <div class="invoice-info">
@@ -297,7 +298,7 @@
                 {{ invoice.status }}
               </span>
             </div>
-          </div>
+          </router-link>
         </div>
         <div
           v-else
@@ -861,13 +862,15 @@ h1 {
   margin-bottom: 6px;
 }
 
-.addon-item-link {
+.addon-item-link,
+.invoice-item-link {
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.addon-item-link:hover {
+.addon-item-link:hover,
+.invoice-item-link:hover {
   background-color: #e9ecef;
 }
 

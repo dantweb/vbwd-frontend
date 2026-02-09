@@ -497,5 +497,40 @@
     "subtitle": "Select the plan that works best for you",
     "noPlans": "No plans available at this time.",
     "choosePlan": "Choose Plan"
+  },
+  "planDetail": {
+    "title": "Plan Details",
+    "loading": "Loading plan details...",
+    "error": "Failed to load plan details.",
+    "backLink": "Back",
+    "name": "Name",
+    "price": "Price",
+    "billingPeriod": "Billing Period",
+    "description": "Description",
+    "features": "Features",
+    "status": "Status",
+    "active": "Active",
+    "archived": "Archived"
+  },
+  "tokenBundleDetail": {
+    "title": "Token Bundle Details",
+    "loading": "Loading token bundle...",
+    "error": "Failed to load token bundle.",
+    "backLink": "Back",
+    "name": "Name",
+    "tokenAmount": "Token Amount",
+    "price": "Price",
+    "description": "Description"
+  },
+  "addonInfo": {
+    "title": "Add-On Details",
+    "loading": "Loading add-on details...",
+    "error": "Failed to load add-on details.",
+    "backLink": "Back",
+    "name": "Name",
+    "price": "Price",
+    "currency": "Currency",
+    "billingPeriod": "Billing Period",
+    "description": "Description"
   }
 }

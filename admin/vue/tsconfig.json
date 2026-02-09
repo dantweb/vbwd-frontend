@@ -15,9 +15,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@plugins/*": ["../plugins/*"]
+      "@plugins/*": ["../plugins/*"],
+      "vue": ["./node_modules/vue"],
+      "@vbwd/view-component": ["./node_modules/@vbwd/view-component"]
     },
     "types": ["vite/client", "vitest/globals"]
   },
