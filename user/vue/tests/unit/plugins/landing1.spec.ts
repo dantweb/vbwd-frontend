@@ -3,8 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component'
 import type { IPlatformSDK } from '@vbwd/view-component'
-import { landing1Plugin } from '../../../plugins/landing1'
-import Landing1View from '../../../plugins/landing1/Landing1View.vue'
+import { landing1Plugin } from '../../../../plugins/landing1'
+import Landing1View from '../../../../plugins/landing1/Landing1View.vue'
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (key: string) => key })

@@ -5,8 +5,8 @@ import router from './router';
 import { initializeApi } from '@/api';
 import i18n, { initLocale } from '@/i18n';
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component';
-import { landing1Plugin } from '../plugins/landing1';
-import { checkoutPlugin } from '../plugins/checkout';
+import { landing1Plugin } from '../../plugins/landing1';
+import { checkoutPlugin } from '../../plugins/checkout';
 
 // Initialize API with stored auth token before mounting app
 initializeApi();

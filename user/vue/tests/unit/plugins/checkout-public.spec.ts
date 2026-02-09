@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component'
-import { checkoutPlugin } from '../../../plugins/checkout'
-import PublicCheckoutView from '../../../plugins/checkout/PublicCheckoutView.vue'
+import { checkoutPlugin } from '../../../../plugins/checkout'
+import PublicCheckoutView from '../../../../plugins/checkout/PublicCheckoutView.vue'
 import { api } from '../../../src/api'
 
 vi.mock('../../../src/api', () => ({
