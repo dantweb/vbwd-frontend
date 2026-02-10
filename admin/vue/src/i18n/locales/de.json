@@ -356,7 +356,10 @@
     },
     "tabs": {
       "coreSettings": "Kerneinstellungen",
-      "tokens": "Token-Pakete"
+      "tokens": "Token-Pakete",
+      "countries": "Länder",
+      "adminPlugins": "Admin-Plugins",
+      "backendPlugins": "Backend-Plugins"
     },
     "coreSettings": {
       "title": "Dienstanbieter-Informationen",
@@ -530,5 +533,61 @@
     "es": "Español",
     "fr": "Français",
     "ja": "日本語"
+  },
+  "adminPlugins": {
+    "title": "Installierte Admin-Plugins",
+    "description": "Installierte Admin-Plugins verwalten, Konfiguration anzeigen und Plugin-Lebenszyklus steuern.",
+    "search": "Admin-Plugins suchen...",
+    "noPlugins": "Keine Admin-Plugins installiert",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "installed": "Installiert",
+      "actions": "Aktionen"
+    },
+    "view": "Anzeigen",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "error": "Fehler",
+    "detail": {
+      "title": "Admin-Plugin-Details",
+      "backToPlugins": "Zurück zu Admin-Plugins",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "uninstall": "Deinstallieren",
+      "confirmDeactivate": "Möchten Sie dieses Plugin wirklich deaktivieren?",
+      "confirmUninstall": "Möchten Sie dieses Plugin wirklich deinstallieren? Die Plugin-Dateien bleiben im Code erhalten.",
+      "configSaved": "Konfiguration erfolgreich gespeichert",
+      "saveConfig": "Konfiguration speichern",
+      "saving": "Speichern..."
+    }
+  },
+  "backendPlugins": {
+    "title": "Backend-Plugins",
+    "description": "Backend-Server-Plugins und deren Konfiguration verwalten.",
+    "search": "Backend-Plugins suchen...",
+    "noPlugins": "Keine Backend-Plugins installiert",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "view": "Anzeigen",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "error": "Fehler",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "detail": {
+      "backToPlugins": "Zurück zu Backend-Plugins",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "saveConfig": "Konfiguration speichern",
+      "saving": "Speichern...",
+      "configSaved": "Konfiguration erfolgreich gespeichert",
+      "confirmDeactivate": "Sind Sie sicher, dass Sie dieses Plugin deaktivieren möchten?"
+    }
   }
 }

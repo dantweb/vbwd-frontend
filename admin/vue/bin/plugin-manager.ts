@@ -21,7 +21,7 @@ const registry = new PluginRegistry();
 // Initialize CLI with configuration
 const cli = new PluginManagerCLI(registry, {
   pluginsDir: '../plugins',
-  configFile: './plugins.json'
+  configFile: '../plugins/plugins.json'
 });
 
 // Run CLI with command-line arguments

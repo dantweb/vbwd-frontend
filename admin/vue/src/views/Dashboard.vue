@@ -116,17 +116,34 @@
 <script setup lang="ts">
 import { computed, onMounted, inject, defineAsyncComponent } from 'vue'
 import { useAnalyticsStore } from '../stores/analytics'
+import { usePluginsStore } from '../stores/plugins'
 import type { IPlatformSDK } from '@vbwd/view-component'
 
 const analyticsStore = useAnalyticsStore()
+const pluginsStore = usePluginsStore()
 const sdk = inject<IPlatformSDK>('platformSDK')
 
+// Only show widgets from enabled admin plugins
 const pluginWidgets = computed(() => {
   if (!sdk) return []
-  return Object.entries(sdk.getComponents()).map(([name, loader]) => ({
-    name,
-    component: defineAsyncComponent(loader as () => Promise<{ default: unknown }>)
-  }))
+  // Depend on reactive plugins list for re-evaluation
+  const enabledPlugins = pluginsStore.plugins.filter(p => p.enabled)
+  const enabledNorm = new Set(enabledPlugins.map(p => p.name.replace(/[-_]/g, '').toLowerCase()))
+  return Object.entries(sdk.getComponents())
+    .filter(([compName]) => {
+      // If plugins not loaded yet, fall back to showing all
+      if (pluginsStore.plugins.length === 0) return true
+      const norm = compName.replace(/[-_]/g, '').toLowerCase()
+      // Match component name to plugin name (AnalyticsWidget ↔ analytics-widget)
+      for (const pn of enabledNorm) {
+        if (norm.includes(pn) || pn.includes(norm)) return true
+      }
+      return false
+    })
+    .map(([name, loader]) => ({
+      name,
+      component: defineAsyncComponent(loader as () => Promise<{ default: unknown }>)
+    }))
 })
 
 const dashboard = computed(() => analyticsStore.dashboard)
@@ -148,7 +165,10 @@ function changeClass(value: number): string {
 
 onMounted(async () => {
   try {
-    await analyticsStore.fetchDashboard()
+    await Promise.all([
+      analyticsStore.fetchDashboard(),
+      pluginsStore.fetchPlugins()
+    ])
   } catch (error) {
     console.error('Failed to load dashboard:', error)
   }

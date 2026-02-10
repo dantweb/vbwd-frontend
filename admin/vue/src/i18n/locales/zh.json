@@ -353,7 +353,10 @@
     },
     "tabs": {
       "coreSettings": "核心设置",
-      "tokens": "代币包"
+      "tokens": "代币包",
+      "countries": "国家",
+      "adminPlugins": "管理插件",
+      "backendPlugins": "后端插件"
     },
     "coreSettings": {
       "title": "服务提供商信息",
@@ -517,5 +520,61 @@
     "es": "Español",
     "fr": "Français",
     "ja": "日本語"
+  },
+  "adminPlugins": {
+    "title": "已安装管理插件",
+    "description": "管理已安装的管理插件，查看配置并控制插件生命周期。",
+    "search": "搜索管理插件...",
+    "noPlugins": "未安装管理插件",
+    "columns": {
+      "name": "名称",
+      "version": "版本",
+      "status": "状态",
+      "installed": "安装时间",
+      "actions": "操作"
+    },
+    "view": "查看",
+    "active": "已启用",
+    "inactive": "已停用",
+    "error": "错误",
+    "detail": {
+      "title": "管理插件详情",
+      "backToPlugins": "返回管理插件列表",
+      "activate": "启用",
+      "deactivate": "停用",
+      "uninstall": "卸载",
+      "confirmDeactivate": "确定要停用此插件吗？",
+      "confirmUninstall": "确定要卸载此插件吗？插件文件将保留在代码中。",
+      "configSaved": "配置保存成功",
+      "saveConfig": "保存配置",
+      "saving": "保存中..."
+    }
+  },
+  "backendPlugins": {
+    "title": "后端插件",
+    "description": "管理后端服务器插件及其配置。",
+    "search": "搜索后端插件...",
+    "noPlugins": "未安装后端插件",
+    "columns": {
+      "name": "名称",
+      "version": "版本",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "view": "查看",
+    "active": "已启用",
+    "inactive": "已停用",
+    "error": "错误",
+    "enable": "启用",
+    "disable": "禁用",
+    "detail": {
+      "backToPlugins": "返回后端插件",
+      "activate": "启用",
+      "deactivate": "停用",
+      "saveConfig": "保存配置",
+      "saving": "保存中...",
+      "configSaved": "配置保存成功",
+      "confirmDeactivate": "确定要停用此插件吗？"
+    }
   }
 }

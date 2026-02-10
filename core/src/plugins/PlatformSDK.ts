@@ -47,6 +47,13 @@ export class PlatformSDK implements IPlatformSDK {
   }
 
   /**
+   * Remove a registered component
+   */
+  removeComponent(name: string): void {
+    delete this.components[name];
+  }
+
+  /**
    * Get all registered components
    */
   getComponents(): Record<string, ComponentDefinition> {

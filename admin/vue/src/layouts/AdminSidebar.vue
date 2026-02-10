@@ -98,13 +98,6 @@
           >
             {{ $t('nav.paymentMethods') }}
           </router-link>
-          <router-link
-            to="/admin/countries"
-            class="nav-item nav-subitem"
-            data-testid="nav-countries"
-          >
-            {{ $t('nav.countries') }}
-          </router-link>
         </div>
       </div>
     </nav>
@@ -170,7 +163,7 @@ const isTarifsActive = computed((): boolean => {
 // Check if current route is within Settings section
 const isSettingsActive = computed((): boolean => {
   const path = route.path;
-  return path.includes('/admin/settings') || path.includes('/admin/payment-methods') || path.includes('/admin/countries');
+  return path.includes('/admin/settings') || path.includes('/admin/payment-methods');
 });
 
 function toggleUserMenu(): void {

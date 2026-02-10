@@ -353,7 +353,10 @@
     },
     "tabs": {
       "coreSettings": "Configuración Principal",
-      "tokens": "Paquetes de Tokens"
+      "tokens": "Paquetes de Tokens",
+      "countries": "Países",
+      "adminPlugins": "Plugins de Admin",
+      "backendPlugins": "Plugins de Backend"
     },
     "coreSettings": {
       "title": "Información del Proveedor de Servicios",
@@ -519,5 +522,61 @@
     "es": "Español",
     "fr": "Français",
     "ja": "日本語"
+  },
+  "adminPlugins": {
+    "title": "Plugins de Admin Instalados",
+    "description": "Gestionar plugins de admin instalados, ver configuración y controlar el ciclo de vida.",
+    "search": "Buscar plugins de admin...",
+    "noPlugins": "No hay plugins de admin instalados",
+    "columns": {
+      "name": "Nombre",
+      "version": "Versión",
+      "status": "Estado",
+      "installed": "Instalado",
+      "actions": "Acciones"
+    },
+    "view": "Ver",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "error": "Error",
+    "detail": {
+      "title": "Detalles del Plugin de Admin",
+      "backToPlugins": "Volver a Plugins de Admin",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "uninstall": "Desinstalar",
+      "confirmDeactivate": "¿Está seguro de que desea desactivar este plugin?",
+      "confirmUninstall": "¿Está seguro de que desea desinstalar este plugin? Los archivos del plugin permanecerán en el código.",
+      "configSaved": "Configuración guardada exitosamente",
+      "saveConfig": "Guardar Configuración",
+      "saving": "Guardando..."
+    }
+  },
+  "backendPlugins": {
+    "title": "Plugins de Backend",
+    "description": "Gestionar plugins del servidor backend y su configuración.",
+    "search": "Buscar plugins de backend...",
+    "noPlugins": "No hay plugins de backend instalados",
+    "columns": {
+      "name": "Nombre",
+      "version": "Versión",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "view": "Ver",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "error": "Error",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "detail": {
+      "backToPlugins": "Volver a plugins de backend",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "saveConfig": "Guardar configuración",
+      "saving": "Guardando...",
+      "configSaved": "Configuración guardada correctamente",
+      "confirmDeactivate": "¿Está seguro de que desea desactivar este plugin?"
+    }
   }
 }

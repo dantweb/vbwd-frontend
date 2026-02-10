@@ -353,7 +353,10 @@
     },
     "tabs": {
       "coreSettings": "基本設定",
-      "tokens": "トークンバンドル"
+      "tokens": "トークンバンドル",
+      "countries": "国",
+      "adminPlugins": "管理プラグイン",
+      "backendPlugins": "バックエンドプラグイン"
     },
     "coreSettings": {
       "title": "サービスプロバイダー情報",
@@ -517,5 +520,61 @@
     "es": "Español",
     "fr": "Français",
     "ja": "日本語"
+  },
+  "adminPlugins": {
+    "title": "インストール済み管理プラグイン",
+    "description": "インストール済み管理プラグインの管理、設定の表示、プラグインのライフサイクル制御。",
+    "search": "管理プラグインを検索...",
+    "noPlugins": "管理プラグインがインストールされていません",
+    "columns": {
+      "name": "名前",
+      "version": "バージョン",
+      "status": "ステータス",
+      "installed": "インストール日",
+      "actions": "操作"
+    },
+    "view": "表示",
+    "active": "有効",
+    "inactive": "無効",
+    "error": "エラー",
+    "detail": {
+      "title": "管理プラグイン詳細",
+      "backToPlugins": "管理プラグイン一覧に戻る",
+      "activate": "有効化",
+      "deactivate": "無効化",
+      "uninstall": "アンインストール",
+      "confirmDeactivate": "このプラグインを無効化してもよろしいですか？",
+      "confirmUninstall": "このプラグインをアンインストールしてもよろしいですか？プラグインファイルはコード内に残ります。",
+      "configSaved": "設定が正常に保存されました",
+      "saveConfig": "設定を保存",
+      "saving": "保存中..."
+    }
+  },
+  "backendPlugins": {
+    "title": "バックエンドプラグイン",
+    "description": "バックエンドサーバープラグインとその設定を管理します。",
+    "search": "バックエンドプラグインを検索...",
+    "noPlugins": "バックエンドプラグインがインストールされていません",
+    "columns": {
+      "name": "名前",
+      "version": "バージョン",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "view": "表示",
+    "active": "有効",
+    "inactive": "無効",
+    "error": "エラー",
+    "enable": "有効化",
+    "disable": "無効化",
+    "detail": {
+      "backToPlugins": "バックエンドプラグインに戻る",
+      "activate": "有効化",
+      "deactivate": "無効化",
+      "saveConfig": "設定を保存",
+      "saving": "保存中...",
+      "configSaved": "設定が正常に保存されました",
+      "confirmDeactivate": "このプラグインを無効化してもよろしいですか？"
+    }
   }
 }

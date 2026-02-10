@@ -200,6 +200,12 @@ export interface IPlatformSDK {
   addComponent(name: string, component: ComponentDefinition): void;
 
   /**
+   * Remove a registered component
+   * @param name Component name
+   */
+  removeComponent(name: string): void;
+
+  /**
    * Get all registered components
    */
   getComponents(): Record<string, ComponentDefinition>;

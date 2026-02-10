@@ -60,6 +60,9 @@ describe('Settings.vue', () => {
     expect(wrapper.find('[data-testid="settings-tabs"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-core-settings"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-tokens"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tab-countries"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tab-admin-plugins"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tab-backend-plugins"]').exists()).toBe(true);
   });
 
   it('displays current settings values in core settings tab', async () => {

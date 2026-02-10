@@ -75,11 +75,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/PaymentMethods.vue')
       },
       {
-        path: 'countries',
-        name: 'countries',
-        component: () => import('@/views/Countries.vue')
-      },
-      {
         path: 'payment-methods/new',
         name: 'payment-method-new',
         component: () => import('@/views/PaymentMethodForm.vue')
@@ -138,6 +133,16 @@ const routes: RouteRecordRaw[] = [
         path: 'settings/token-bundles/:id',
         name: 'token-bundle-edit',
         component: () => import('@/views/TokenBundleForm.vue')
+      },
+      {
+        path: 'settings/plugins/:pluginName',
+        name: 'plugin-details',
+        component: () => import('@/views/PluginDetails.vue')
+      },
+      {
+        path: 'settings/backend-plugins/:pluginName',
+        name: 'backend-plugin-details',
+        component: () => import('@/views/BackendPluginDetails.vue')
       },
       {
         path: 'profile',

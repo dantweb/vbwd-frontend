@@ -353,7 +353,10 @@
     },
     "tabs": {
       "coreSettings": "Paramètres principaux",
-      "tokens": "Forfaits de jetons"
+      "tokens": "Forfaits de jetons",
+      "countries": "Pays",
+      "adminPlugins": "Plugins Admin",
+      "backendPlugins": "Plugins Backend"
     },
     "coreSettings": {
       "title": "Informations du fournisseur de services",
@@ -519,5 +522,61 @@
     "es": "Español",
     "fr": "Français",
     "ja": "日本語"
+  },
+  "adminPlugins": {
+    "title": "Plugins Admin installés",
+    "description": "Gérer les plugins admin installés, voir la configuration et contrôler le cycle de vie des plugins.",
+    "search": "Rechercher des plugins admin...",
+    "noPlugins": "Aucun plugin admin installé",
+    "columns": {
+      "name": "Nom",
+      "version": "Version",
+      "status": "Statut",
+      "installed": "Installé",
+      "actions": "Actions"
+    },
+    "view": "Voir",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "error": "Erreur",
+    "detail": {
+      "title": "Détails du plugin admin",
+      "backToPlugins": "Retour aux plugins admin",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "uninstall": "Désinstaller",
+      "confirmDeactivate": "Êtes-vous sûr de vouloir désactiver ce plugin ?",
+      "confirmUninstall": "Êtes-vous sûr de vouloir désinstaller ce plugin ? Les fichiers du plugin resteront dans le code.",
+      "configSaved": "Configuration enregistrée avec succès",
+      "saveConfig": "Enregistrer la configuration",
+      "saving": "Enregistrement..."
+    }
+  },
+  "backendPlugins": {
+    "title": "Plugins Backend",
+    "description": "Gérer les plugins du serveur backend et leur configuration.",
+    "search": "Rechercher des plugins backend...",
+    "noPlugins": "Aucun plugin backend installé",
+    "columns": {
+      "name": "Nom",
+      "version": "Version",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "view": "Voir",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "error": "Erreur",
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "detail": {
+      "backToPlugins": "Retour aux plugins backend",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "saveConfig": "Enregistrer la configuration",
+      "saving": "Enregistrement...",
+      "configSaved": "Configuration enregistrée avec succès",
+      "confirmDeactivate": "Êtes-vous sûr de vouloir désactiver ce plugin ?"
+    }
   }
 }

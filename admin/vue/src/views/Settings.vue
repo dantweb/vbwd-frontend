@@ -25,6 +25,30 @@
       >
         {{ $t('settings.tabs.tokens') }}
       </button>
+      <button
+        data-testid="tab-countries"
+        class="tab-btn"
+        :class="{ active: activeTab === 'countries' }"
+        @click="activeTab = 'countries'"
+      >
+        {{ $t('settings.tabs.countries') }}
+      </button>
+      <button
+        data-testid="tab-admin-plugins"
+        class="tab-btn"
+        :class="{ active: activeTab === 'adminPlugins' }"
+        @click="activeTab = 'adminPlugins'"
+      >
+        {{ $t('settings.tabs.adminPlugins') }}
+      </button>
+      <button
+        data-testid="tab-backend-plugins"
+        class="tab-btn"
+        :class="{ active: activeTab === 'backendPlugins' }"
+        @click="activeTab = 'backendPlugins'"
+      >
+        {{ $t('settings.tabs.backendPlugins') }}
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -414,6 +438,465 @@
           </div>
         </div>
       </div>
+
+      <!-- Countries Tab -->
+      <div
+        v-show="activeTab === 'countries'"
+        data-testid="countries-content"
+        class="countries-tab"
+      >
+        <p class="section-description">
+          {{ $t('countriesConfig.description') }}
+        </p>
+
+        <div
+          v-if="countriesLoading && !countriesHasData"
+          class="bundles-loading"
+        >
+          <div class="spinner" />
+          <p>{{ $t('common.loading') }}</p>
+        </div>
+
+        <div
+          v-else-if="countriesError"
+          class="bundles-error"
+        >
+          <p>{{ countriesError }}</p>
+          <button
+            class="retry-btn"
+            @click="loadCountries"
+          >
+            {{ $t('common.retry') }}
+          </button>
+        </div>
+
+        <div
+          v-else
+          class="countries-layout"
+        >
+          <!-- Enabled Countries (Drag & Drop) -->
+          <div class="countries-panel enabled-panel">
+            <div class="countries-panel-header">
+              <h3>{{ $t('countriesConfig.enabledCountries') }}</h3>
+              <span class="count-badge enabled-badge">{{ enabledCountries.length }}</span>
+            </div>
+
+            <div
+              v-if="enabledCountries.length === 0"
+              class="empty-panel"
+            >
+              {{ $t('countriesConfig.noEnabledCountries') }}
+            </div>
+
+            <ul
+              v-else
+              class="country-list sortable-list"
+              data-testid="enabled-countries-list"
+              @dragover.prevent
+              @drop="handleDrop"
+            >
+              <li
+                v-for="(country, index) in enabledCountries"
+                :key="country.code"
+                class="country-item enabled-item"
+                :data-testid="`enabled-country-${country.code}`"
+                draggable="true"
+                :class="{ 'drag-over': dragOverIndex === index }"
+                @dragstart="handleDragStart($event, index)"
+                @dragenter="handleDragEnter($event, index)"
+                @dragleave="handleDragLeave"
+                @dragend="handleDragEnd"
+              >
+                <span class="drag-handle">&#x2630;</span>
+                <span class="country-flag">{{ getFlagEmoji(country.code) }}</span>
+                <span class="country-name">{{ country.name }}</span>
+                <span class="country-code">{{ country.code }}</span>
+                <button
+                  class="action-btn deactivate-btn"
+                  :disabled="countryActionLoading === country.code"
+                  :title="$t('countriesConfig.disable')"
+                  @click="handleDisableCountry(country.code)"
+                >
+                  {{ $t('countriesConfig.disable') }}
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Disabled Countries -->
+          <div class="countries-panel disabled-panel">
+            <div class="countries-panel-header">
+              <h3>{{ $t('countriesConfig.disabledCountries') }}</h3>
+              <span class="count-badge">{{ disabledCountries.length }}</span>
+            </div>
+
+            <div class="search-box">
+              <input
+                v-model="countrySearchQuery"
+                type="text"
+                :placeholder="$t('common.search')"
+                class="search-input"
+                data-testid="country-search"
+              >
+            </div>
+
+            <div
+              v-if="filteredDisabledCountries.length === 0"
+              class="empty-panel"
+            >
+              {{ countrySearchQuery ? $t('common.noResults') : $t('countriesConfig.noDisabledCountries') }}
+            </div>
+
+            <ul
+              v-else
+              class="country-list"
+              data-testid="disabled-countries-list"
+            >
+              <li
+                v-for="country in filteredDisabledCountries"
+                :key="country.code"
+                class="country-item disabled-item"
+                :data-testid="`disabled-country-${country.code}`"
+              >
+                <span class="country-flag">{{ getFlagEmoji(country.code) }}</span>
+                <span class="country-name">{{ country.name }}</span>
+                <span class="country-code">{{ country.code }}</span>
+                <button
+                  class="action-btn activate-btn"
+                  :disabled="countryActionLoading === country.code"
+                  :title="$t('countriesConfig.enable')"
+                  @click="handleEnableCountry(country.code)"
+                >
+                  {{ $t('countriesConfig.enable') }}
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Plugins Tab -->
+      <div
+        v-show="activeTab === 'adminPlugins'"
+        data-testid="admin-plugins-content"
+        class="plugins-tab"
+      >
+        <div class="form-section">
+          <div class="section-header">
+            <div>
+              <h3>{{ $t('adminPlugins.title') }}</h3>
+              <p class="section-description">
+                {{ $t('adminPlugins.description') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div
+            v-if="pluginsLoading"
+            class="bundles-loading"
+            data-testid="admin-plugins-loading"
+          >
+            <div class="spinner" />
+            <p>{{ $t('common.loading') }}</p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            v-else-if="pluginsError"
+            class="bundles-error"
+            data-testid="admin-plugins-error"
+          >
+            <p>{{ pluginsError }}</p>
+            <button
+              class="retry-btn"
+              @click="loadPlugins()"
+            >
+              {{ $t('common.retry') }}
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-else-if="sortedPlugins.length === 0 && !pluginSearchQuery"
+            class="empty-state"
+            data-testid="no-admin-plugins"
+          >
+            <p>{{ $t('adminPlugins.noPlugins') }}</p>
+          </div>
+
+          <!-- Plugins Table -->
+          <div
+            v-else
+            class="bundles-table-container"
+          >
+            <!-- Quick Search -->
+            <div class="plugin-search-box">
+              <input
+                v-model="pluginSearchQuery"
+                type="text"
+                :placeholder="$t('adminPlugins.search')"
+                class="search-input"
+                data-testid="admin-plugin-search"
+              >
+            </div>
+
+            <div
+              v-if="sortedPlugins.length === 0 && pluginSearchQuery"
+              class="empty-state"
+            >
+              <p>{{ $t('common.noResults') }}</p>
+            </div>
+
+            <table
+              v-else
+              class="bundles-table"
+              data-testid="admin-plugins-table"
+            >
+              <thead>
+                <tr>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': pluginSortKey === 'name' }"
+                    @click="handlePluginSort('name')"
+                  >
+                    {{ $t('adminPlugins.columns.name') }}
+                    <span class="sort-icon">{{ pluginSortKey === 'name' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': pluginSortKey === 'version' }"
+                    @click="handlePluginSort('version')"
+                  >
+                    {{ $t('adminPlugins.columns.version') }}
+                    <span class="sort-icon">{{ pluginSortKey === 'version' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': pluginSortKey === 'status' }"
+                    @click="handlePluginSort('status')"
+                  >
+                    {{ $t('adminPlugins.columns.status') }}
+                    <span class="sort-icon">{{ pluginSortKey === 'status' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': pluginSortKey === 'installedAt' }"
+                    @click="handlePluginSort('installedAt')"
+                  >
+                    {{ $t('adminPlugins.columns.installed') }}
+                    <span class="sort-icon">{{ pluginSortKey === 'installedAt' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th>{{ $t('adminPlugins.columns.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="plugin in sortedPlugins"
+                  :key="plugin.name"
+                  data-testid="admin-plugin-row"
+                >
+                  <td class="bundle-name">
+                    <router-link :to="`/admin/settings/plugins/${plugin.name}`">
+                      {{ plugin.name }}
+                    </router-link>
+                    <span
+                      v-if="plugin.description"
+                      class="bundle-description"
+                    >
+                      {{ plugin.description }}
+                    </span>
+                  </td>
+                  <td>{{ plugin.version }}</td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      :class="{
+                        active: plugin.status === 'active',
+                        inactive: plugin.status === 'inactive',
+                        'status-error': plugin.status === 'error'
+                      }"
+                    >
+                      {{ plugin.status === 'active' ? $t('adminPlugins.active') : plugin.status === 'inactive' ? $t('adminPlugins.inactive') : $t('adminPlugins.error') }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(plugin.installedAt) }}</td>
+                  <td class="actions-cell">
+                    <router-link
+                      :to="`/admin/settings/plugins/${plugin.name}`"
+                      class="action-btn edit-btn"
+                      data-testid="view-admin-plugin-btn"
+                    >
+                      {{ $t('adminPlugins.view') }}
+                    </router-link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backend Plugins Tab -->
+      <div
+        v-show="activeTab === 'backendPlugins'"
+        data-testid="backend-plugins-content"
+        class="plugins-tab"
+      >
+        <div class="form-section">
+          <div class="section-header">
+            <div>
+              <h3>{{ $t('backendPlugins.title') }}</h3>
+              <p class="section-description">
+                {{ $t('backendPlugins.description') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div
+            v-if="backendPluginsLoading"
+            class="bundles-loading"
+            data-testid="backend-plugins-loading"
+          >
+            <div class="spinner" />
+            <p>{{ $t('common.loading') }}</p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            v-else-if="backendPluginsError"
+            class="bundles-error"
+            data-testid="backend-plugins-error"
+          >
+            <p>{{ backendPluginsError }}</p>
+            <button
+              class="retry-btn"
+              @click="loadBackendPlugins()"
+            >
+              {{ $t('common.retry') }}
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-else-if="sortedBackendPlugins.length === 0 && !backendPluginSearchQuery"
+            class="empty-state"
+            data-testid="no-backend-plugins"
+          >
+            <p>{{ $t('backendPlugins.noPlugins') }}</p>
+          </div>
+
+          <!-- Backend Plugins Table -->
+          <div
+            v-else
+            class="bundles-table-container"
+          >
+            <div class="plugin-search-box">
+              <input
+                v-model="backendPluginSearchQuery"
+                type="text"
+                :placeholder="$t('backendPlugins.search')"
+                class="search-input"
+                data-testid="backend-plugin-search"
+              >
+            </div>
+
+            <div
+              v-if="sortedBackendPlugins.length === 0 && backendPluginSearchQuery"
+              class="empty-state"
+            >
+              <p>{{ $t('common.noResults') }}</p>
+            </div>
+
+            <table
+              v-else
+              class="bundles-table"
+              data-testid="backend-plugins-table"
+            >
+              <thead>
+                <tr>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': backendPluginSortKey === 'name' }"
+                    @click="handleBackendPluginSort('name')"
+                  >
+                    {{ $t('backendPlugins.columns.name') }}
+                    <span class="sort-icon">{{ backendPluginSortKey === 'name' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': backendPluginSortKey === 'version' }"
+                    @click="handleBackendPluginSort('version')"
+                  >
+                    {{ $t('backendPlugins.columns.version') }}
+                    <span class="sort-icon">{{ backendPluginSortKey === 'version' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': backendPluginSortKey === 'status' }"
+                    @click="handleBackendPluginSort('status')"
+                  >
+                    {{ $t('backendPlugins.columns.status') }}
+                    <span class="sort-icon">{{ backendPluginSortKey === 'status' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                  </th>
+                  <th>{{ $t('backendPlugins.columns.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="bp in sortedBackendPlugins"
+                  :key="bp.name"
+                  data-testid="backend-plugin-row"
+                >
+                  <td class="bundle-name">
+                    <router-link :to="`/admin/settings/backend-plugins/${bp.name}`">
+                      {{ bp.name }}
+                    </router-link>
+                    <span
+                      v-if="bp.description"
+                      class="bundle-description"
+                    >
+                      {{ bp.description }}
+                    </span>
+                  </td>
+                  <td>{{ bp.version }}</td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      :class="{
+                        active: bp.status === 'active',
+                        inactive: bp.status === 'inactive',
+                        'status-error': bp.status === 'error'
+                      }"
+                    >
+                      {{ bp.status === 'active' ? $t('backendPlugins.active') : bp.status === 'inactive' ? $t('backendPlugins.inactive') : $t('backendPlugins.error') }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <button
+                      v-if="bp.status !== 'active'"
+                      class="action-btn activate-btn"
+                      data-testid="enable-backend-plugin-btn"
+                      @click="handleEnableBackendPlugin(bp.name)"
+                    >
+                      {{ $t('backendPlugins.enable') }}
+                    </button>
+                    <button
+                      v-else
+                      class="action-btn deactivate-btn"
+                      data-testid="disable-backend-plugin-btn"
+                      @click="handleDisableBackendPlugin(bp.name)"
+                    >
+                      {{ $t('backendPlugins.disable') }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -423,12 +906,17 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { api } from '@/api';
 import { useTokenBundlesStore } from '@/stores/tokenBundles';
+import { useCountriesStore } from '@/stores/countries';
+import { usePluginsStore } from '@/stores/plugins';
+import type { PluginEntry } from '@/stores/plugins';
 
 const { t } = useI18n();
 const tokenBundlesStore = useTokenBundlesStore();
+const countriesStore = useCountriesStore();
+const pluginsStore = usePluginsStore();
 
 // Tab state
-type MainTab = 'core' | 'tokens';
+type MainTab = 'core' | 'tokens' | 'countries' | 'adminPlugins' | 'backendPlugins';
 
 const activeTab = ref<MainTab>('core');
 
@@ -596,10 +1084,275 @@ function formatPrice(price: string | number): string {
   }).format(numPrice);
 }
 
-// Load token bundles when tokens tab is selected
+// Countries
+const countriesLoading = ref(false);
+const countriesError = ref<string | null>(null);
+const countriesLoaded = ref(false);
+const countryActionLoading = ref<string | null>(null);
+const countrySearchQuery = ref('');
+const draggedIndex = ref<number | null>(null);
+const dragOverIndex = ref<number | null>(null);
+
+const enabledCountries = computed(() => countriesStore.sortedEnabled);
+const disabledCountries = computed(() => countriesStore.sortedDisabled);
+const countriesHasData = computed(() => countriesStore.countries.length > 0);
+
+const filteredDisabledCountries = computed(() => {
+  if (!countrySearchQuery.value) {
+    return disabledCountries.value;
+  }
+  const query = countrySearchQuery.value.toLowerCase();
+  return disabledCountries.value.filter(
+    c => c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query)
+  );
+});
+
+function getFlagEmoji(countryCode: string): string {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+async function loadCountries(): Promise<void> {
+  countriesLoading.value = true;
+  countriesError.value = null;
+  try {
+    await countriesStore.fetchAllCountries();
+    countriesLoaded.value = true;
+  } catch (e) {
+    countriesError.value = (e as Error).message || t('countriesConfig.loadError');
+  } finally {
+    countriesLoading.value = false;
+  }
+}
+
+async function handleEnableCountry(code: string): Promise<void> {
+  countryActionLoading.value = code;
+  try {
+    await countriesStore.enableCountry(code);
+  } catch (e) {
+    countriesError.value = (e as Error).message;
+  } finally {
+    countryActionLoading.value = null;
+  }
+}
+
+async function handleDisableCountry(code: string): Promise<void> {
+  countryActionLoading.value = code;
+  try {
+    await countriesStore.disableCountry(code);
+  } catch (e) {
+    countriesError.value = (e as Error).message;
+  } finally {
+    countryActionLoading.value = null;
+  }
+}
+
+function handleDragStart(event: DragEvent, index: number): void {
+  draggedIndex.value = index;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(index));
+  }
+}
+
+function handleDragEnter(_event: DragEvent, index: number): void {
+  if (draggedIndex.value !== null && draggedIndex.value !== index) {
+    dragOverIndex.value = index;
+  }
+}
+
+function handleDragLeave(): void {
+  dragOverIndex.value = null;
+}
+
+function handleDragEnd(): void {
+  draggedIndex.value = null;
+  dragOverIndex.value = null;
+}
+
+async function handleDrop(): Promise<void> {
+  if (draggedIndex.value === null || dragOverIndex.value === null) {
+    return;
+  }
+
+  const fromIndex = draggedIndex.value;
+  const toIndex = dragOverIndex.value;
+
+  if (fromIndex === toIndex) {
+    draggedIndex.value = null;
+    dragOverIndex.value = null;
+    return;
+  }
+
+  const countries = [...enabledCountries.value];
+  const [movedCountry] = countries.splice(fromIndex, 1);
+  countries.splice(toIndex, 0, movedCountry);
+
+  countriesStore.updateEnabledOrder(countries);
+
+  draggedIndex.value = null;
+  dragOverIndex.value = null;
+
+  try {
+    const codes = countries.map(c => c.code);
+    await countriesStore.reorderCountries(codes);
+  } catch (e) {
+    await loadCountries();
+    countriesError.value = (e as Error).message;
+  }
+}
+
+// Admin Plugins
+const pluginsLoading = ref(false);
+const pluginsError = ref<string | null>(null);
+const pluginsLoaded = ref(false);
+const pluginSearchQuery = ref('');
+const pluginSortKey = ref<string>('name');
+const pluginSortDir = ref<'asc' | 'desc'>('asc');
+
+const filteredPlugins = computed((): PluginEntry[] => {
+  if (!pluginSearchQuery.value) {
+    return pluginsStore.plugins;
+  }
+  const query = pluginSearchQuery.value.toLowerCase();
+  return pluginsStore.plugins.filter(
+    p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
+  );
+});
+
+const sortedPlugins = computed((): PluginEntry[] => {
+  const list = [...filteredPlugins.value];
+  const key = pluginSortKey.value as keyof PluginEntry;
+  const dir = pluginSortDir.value === 'asc' ? 1 : -1;
+  return list.sort((a, b) => {
+    const aVal = String(a[key] || '');
+    const bVal = String(b[key] || '');
+    return aVal.localeCompare(bVal) * dir;
+  });
+});
+
+async function loadPlugins(): Promise<void> {
+  pluginsLoading.value = true;
+  pluginsError.value = null;
+  try {
+    await pluginsStore.fetchPlugins();
+    pluginsLoaded.value = true;
+  } catch (e) {
+    pluginsError.value = (e as Error).message || 'Failed to load plugins';
+  } finally {
+    pluginsLoading.value = false;
+  }
+}
+
+function handlePluginSort(key: string): void {
+  if (pluginSortKey.value === key) {
+    pluginSortDir.value = pluginSortDir.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    pluginSortKey.value = key;
+    pluginSortDir.value = 'asc';
+  }
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString();
+}
+
+// Backend Plugins
+interface BackendPluginEntry {
+  name: string;
+  version: string;
+  description?: string;
+  status: 'active' | 'inactive' | 'error';
+}
+
+const backendPluginsLoading = ref(false);
+const backendPluginsError = ref<string | null>(null);
+const backendPluginsLoaded = ref(false);
+const backendPluginSearchQuery = ref('');
+const backendPluginSortKey = ref<string>('name');
+const backendPluginSortDir = ref<'asc' | 'desc'>('asc');
+const backendPluginsList = ref<BackendPluginEntry[]>([]);
+
+const filteredBackendPlugins = computed((): BackendPluginEntry[] => {
+  if (!backendPluginSearchQuery.value) {
+    return backendPluginsList.value;
+  }
+  const query = backendPluginSearchQuery.value.toLowerCase();
+  return backendPluginsList.value.filter(
+    p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
+  );
+});
+
+const sortedBackendPlugins = computed((): BackendPluginEntry[] => {
+  const list = [...filteredBackendPlugins.value];
+  const key = backendPluginSortKey.value as keyof BackendPluginEntry;
+  const dir = backendPluginSortDir.value === 'asc' ? 1 : -1;
+  return list.sort((a, b) => {
+    const aVal = String(a[key] || '');
+    const bVal = String(b[key] || '');
+    return aVal.localeCompare(bVal) * dir;
+  });
+});
+
+async function loadBackendPlugins(): Promise<void> {
+  backendPluginsLoading.value = true;
+  backendPluginsError.value = null;
+  try {
+    const response = await api.get('/admin/plugins') as { plugins: BackendPluginEntry[] };
+    backendPluginsList.value = response.plugins || [];
+    backendPluginsLoaded.value = true;
+  } catch (e) {
+    backendPluginsError.value = (e as Error).message || 'Failed to load backend plugins';
+  } finally {
+    backendPluginsLoading.value = false;
+  }
+}
+
+async function handleEnableBackendPlugin(name: string): Promise<void> {
+  try {
+    await api.post(`/admin/plugins/${name}/enable`);
+    await loadBackendPlugins();
+  } catch (e) {
+    backendPluginsError.value = (e as Error).message || 'Failed to enable plugin';
+  }
+}
+
+async function handleDisableBackendPlugin(name: string): Promise<void> {
+  try {
+    await api.post(`/admin/plugins/${name}/disable`);
+    await loadBackendPlugins();
+  } catch (e) {
+    backendPluginsError.value = (e as Error).message || 'Failed to disable plugin';
+  }
+}
+
+function handleBackendPluginSort(key: string): void {
+  if (backendPluginSortKey.value === key) {
+    backendPluginSortDir.value = backendPluginSortDir.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    backendPluginSortKey.value = key;
+    backendPluginSortDir.value = 'asc';
+  }
+}
+
+// Lazy-load tab data
 watch(activeTab, (newTab) => {
   if (newTab === 'tokens' && !bundlesLoaded.value) {
     loadTokenBundles();
+  }
+  if (newTab === 'countries' && !countriesLoaded.value) {
+    loadCountries();
+  }
+  if (newTab === 'adminPlugins' && !pluginsLoaded.value) {
+    loadPlugins();
+  }
+  if (newTab === 'backendPlugins' && !backendPluginsLoaded.value) {
+    loadBackendPlugins();
   }
 });
 
@@ -1042,5 +1795,194 @@ onMounted(() => {
   margin-top: 10px;
   font-size: 0.9rem;
   color: #999;
+}
+
+/* Countries Tab */
+.countries-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .countries-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.countries-panel {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.countries-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.countries-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #495057;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.count-badge {
+  background: #6c757d;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.enabled-badge {
+  background: #28a745;
+}
+
+.search-box {
+  padding: 10px;
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.empty-panel {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.country-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.country-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.15s;
+}
+
+.country-item:last-child {
+  border-bottom: none;
+}
+
+.country-item:hover {
+  background: #f8f9fa;
+}
+
+.enabled-item {
+  cursor: grab;
+}
+
+.enabled-item:active {
+  cursor: grabbing;
+}
+
+.enabled-item.drag-over {
+  background: #e3f2fd;
+  border-top: 2px solid #2196f3;
+}
+
+.drag-handle {
+  color: #adb5bd;
+  cursor: grab;
+  font-size: 14px;
+}
+
+.country-flag {
+  font-size: 20px;
+}
+
+.country-name {
+  flex: 1;
+  color: #212529;
+}
+
+.country-code {
+  color: #6c757d;
+  font-family: monospace;
+  font-size: 12px;
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Plugins Tab */
+.plugins-tab .form-section {
+  max-width: 100%;
+}
+
+.plugins-tab .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.plugins-tab .section-header h3 {
+  margin: 0 0 8px 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.plugins-tab .section-header .section-description {
+  margin-bottom: 0;
+}
+
+.plugin-search-box {
+  margin-bottom: 15px;
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-header:hover {
+  background: #e9ecef;
+}
+
+.sort-icon {
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0.5;
+}
+
+.sort-active .sort-icon {
+  opacity: 1;
+}
+
+.status-badge.status-error {
+  background: #f8d7da;
+  color: #721c24;
 }
 </style>

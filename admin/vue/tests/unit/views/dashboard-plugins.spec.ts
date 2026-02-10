@@ -27,6 +27,14 @@ vi.mock('@/api', () => ({
   clearApiAuth: vi.fn()
 }))
 
+// Mock the plugins store to return empty plugins (no filtering)
+vi.mock('@/stores/plugins', () => ({
+  usePluginsStore: () => ({
+    plugins: [],
+    fetchPlugins: vi.fn().mockResolvedValue([])
+  })
+}))
+
 // Mock i18n
 vi.mock('@/i18n', () => ({
   default: {

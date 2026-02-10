@@ -11,6 +11,7 @@ import {
   PlatformSDK
 } from '@vbwd/view-component';
 import { analyticsWidgetPlugin } from '@plugins/analytics-widget';
+import pluginsRegistry from '../../plugins/plugins.json';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
 
 // Configure auth store with admin-specific settings
@@ -43,9 +44,17 @@ const sdk = new PlatformSDK();
 
 registry.register(analyticsWidgetPlugin);
 
+const enabledPlugins = pluginsRegistry.plugins as Record<string, { enabled: boolean }>;
+
 (async () => {
   await registry.installAll(sdk);
-  await registry.activate('analytics-widget');
+
+  // Only activate plugins that are enabled in plugins.json
+  for (const [name, entry] of Object.entries(enabledPlugins)) {
+    if (entry.enabled) {
+      await registry.activate(name);
+    }
+  }
 
   // Inject plugin routes into Vue Router
   for (const route of sdk.getRoutes()) {

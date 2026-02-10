@@ -358,7 +358,10 @@
     },
     "tabs": {
       "coreSettings": "Core Settings",
-      "tokens": "Token Bundles"
+      "tokens": "Token Bundles",
+      "countries": "Countries",
+      "adminPlugins": "Admin Plugins",
+      "backendPlugins": "Backend Plugins"
     },
     "coreSettings": {
       "title": "Service Provider Information",
@@ -596,5 +599,61 @@
     "es": "Español",
     "fr": "Français",
     "ja": "日本語"
+  },
+  "adminPlugins": {
+    "title": "Installed Admin Plugins",
+    "description": "Manage installed admin plugins, view configuration, and control plugin lifecycle.",
+    "search": "Search admin plugins...",
+    "noPlugins": "No admin plugins installed",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "installed": "Installed",
+      "actions": "Actions"
+    },
+    "view": "View",
+    "active": "Active",
+    "inactive": "Inactive",
+    "error": "Error",
+    "detail": {
+      "title": "Admin Plugin Details",
+      "backToPlugins": "Back to Admin Plugins",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "uninstall": "Uninstall",
+      "confirmDeactivate": "Are you sure you want to deactivate this plugin?",
+      "confirmUninstall": "Are you sure you want to uninstall this plugin? The plugin files will remain in the codebase.",
+      "configSaved": "Configuration saved successfully",
+      "saveConfig": "Save Configuration",
+      "saving": "Saving..."
+    }
+  },
+  "backendPlugins": {
+    "title": "Backend Plugins",
+    "description": "Manage backend server plugins and their configuration.",
+    "search": "Search backend plugins...",
+    "noPlugins": "No backend plugins installed",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "view": "View",
+    "active": "Active",
+    "inactive": "Inactive",
+    "error": "Error",
+    "enable": "Enable",
+    "disable": "Disable",
+    "detail": {
+      "backToPlugins": "Back to Backend Plugins",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "saveConfig": "Save Configuration",
+      "saving": "Saving...",
+      "configSaved": "Configuration saved successfully",
+      "confirmDeactivate": "Are you sure you want to deactivate this plugin?"
+    }
   }
 }
