@@ -54,6 +54,13 @@
             <span class="label">{{ $t('invoices.detail.currency') }}</span>
             <span class="value">{{ invoice.currency || 'USD' }}</span>
           </div>
+          <div
+            v-if="invoice.payment_method"
+            class="detail-row"
+          >
+            <span class="label">{{ $t('invoices.detail.paymentMethod') }}</span>
+            <span class="value payment-method-badge">{{ paymentMethodLabel(invoice.payment_method) }}</span>
+          </div>
         </div>
 
         <!-- Line Items -->
@@ -122,12 +129,26 @@
             {{ $t('invoices.detail.downloadPdf') }}
           </button>
           <router-link
-            v-if="invoice.status === 'pending'"
+            v-if="invoice.status === 'pending' && invoice.payment_method === 'stripe'"
+            :to="`/pay/stripe?invoice=${invoice.id}`"
+            class="btn primary"
+          >
+            {{ $t('invoices.detail.payNow') }}
+          </router-link>
+          <router-link
+            v-else-if="invoice.status === 'pending' && invoice.payment_method !== 'invoice'"
             :to="`/dashboard/invoices/${invoice.id}/pay`"
             class="btn primary"
           >
             {{ $t('invoices.detail.payNow') }}
           </router-link>
+          <button
+            v-else-if="invoice.status === 'pending' && invoice.payment_method === 'invoice'"
+            class="btn secondary"
+            disabled
+          >
+            {{ $t('invoices.detail.payByInvoice') }}
+          </button>
         </div>
       </div>
     </div>
@@ -157,6 +178,7 @@ interface Invoice {
   amount: string;
   total_amount?: string;
   currency: string;
+  payment_method?: string | null;
   invoiced_at?: string;
   created_at?: string;
   due_date?: string;
@@ -222,6 +244,15 @@ function itemTypeLabel(type?: string): string {
     add_on: 'Add-On',
   };
   return labels[type || ''] || type || 'Item';
+}
+
+function paymentMethodLabel(method: string): string {
+  const labels: Record<string, string> = {
+    stripe: 'Stripe',
+    invoice: t('invoices.detail.paymentMethods.invoice'),
+    paypal: 'PayPal',
+  };
+  return labels[method] || method;
 }
 
 function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: string }): string | null {
@@ -318,6 +349,11 @@ h1 {
   color: #721c24;
 }
 
+.status-badge.refunded {
+  background: #fff3cd;
+  color: #856404;
+}
+
 .invoice-info {
   display: flex;
   flex-direction: column;
@@ -338,6 +374,16 @@ h1 {
 .detail-row .value {
   font-weight: 500;
   color: #2c3e50;
+}
+
+.payment-method-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.9rem;
+  text-transform: capitalize;
 }
 
 .line-items {

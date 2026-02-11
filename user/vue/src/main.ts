@@ -7,6 +7,7 @@ import i18n, { initLocale } from '@/i18n';
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component';
 import { landing1Plugin } from '../../plugins/landing1';
 import { checkoutPlugin } from '../../plugins/checkout';
+import { stripePaymentPlugin } from '../../plugins/stripe-payment';
 import type { IPlugin } from '@vbwd/view-component';
 
 // Initialize API with stored auth token before mounting app
@@ -24,7 +25,8 @@ initLocale();
 // All available plugins (code is always bundled, routes are conditional)
 const availablePlugins: Record<string, IPlugin> = {
   landing1: landing1Plugin,
-  checkout: checkoutPlugin
+  checkout: checkoutPlugin,
+  'stripe-payment': stripePaymentPlugin,
 };
 
 async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean }>> {
@@ -64,6 +66,14 @@ async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean 
     for (const route of sdk.getRoutes()) {
       router.addRoute(route as Parameters<typeof router.addRoute>[0]);
     }
+
+    // Add catch-all 404 AFTER plugin routes so dynamic routes are matched first
+    router.addRoute({
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('./views/NotFound.vue'),
+      meta: { requiresAuth: false }
+    });
 
     // Activate all registered plugins (they're all enabled)
     for (const [name, entry] of Object.entries(enabledPlugins)) {

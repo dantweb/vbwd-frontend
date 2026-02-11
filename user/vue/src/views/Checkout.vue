@@ -316,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCheckoutStore } from '@/stores/checkout';
@@ -388,6 +388,16 @@ const missingRequirements = computed(() => {
   if (!selectedPaymentMethod.value) missing.push(t('checkout.requirements.paymentMethod'));
   if (!termsAccepted.value) missing.push(t('checkout.requirements.acceptTerms'));
   return missing;
+});
+
+// Redirect to Stripe payment when checkout succeeds with stripe payment method
+watch(() => store.checkoutResult, (result) => {
+  if (result && store.paymentMethodCode === 'stripe') {
+    const invoiceId = result.invoice?.id;
+    if (invoiceId) {
+      router.push({ path: '/pay/stripe', query: { invoice: invoiceId } });
+    }
+  }
 });
 
 onMounted(async () => {

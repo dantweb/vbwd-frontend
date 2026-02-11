@@ -145,7 +145,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { api } from '@/api';
 
@@ -164,12 +164,14 @@ interface Invoice {
   amount: string;
   total_amount?: string;
   currency: string;
+  payment_method?: string | null;
   invoiced_at?: string;
   created_at?: string;
   line_items?: LineItem[];
 }
 
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
 
 const loading = ref(true);
@@ -190,6 +192,12 @@ async function loadInvoice(): Promise<void> {
     const invoiceId = route.params.invoiceId as string;
     const response = await api.get(`/user/invoices/${invoiceId}`) as { invoice: Invoice } | Invoice;
     invoice.value = (response as { invoice: Invoice }).invoice || response as Invoice;
+
+    // For Stripe invoices, redirect to Stripe checkout flow
+    if (invoice.value?.payment_method === 'stripe' && invoice.value?.status === 'pending') {
+      router.replace(`/pay/stripe?invoice=${invoice.value.id}`);
+      return;
+    }
   } catch (err) {
     error.value = (err as Error).message || t('invoices.pay.errors.failedToLoad');
   } finally {
@@ -320,6 +328,11 @@ h1 {
 }
 
 .status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.refunded {
   background: #fff3cd;
   color: #856404;
 }

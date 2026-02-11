@@ -303,7 +303,8 @@
       "allStatuses": "All Statuses",
       "paid": "Paid",
       "pending": "Pending",
-      "overdue": "Overdue"
+      "overdue": "Overdue",
+      "refunded": "Refunded"
     },
     "tableHeaders": {
       "date": "Date",
@@ -338,6 +339,13 @@
       "totalAmount": "Total Amount",
       "downloadPdf": "Download PDF",
       "payNow": "Pay Now",
+      "payByInvoice": "Pay by Invoice",
+      "paymentMethod": "Payment Method",
+      "paymentMethods": {
+        "stripe": "Stripe",
+        "invoice": "Invoice (Bank Transfer)",
+        "paypal": "PayPal"
+      },
       "errors": {
         "failedToLoad": "Failed to load invoice",
         "failedToDownload": "Failed to download invoice"
@@ -536,5 +544,25 @@
   "notFound": {
     "message": "The page you are looking for does not exist.",
     "backHome": "Back to Dashboard"
+  },
+  "stripe": {
+    "payment": {
+      "redirecting": "Redirecting to Stripe...",
+      "retry": "Try Again",
+      "error": "Failed to create payment session",
+      "noInvoice": "No invoice specified. Please complete checkout first."
+    },
+    "success": {
+      "title": "Payment Successful",
+      "message": "Your payment has been processed. Your subscription is now active.",
+      "verifying": "Verifying payment...",
+      "processing": "Your payment is being processed. This may take a moment.",
+      "viewInvoices": "View Invoices"
+    },
+    "cancel": {
+      "title": "Payment Cancelled",
+      "message": "Your payment was cancelled. Your invoice is still pending.",
+      "tryAgain": "Try Again"
+    }
   }
 }

@@ -1,6 +1,8 @@
 <template>
   <div class="public-checkout">
-    <h1 data-testid="checkout-title">{{ $t('checkout.title') }}</h1>
+    <h1 data-testid="checkout-title">
+      {{ $t('checkout.title') }}
+    </h1>
 
     <!-- Loading State -->
     <div
@@ -175,8 +177,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCheckoutStore } from '@/stores/checkout';
 import { isAuthenticated as checkAuth } from '@/api';
@@ -186,6 +188,7 @@ import TermsCheckbox from '@/components/checkout/TermsCheckbox.vue';
 import BillingAddressBlock from '@/components/checkout/BillingAddressBlock.vue';
 
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
 const checkoutStore = useCheckoutStore();
 
@@ -260,6 +263,16 @@ function formatBillingPeriod(period?: string): string {
   };
   return periodMap[period] || period.toLowerCase();
 }
+
+// Redirect to Stripe payment when checkout succeeds with stripe payment method
+watch(() => checkoutStore.checkoutResult, (result) => {
+  if (result && checkoutStore.paymentMethodCode === 'stripe') {
+    const invoiceId = result.invoice?.id;
+    if (invoiceId) {
+      router.push({ path: '/pay/stripe', query: { invoice: invoiceId } });
+    }
+  }
+});
 
 onMounted(async () => {
   if (planSlug.value) {

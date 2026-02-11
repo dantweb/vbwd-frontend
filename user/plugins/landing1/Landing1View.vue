@@ -1,8 +1,12 @@
 <template>
   <div class="landing1">
     <div class="landing1-header">
-      <h1 data-testid="landing1-title">{{ $t('landing1.title') }}</h1>
-      <p class="subtitle">{{ $t('landing1.subtitle') }}</p>
+      <h1 data-testid="landing1-title">
+        {{ $t('landing1.title') }}
+      </h1>
+      <p class="subtitle">
+        {{ $t('landing1.subtitle') }}
+      </p>
     </div>
 
     <!-- Loading State -->
@@ -51,10 +55,15 @@
         class="plan-card"
         :data-testid="`plan-card-${plan.slug}`"
       >
-        <h2 class="plan-name">{{ plan.name }}</h2>
+        <h2 class="plan-name">
+          {{ plan.name }}
+        </h2>
         <div class="plan-price">
           {{ formatPrice(plan.display_price, plan.display_currency) }}
-          <span v-if="plan.billing_period" class="billing-period">/{{ formatBillingPeriod(plan.billing_period) }}</span>
+          <span
+            v-if="plan.billing_period"
+            class="billing-period"
+          >/{{ formatBillingPeriod(plan.billing_period) }}</span>
         </div>
         <p
           v-if="plan.description"

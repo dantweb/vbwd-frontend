@@ -303,7 +303,8 @@
       "allStatuses": "Alle Status",
       "paid": "Bezahlt",
       "pending": "Ausstehend",
-      "overdue": "Überfällig"
+      "overdue": "Überfällig",
+      "refunded": "Erstattet"
     },
     "tableHeaders": {
       "date": "Datum",
@@ -338,6 +339,13 @@
       "totalAmount": "Gesamtbetrag",
       "downloadPdf": "PDF herunterladen",
       "payNow": "Jetzt bezahlen",
+      "payByInvoice": "Per Rechnung bezahlen",
+      "paymentMethod": "Zahlungsmethode",
+      "paymentMethods": {
+        "stripe": "Stripe",
+        "invoice": "Rechnung (Banküberweisung)",
+        "paypal": "PayPal"
+      },
       "errors": {
         "failedToLoad": "Rechnung konnte nicht geladen werden",
         "failedToDownload": "Rechnung konnte nicht heruntergeladen werden"
@@ -536,5 +544,25 @@
   "notFound": {
     "message": "Die angeforderte Seite existiert nicht.",
     "backHome": "Zurück zum Dashboard"
+  },
+  "stripe": {
+    "payment": {
+      "redirecting": "Weiterleitung zu Stripe...",
+      "retry": "Erneut versuchen",
+      "error": "Zahlungssitzung konnte nicht erstellt werden",
+      "noInvoice": "Keine Rechnung angegeben. Bitte schließen Sie zuerst den Checkout ab."
+    },
+    "success": {
+      "title": "Zahlung erfolgreich",
+      "message": "Ihre Zahlung wurde verarbeitet. Ihr Abonnement ist jetzt aktiv.",
+      "verifying": "Zahlung wird überprüft...",
+      "processing": "Ihre Zahlung wird verarbeitet. Dies kann einen Moment dauern.",
+      "viewInvoices": "Rechnungen anzeigen"
+    },
+    "cancel": {
+      "title": "Zahlung abgebrochen",
+      "message": "Ihre Zahlung wurde abgebrochen. Ihre Rechnung ist noch ausstehend.",
+      "tryAgain": "Erneut versuchen"
+    }
   }
 }

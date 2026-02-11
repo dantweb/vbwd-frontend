@@ -59,6 +59,9 @@
             <option value="overdue">
               {{ $t('invoices.filters.overdue') }}
             </option>
+            <option value="refunded">
+              {{ $t('invoices.filters.refunded') }}
+            </option>
           </select>
         </div>
       </div>
@@ -527,6 +530,11 @@ h1 {
 .status.overdue {
   background-color: #f8d7da;
   color: #721c24;
+}
+
+.status.refunded {
+  background-color: #e2e3e5;
+  color: #383d41;
 }
 
 .actions-cell {

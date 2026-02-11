@@ -46,7 +46,9 @@
         data-testid="plugin-header"
       >
         <div class="plugin-info">
-          <h2 data-testid="plugin-name">{{ plugin.name }}</h2>
+          <h2 data-testid="plugin-name">
+            {{ plugin.name }}
+          </h2>
           <span class="plugin-version">v{{ plugin.version }}</span>
           <span
             class="status-badge"
@@ -127,8 +129,8 @@
         <div class="config-form">
           <div
             v-for="tab in plugin.adminConfig.tabs"
-            :key="tab.id"
             v-show="activeConfigTab === tab.id"
+            :key="tab.id"
             class="config-tab-content"
             :data-testid="`config-content-${tab.id}`"
           >
