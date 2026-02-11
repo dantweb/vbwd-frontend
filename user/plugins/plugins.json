@@ -2,13 +2,13 @@
   "plugins": {
     "landing1": {
       "enabled": true,
-      "version": "0.0.0",
+      "version": "1.0.0",
       "installedAt": "2026-02-09T09:27:36.268Z",
       "source": "local"
     },
     "checkout": {
       "enabled": true,
-      "version": "0.0.0",
+      "version": "1.0.0",
       "installedAt": "2026-02-09T09:28:16.651Z",
       "source": "local"
     }

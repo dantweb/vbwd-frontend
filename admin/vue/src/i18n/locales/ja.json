@@ -356,7 +356,8 @@
       "tokens": "トークンバンドル",
       "countries": "国",
       "adminPlugins": "管理プラグイン",
-      "backendPlugins": "バックエンドプラグイン"
+      "backendPlugins": "バックエンドプラグイン",
+      "userPlugins": "ユーザープラグイン"
     },
     "coreSettings": {
       "title": "サービスプロバイダー情報",
@@ -575,6 +576,42 @@
       "saving": "保存中...",
       "configSaved": "設定が正常に保存されました",
       "confirmDeactivate": "このプラグインを無効化してもよろしいですか？"
+    }
+  },
+  "userPlugins": {
+    "title": "ユーザープラグイン",
+    "description": "ユーザーアプリケーションにインストールされたフロントエンドプラグインを管理します。",
+    "search": "ユーザープラグインを検索...",
+    "noPlugins": "ユーザープラグインが見つかりません",
+    "columns": {
+      "name": "名前",
+      "version": "バージョン",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "enable": "有効化",
+    "disable": "無効化",
+    "install": "インストール",
+    "uninstall": "アンインストール",
+    "view": "表示",
+    "active": "有効",
+    "inactive": "無効",
+    "uninstalled": "未インストール",
+    "error": "エラー",
+    "connectionError": "ユーザーアプリケーションに接続できません。実行中ですか？",
+    "detail": {
+      "title": "ユーザープラグイン詳細",
+      "back": "ユーザープラグインに戻る",
+      "activate": "有効化",
+      "deactivate": "無効化",
+      "install": "インストール",
+      "uninstall": "アンインストール",
+      "confirmDeactivate": "このプラグインを無効化してもよろしいですか？",
+      "confirmUninstall": "このプラグインをアンインストールしてもよろしいですか？プラグインファイルはディスクに残ります。",
+      "saveConfig": "設定を保存",
+      "saving": "保存中...",
+      "configSaved": "設定が正常に保存されました",
+      "noConfig": "このプラグインには設定オプションがありません。"
     }
   }
 }

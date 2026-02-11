@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component'
+import type { IPlugin } from '@vbwd/view-component'
 import { checkoutPlugin } from '../../../../plugins/checkout'
 import PublicCheckoutView from '../../../../plugins/checkout/PublicCheckoutView.vue'
 import { api } from '../../../src/api'
@@ -81,9 +82,9 @@ describe('Checkout Public Plugin', () => {
 
   it('should register correctly', () => {
     registry.register(checkoutPlugin)
-    const plugin = registry.get('checkout-public')
+    const plugin = registry.get('checkout')
     expect(plugin).toBeDefined()
-    expect(plugin!.name).toBe('checkout-public')
+    expect(plugin!.name).toBe('checkout')
     expect(plugin!.version).toBe('1.0.0')
   })
 
@@ -96,6 +97,28 @@ describe('Checkout Public Plugin', () => {
     expect(routes[0].path).toBe('/checkout')
     expect(routes[0].name).toBe('checkout-public')
     expect(routes[0].meta).toEqual({ requiresAuth: false })
+  })
+
+  it('should have activate method', () => {
+    expect(typeof checkoutPlugin.activate).toBe('function')
+  })
+
+  it('should have deactivate method', () => {
+    expect(typeof checkoutPlugin.deactivate).toBe('function')
+  })
+
+  it('should set _active to true on activate', () => {
+    const plugin = checkoutPlugin as IPlugin & { _active: boolean }
+    plugin._active = false
+    plugin.activate!()
+    expect(plugin._active).toBe(true)
+  })
+
+  it('should set _active to false on deactivate', () => {
+    const plugin = checkoutPlugin as IPlugin & { _active: boolean }
+    plugin._active = true
+    plugin.deactivate!()
+    expect(plugin._active).toBe(false)
   })
 })
 

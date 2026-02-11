@@ -532,5 +532,9 @@
     "currency": "Währung",
     "billingPeriod": "Abrechnungszeitraum",
     "description": "Beschreibung"
+  },
+  "notFound": {
+    "message": "Die angeforderte Seite existiert nicht.",
+    "backHome": "Zurück zum Dashboard"
   }
 }

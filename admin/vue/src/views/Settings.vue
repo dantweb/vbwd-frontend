@@ -49,6 +49,14 @@
       >
         {{ $t('settings.tabs.backendPlugins') }}
       </button>
+      <button
+        data-testid="tab-user-plugins"
+        class="tab-btn"
+        :class="{ active: activeTab === 'userPlugins' }"
+        @click="activeTab = 'userPlugins'"
+      >
+        {{ $t('settings.tabs.userPlugins') }}
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -897,6 +905,184 @@
           </div>
         </div>
       </div>
+
+      <!-- User Plugins Tab -->
+      <div
+        v-show="activeTab === 'userPlugins'"
+        data-testid="user-plugins-content"
+        class="plugins-tab"
+      >
+        <div class="form-section">
+          <div class="section-header">
+            <div>
+              <h3>{{ $t('userPlugins.title') }}</h3>
+              <p class="section-description">
+                {{ $t('userPlugins.description') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div
+            v-if="userPluginsLoading"
+            class="bundles-loading"
+            data-testid="user-plugins-loading"
+          >
+            <div class="spinner" />
+            <p>{{ $t('common.loading') }}</p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            v-else-if="userPluginsError"
+            class="bundles-error"
+            data-testid="user-plugins-error"
+          >
+            <p>{{ userPluginsError }}</p>
+            <button
+              class="retry-btn"
+              @click="loadUserPlugins()"
+            >
+              {{ $t('common.retry') }}
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-else-if="sortedUserPlugins.length === 0 && !userPluginSearchQuery"
+            class="empty-state"
+            data-testid="no-user-plugins"
+          >
+            <p>{{ $t('userPlugins.noPlugins') }}</p>
+          </div>
+
+          <!-- User Plugins Table -->
+          <div
+            v-else
+            class="bundles-table-container"
+          >
+            <div class="plugin-search-box">
+              <input
+                v-model="userPluginSearchQuery"
+                type="text"
+                :placeholder="$t('userPlugins.search')"
+                class="search-input"
+                data-testid="user-plugin-search"
+              >
+            </div>
+
+            <div
+              v-if="sortedUserPlugins.length === 0 && userPluginSearchQuery"
+              class="empty-state"
+            >
+              <p>{{ $t('common.noResults') }}</p>
+            </div>
+
+            <table
+              v-else
+              class="bundles-table"
+              data-testid="user-plugins-table"
+            >
+              <thead>
+                <tr>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': userPluginSortKey === 'name' }"
+                    @click="handleUserPluginSort('name')"
+                  >
+                    {{ $t('userPlugins.columns.name') }}
+                    <span class="sort-icon">{{ userPluginSortKey === 'name' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': userPluginSortKey === 'version' }"
+                    @click="handleUserPluginSort('version')"
+                  >
+                    {{ $t('userPlugins.columns.version') }}
+                    <span class="sort-icon">{{ userPluginSortKey === 'version' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
+                  </th>
+                  <th
+                    class="sortable-header"
+                    :class="{ 'sort-active': userPluginSortKey === 'status' }"
+                    @click="handleUserPluginSort('status')"
+                  >
+                    {{ $t('userPlugins.columns.status') }}
+                    <span class="sort-icon">{{ userPluginSortKey === 'status' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
+                  </th>
+                  <th>{{ $t('userPlugins.columns.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="up in sortedUserPlugins"
+                  :key="up.name"
+                  data-testid="user-plugin-row"
+                >
+                  <td class="bundle-name">
+                    <router-link :to="`/admin/settings/user-plugins/${up.name}`">
+                      {{ up.name }}
+                    </router-link>
+                    <span
+                      v-if="up.description"
+                      class="bundle-description"
+                    >
+                      {{ up.description }}
+                    </span>
+                  </td>
+                  <td>{{ up.version }}</td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      :class="{
+                        active: up.status === 'active',
+                        inactive: up.status === 'inactive',
+                        'status-error': up.status === 'uninstalled'
+                      }"
+                    >
+                      {{ up.status === 'active' ? $t('userPlugins.active') : up.status === 'inactive' ? $t('userPlugins.inactive') : $t('userPlugins.uninstalled') }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <button
+                      v-if="up.status === 'uninstalled'"
+                      class="action-btn activate-btn"
+                      data-testid="install-user-plugin-btn"
+                      @click="handleUserPluginInstall(up.name)"
+                    >
+                      {{ $t('userPlugins.install') }}
+                    </button>
+                    <template v-else>
+                      <button
+                        v-if="up.status !== 'active'"
+                        class="action-btn activate-btn"
+                        data-testid="enable-user-plugin-btn"
+                        @click="handleUserPluginEnable(up.name)"
+                      >
+                        {{ $t('userPlugins.enable') }}
+                      </button>
+                      <button
+                        v-else
+                        class="action-btn deactivate-btn"
+                        data-testid="disable-user-plugin-btn"
+                        @click="handleUserPluginDisable(up.name)"
+                      >
+                        {{ $t('userPlugins.disable') }}
+                      </button>
+                    </template>
+                    <router-link
+                      :to="`/admin/settings/user-plugins/${up.name}`"
+                      class="action-btn edit-btn"
+                      data-testid="view-user-plugin-btn"
+                    >
+                      {{ $t('userPlugins.view') }}
+                    </router-link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -909,14 +1095,17 @@ import { useTokenBundlesStore } from '@/stores/tokenBundles';
 import { useCountriesStore } from '@/stores/countries';
 import { usePluginsStore } from '@/stores/plugins';
 import type { PluginEntry } from '@/stores/plugins';
+import { useUserPluginsStore } from '@/stores/userPlugins';
+import type { UserPluginEntry } from '@/stores/userPlugins';
 
 const { t } = useI18n();
 const tokenBundlesStore = useTokenBundlesStore();
 const countriesStore = useCountriesStore();
 const pluginsStore = usePluginsStore();
+const userPluginsStore = useUserPluginsStore();
 
 // Tab state
-type MainTab = 'core' | 'tokens' | 'countries' | 'adminPlugins' | 'backendPlugins';
+type MainTab = 'core' | 'tokens' | 'countries' | 'adminPlugins' | 'backendPlugins' | 'userPlugins';
 
 const activeTab = ref<MainTab>('core');
 
@@ -1340,6 +1529,81 @@ function handleBackendPluginSort(key: string): void {
   }
 }
 
+// User Plugins
+const userPluginsLoading = ref(false);
+const userPluginsError = ref<string | null>(null);
+const userPluginsLoaded = ref(false);
+const userPluginSearchQuery = ref('');
+const userPluginSortKey = ref<string>('name');
+const userPluginSortDir = ref<'asc' | 'desc'>('asc');
+
+const filteredUserPlugins = computed((): UserPluginEntry[] => {
+  if (!userPluginSearchQuery.value) {
+    return userPluginsStore.plugins;
+  }
+  const query = userPluginSearchQuery.value.toLowerCase();
+  return userPluginsStore.plugins.filter(
+    p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
+  );
+});
+
+const sortedUserPlugins = computed((): UserPluginEntry[] => {
+  const list = [...filteredUserPlugins.value];
+  const key = userPluginSortKey.value as keyof UserPluginEntry;
+  const dir = userPluginSortDir.value === 'asc' ? 1 : -1;
+  return list.sort((a, b) => {
+    const aVal = String(a[key] || '');
+    const bVal = String(b[key] || '');
+    return aVal.localeCompare(bVal) * dir;
+  });
+});
+
+async function loadUserPlugins(): Promise<void> {
+  userPluginsLoading.value = true;
+  userPluginsError.value = null;
+  try {
+    await userPluginsStore.fetchPlugins();
+    userPluginsLoaded.value = true;
+  } catch (e) {
+    userPluginsError.value = (e as Error).message || t('userPlugins.connectionError');
+  } finally {
+    userPluginsLoading.value = false;
+  }
+}
+
+async function handleUserPluginEnable(name: string): Promise<void> {
+  try {
+    await userPluginsStore.enablePlugin(name);
+  } catch (e) {
+    userPluginsError.value = (e as Error).message;
+  }
+}
+
+async function handleUserPluginDisable(name: string): Promise<void> {
+  try {
+    await userPluginsStore.disablePlugin(name);
+  } catch (e) {
+    userPluginsError.value = (e as Error).message;
+  }
+}
+
+async function handleUserPluginInstall(name: string): Promise<void> {
+  try {
+    await userPluginsStore.installPlugin(name);
+  } catch (e) {
+    userPluginsError.value = (e as Error).message;
+  }
+}
+
+function handleUserPluginSort(key: string): void {
+  if (userPluginSortKey.value === key) {
+    userPluginSortDir.value = userPluginSortDir.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    userPluginSortKey.value = key;
+    userPluginSortDir.value = 'asc';
+  }
+}
+
 // Lazy-load tab data
 watch(activeTab, (newTab) => {
   if (newTab === 'tokens' && !bundlesLoaded.value) {
@@ -1353,6 +1617,9 @@ watch(activeTab, (newTab) => {
   }
   if (newTab === 'backendPlugins' && !backendPluginsLoaded.value) {
     loadBackendPlugins();
+  }
+  if (newTab === 'userPlugins' && !userPluginsLoaded.value) {
+    loadUserPlugins();
   }
 });
 

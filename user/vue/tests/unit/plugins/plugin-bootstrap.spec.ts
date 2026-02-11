@@ -151,6 +151,101 @@ describe('User App Plugin Bootstrap', () => {
     expect(Object.keys(sdk.getStores())).toHaveLength(0)
   })
 
+  // --- Conditional Registration from plugins.json ---
+
+  it('should only register and install enabled plugins', async () => {
+    const pluginA = createTestPlugin({
+      name: 'enabled-plugin',
+      install(sdk: IPlatformSDK) {
+        sdk.addRoute({ path: '/enabled', name: 'Enabled', component: () => Promise.resolve({ default: {} }) as Promise<{ default: unknown }> })
+      }
+    })
+    const pluginB = createTestPlugin({
+      name: 'disabled-plugin',
+      install(sdk: IPlatformSDK) {
+        sdk.addRoute({ path: '/disabled', name: 'Disabled', component: () => Promise.resolve({ default: {} }) as Promise<{ default: unknown }> })
+      }
+    })
+
+    const availablePlugins: Record<string, IPlugin> = {
+      'enabled-plugin': pluginA,
+      'disabled-plugin': pluginB
+    }
+
+    // Simulate runtime registry fetch: only enabled-plugin is enabled
+    const pluginRegistry: Record<string, { enabled: boolean }> = {
+      'enabled-plugin': { enabled: true },
+      'disabled-plugin': { enabled: false }
+    }
+
+    // Only register enabled plugins (matches new main.ts flow)
+    for (const [name, entry] of Object.entries(pluginRegistry)) {
+      if (entry.enabled && availablePlugins[name]) {
+        registry.register(availablePlugins[name])
+      }
+    }
+
+    await registry.installAll(sdk)
+
+    // Only enabled plugin's route should be registered
+    const routes = sdk.getRoutes()
+    expect(routes).toHaveLength(1)
+    expect(routes[0].path).toBe('/enabled')
+
+    // Disabled plugin should not be in registry at all
+    expect(registry.get('enabled-plugin')).toBeDefined()
+    expect(registry.get('disabled-plugin')).toBeUndefined()
+  })
+
+  it('should not register any routes when all plugins are disabled', async () => {
+    const plugin = createTestPlugin({
+      name: 'all-disabled',
+      install(sdk: IPlatformSDK) {
+        sdk.addRoute({ path: '/disabled-route', name: 'DisabledRoute', component: () => Promise.resolve({ default: {} }) as Promise<{ default: unknown }> })
+      }
+    })
+
+    const availablePlugins: Record<string, IPlugin> = { 'all-disabled': plugin }
+    const pluginRegistry: Record<string, { enabled: boolean }> = {
+      'all-disabled': { enabled: false }
+    }
+
+    for (const [name, entry] of Object.entries(pluginRegistry)) {
+      if (entry.enabled && availablePlugins[name]) {
+        registry.register(availablePlugins[name])
+      }
+    }
+
+    await registry.installAll(sdk)
+
+    expect(sdk.getRoutes()).toHaveLength(0)
+    expect(registry.get('all-disabled')).toBeUndefined()
+  })
+
+  it('should not register routes for uninstalled plugins', async () => {
+    const plugin = createTestPlugin({
+      name: 'uninstalled-plugin',
+      install(sdk: IPlatformSDK) {
+        sdk.addRoute({ path: '/uninstalled', name: 'Uninstalled', component: () => Promise.resolve({ default: {} }) as Promise<{ default: unknown }> })
+      }
+    })
+
+    const availablePlugins: Record<string, IPlugin> = { 'uninstalled-plugin': plugin }
+
+    // Plugin not in registry at all (uninstalled)
+    const pluginRegistry: Record<string, { enabled: boolean }> = {}
+
+    for (const [name, entry] of Object.entries(pluginRegistry)) {
+      if (entry.enabled && availablePlugins[name]) {
+        registry.register(availablePlugins[name])
+      }
+    }
+
+    await registry.installAll(sdk)
+
+    expect(sdk.getRoutes()).toHaveLength(0)
+  })
+
   // --- Isolation from Admin ---
 
   it('should keep separate registry instances independent', () => {

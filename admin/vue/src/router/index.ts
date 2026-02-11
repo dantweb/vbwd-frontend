@@ -145,6 +145,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/BackendPluginDetails.vue')
       },
       {
+        path: 'settings/user-plugins/:pluginName',
+        name: 'user-plugin-details',
+        component: () => import('@/views/UserPluginDetails.vue')
+      },
+      {
         path: 'profile',
         name: 'profile',
         component: () => import('@/views/Profile.vue')

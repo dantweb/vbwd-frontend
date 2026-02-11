@@ -49,6 +49,28 @@ describe('Landing1 Plugin', () => {
     expect(routes[0].name).toBe('landing1')
     expect(routes[0].meta).toEqual({ requiresAuth: false })
   })
+
+  it('should have activate method', () => {
+    expect(typeof landing1Plugin.activate).toBe('function')
+  })
+
+  it('should have deactivate method', () => {
+    expect(typeof landing1Plugin.deactivate).toBe('function')
+  })
+
+  it('should set _active to true on activate', () => {
+    const plugin = landing1Plugin as IPlugin & { _active: boolean }
+    plugin._active = false
+    plugin.activate!()
+    expect(plugin._active).toBe(true)
+  })
+
+  it('should set _active to false on deactivate', () => {
+    const plugin = landing1Plugin as IPlugin & { _active: boolean }
+    plugin._active = true
+    plugin.deactivate!()
+    expect(plugin._active).toBe(false)
+  })
 })
 
 describe('Landing1View', () => {

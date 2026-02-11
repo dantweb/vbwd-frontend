@@ -359,7 +359,8 @@
       "tokens": "Token-Pakete",
       "countries": "Länder",
       "adminPlugins": "Admin-Plugins",
-      "backendPlugins": "Backend-Plugins"
+      "backendPlugins": "Backend-Plugins",
+      "userPlugins": "Benutzer-Plugins"
     },
     "coreSettings": {
       "title": "Dienstanbieter-Informationen",
@@ -588,6 +589,42 @@
       "saving": "Speichern...",
       "configSaved": "Konfiguration erfolgreich gespeichert",
       "confirmDeactivate": "Sind Sie sicher, dass Sie dieses Plugin deaktivieren möchten?"
+    }
+  },
+  "userPlugins": {
+    "title": "Benutzer-Plugins",
+    "description": "Frontend-Plugins der Benutzeranwendung verwalten.",
+    "search": "Benutzer-Plugins suchen...",
+    "noPlugins": "Keine Benutzer-Plugins gefunden",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "install": "Installieren",
+    "uninstall": "Deinstallieren",
+    "view": "Anzeigen",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "uninstalled": "Nicht installiert",
+    "error": "Fehler",
+    "connectionError": "Verbindung zur Benutzeranwendung nicht möglich. Läuft sie?",
+    "detail": {
+      "title": "Benutzer-Plugin-Details",
+      "back": "Zurück zu Benutzer-Plugins",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "install": "Installieren",
+      "uninstall": "Deinstallieren",
+      "confirmDeactivate": "Möchten Sie dieses Plugin wirklich deaktivieren?",
+      "confirmUninstall": "Möchten Sie dieses Plugin wirklich deinstallieren? Plugin-Dateien bleiben auf der Festplatte erhalten.",
+      "saveConfig": "Konfiguration speichern",
+      "saving": "Speichern...",
+      "configSaved": "Konfiguration erfolgreich gespeichert",
+      "noConfig": "Dieses Plugin hat keine Konfigurationsoptionen."
     }
   }
 }

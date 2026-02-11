@@ -101,6 +101,12 @@ const routes: RouteRecordRaw[] = [
     name: 'invoice-pay',
     component: () => import('../views/InvoicePay.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('../views/NotFound.vue'),
+    meta: { requiresAuth: false }
   }
 ];
 

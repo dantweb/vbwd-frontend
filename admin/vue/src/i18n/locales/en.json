@@ -361,7 +361,8 @@
       "tokens": "Token Bundles",
       "countries": "Countries",
       "adminPlugins": "Admin Plugins",
-      "backendPlugins": "Backend Plugins"
+      "backendPlugins": "Backend Plugins",
+      "userPlugins": "User Plugins"
     },
     "coreSettings": {
       "title": "Service Provider Information",
@@ -654,6 +655,42 @@
       "saving": "Saving...",
       "configSaved": "Configuration saved successfully",
       "confirmDeactivate": "Are you sure you want to deactivate this plugin?"
+    }
+  },
+  "userPlugins": {
+    "title": "User Plugins",
+    "description": "Manage frontend plugins installed on the user application.",
+    "search": "Search user plugins...",
+    "noPlugins": "No user plugins found",
+    "columns": {
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "enable": "Enable",
+    "disable": "Disable",
+    "install": "Install",
+    "uninstall": "Uninstall",
+    "view": "View",
+    "active": "Active",
+    "inactive": "Inactive",
+    "uninstalled": "Not Installed",
+    "error": "Error",
+    "connectionError": "Cannot connect to user application. Is it running?",
+    "detail": {
+      "title": "User Plugin Details",
+      "back": "Back to User Plugins",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "install": "Install",
+      "uninstall": "Uninstall",
+      "confirmDeactivate": "Are you sure you want to deactivate this plugin?",
+      "confirmUninstall": "Are you sure you want to uninstall this plugin? Plugin files will remain on disk.",
+      "saveConfig": "Save Configuration",
+      "saving": "Saving...",
+      "configSaved": "Configuration saved successfully",
+      "noConfig": "This plugin has no configuration options."
     }
   }
 }

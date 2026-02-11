@@ -356,7 +356,8 @@
       "tokens": "Paquetes de Tokens",
       "countries": "Países",
       "adminPlugins": "Plugins de Admin",
-      "backendPlugins": "Plugins de Backend"
+      "backendPlugins": "Plugins de Backend",
+      "userPlugins": "Plugins de Usuario"
     },
     "coreSettings": {
       "title": "Información del Proveedor de Servicios",
@@ -577,6 +578,42 @@
       "saving": "Guardando...",
       "configSaved": "Configuración guardada correctamente",
       "confirmDeactivate": "¿Está seguro de que desea desactivar este plugin?"
+    }
+  },
+  "userPlugins": {
+    "title": "Plugins de Usuario",
+    "description": "Gestionar plugins frontend instalados en la aplicación de usuario.",
+    "search": "Buscar plugins de usuario...",
+    "noPlugins": "No se encontraron plugins de usuario",
+    "columns": {
+      "name": "Nombre",
+      "version": "Versión",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "install": "Instalar",
+    "uninstall": "Desinstalar",
+    "view": "Ver",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "uninstalled": "No instalado",
+    "error": "Error",
+    "connectionError": "No se puede conectar a la aplicación de usuario. ¿Está en ejecución?",
+    "detail": {
+      "title": "Detalles del Plugin de Usuario",
+      "back": "Volver a Plugins de Usuario",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "install": "Instalar",
+      "uninstall": "Desinstalar",
+      "confirmDeactivate": "¿Está seguro de que desea desactivar este plugin?",
+      "confirmUninstall": "¿Está seguro de que desea desinstalar este plugin? Los archivos del plugin permanecerán en el disco.",
+      "saveConfig": "Guardar Configuración",
+      "saving": "Guardando...",
+      "configSaved": "Configuración guardada exitosamente",
+      "noConfig": "Este plugin no tiene opciones de configuración."
     }
   }
 }

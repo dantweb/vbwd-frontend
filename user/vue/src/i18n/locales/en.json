@@ -532,5 +532,9 @@
     "currency": "Currency",
     "billingPeriod": "Billing Period",
     "description": "Description"
+  },
+  "notFound": {
+    "message": "The page you are looking for does not exist.",
+    "backHome": "Back to Dashboard"
   }
 }

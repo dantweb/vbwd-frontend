@@ -356,7 +356,8 @@
       "tokens": "Forfaits de jetons",
       "countries": "Pays",
       "adminPlugins": "Plugins Admin",
-      "backendPlugins": "Plugins Backend"
+      "backendPlugins": "Plugins Backend",
+      "userPlugins": "Plugins Utilisateur"
     },
     "coreSettings": {
       "title": "Informations du fournisseur de services",
@@ -577,6 +578,42 @@
       "saving": "Enregistrement...",
       "configSaved": "Configuration enregistrée avec succès",
       "confirmDeactivate": "Êtes-vous sûr de vouloir désactiver ce plugin ?"
+    }
+  },
+  "userPlugins": {
+    "title": "Plugins Utilisateur",
+    "description": "Gérer les plugins frontend installés sur l'application utilisateur.",
+    "search": "Rechercher des plugins utilisateur...",
+    "noPlugins": "Aucun plugin utilisateur trouvé",
+    "columns": {
+      "name": "Nom",
+      "version": "Version",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "install": "Installer",
+    "uninstall": "Désinstaller",
+    "view": "Voir",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "uninstalled": "Non installé",
+    "error": "Erreur",
+    "connectionError": "Impossible de se connecter à l'application utilisateur. Est-elle en cours d'exécution ?",
+    "detail": {
+      "title": "Détails du plugin utilisateur",
+      "back": "Retour aux plugins utilisateur",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "install": "Installer",
+      "uninstall": "Désinstaller",
+      "confirmDeactivate": "Êtes-vous sûr de vouloir désactiver ce plugin ?",
+      "confirmUninstall": "Êtes-vous sûr de vouloir désinstaller ce plugin ? Les fichiers du plugin resteront sur le disque.",
+      "saveConfig": "Enregistrer la configuration",
+      "saving": "Enregistrement...",
+      "configSaved": "Configuration enregistrée avec succès",
+      "noConfig": "Ce plugin n'a pas d'options de configuration."
     }
   }
 }

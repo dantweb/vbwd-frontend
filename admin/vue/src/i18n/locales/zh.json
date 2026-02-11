@@ -356,7 +356,8 @@
       "tokens": "代币包",
       "countries": "国家",
       "adminPlugins": "管理插件",
-      "backendPlugins": "后端插件"
+      "backendPlugins": "后端插件",
+      "userPlugins": "用户插件"
     },
     "coreSettings": {
       "title": "服务提供商信息",
@@ -575,6 +576,42 @@
       "saving": "保存中...",
       "configSaved": "配置保存成功",
       "confirmDeactivate": "确定要停用此插件吗？"
+    }
+  },
+  "userPlugins": {
+    "title": "用户插件",
+    "description": "管理安装在用户应用程序上的前端插件。",
+    "search": "搜索用户插件...",
+    "noPlugins": "未找到用户插件",
+    "columns": {
+      "name": "名称",
+      "version": "版本",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "enable": "启用",
+    "disable": "禁用",
+    "install": "安装",
+    "uninstall": "卸载",
+    "view": "查看",
+    "active": "已启用",
+    "inactive": "已停用",
+    "uninstalled": "未安装",
+    "error": "错误",
+    "connectionError": "无法连接到用户应用程序。它是否正在运行？",
+    "detail": {
+      "title": "用户插件详情",
+      "back": "返回用户插件",
+      "activate": "启用",
+      "deactivate": "停用",
+      "install": "安装",
+      "uninstall": "卸载",
+      "confirmDeactivate": "确定要停用此插件吗？",
+      "confirmUninstall": "确定要卸载此插件吗？插件文件将保留在磁盘上。",
+      "saveConfig": "保存配置",
+      "saving": "保存中...",
+      "configSaved": "配置保存成功",
+      "noConfig": "此插件没有配置选项。"
     }
   }
 }
