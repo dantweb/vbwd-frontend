@@ -344,7 +344,8 @@
       "paymentMethods": {
         "stripe": "Stripe",
         "invoice": "Invoice (Bank Transfer)",
-        "paypal": "PayPal"
+        "paypal": "PayPal",
+        "yookassa": "YooKassa"
       },
       "errors": {
         "failedToLoad": "Failed to load invoice",
@@ -582,6 +583,26 @@
     "cancel": {
       "title": "Payment Cancelled",
       "message": "Your PayPal payment was cancelled. Your invoice is still pending.",
+      "tryAgain": "Try Again"
+    }
+  },
+  "yookassa": {
+    "payment": {
+      "redirecting": "Redirecting to YooKassa...",
+      "retry": "Try Again",
+      "error": "Failed to create YooKassa payment session",
+      "noInvoice": "No invoice specified. Please complete checkout first."
+    },
+    "success": {
+      "title": "Payment Successful",
+      "message": "Your YooKassa payment has been processed. Your subscription is now active.",
+      "verifying": "Verifying your payment...",
+      "processing": "Your payment is being processed. This may take a moment.",
+      "viewInvoices": "View Invoices"
+    },
+    "cancel": {
+      "title": "Payment Cancelled",
+      "message": "Your YooKassa payment was cancelled. Your invoice is still pending.",
       "tryAgain": "Try Again"
     }
   }

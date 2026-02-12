@@ -402,6 +402,11 @@ watch(() => store.checkoutResult, (result) => {
     if (invoiceId) {
       router.push({ path: '/pay/paypal', query: { invoice: invoiceId } });
     }
+  } else if (result && store.paymentMethodCode === 'yookassa') {
+    const invoiceId = result.invoice?.id;
+    if (invoiceId) {
+      router.push({ path: '/pay/yookassa', query: { invoice: invoiceId } });
+    }
   }
 });
 
