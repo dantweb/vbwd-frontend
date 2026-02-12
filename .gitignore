@@ -42,5 +42,5 @@ coverage/
 # Misc
 *.local
 .eslintcache
-/user/test-results/
-/admin/vue/test-results/
+test-results/
+test-results
