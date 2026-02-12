@@ -198,6 +198,11 @@ async function loadInvoice(): Promise<void> {
       router.replace(`/pay/stripe?invoice=${invoice.value.id}`);
       return;
     }
+    // For PayPal invoices, redirect to PayPal checkout flow
+    if (invoice.value?.payment_method === 'paypal' && invoice.value?.status === 'pending') {
+      router.replace(`/pay/paypal?invoice=${invoice.value.id}`);
+      return;
+    }
   } catch (err) {
     error.value = (err as Error).message || t('invoices.pay.errors.failedToLoad');
   } finally {

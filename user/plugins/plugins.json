@@ -17,6 +17,12 @@
       "version": "1.0.0",
       "installedAt": "2026-02-11T12:00:00.000Z",
       "source": "local"
+    },
+    "paypal-payment": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-02-12T12:00:00.000Z",
+      "source": "local"
     }
   }
 }

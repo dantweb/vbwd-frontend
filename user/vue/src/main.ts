@@ -8,6 +8,7 @@ import { PluginRegistry, PlatformSDK } from '@vbwd/view-component';
 import { landing1Plugin } from '../../plugins/landing1';
 import { checkoutPlugin } from '../../plugins/checkout';
 import { stripePaymentPlugin } from '../../plugins/stripe-payment';
+import { paypalPaymentPlugin } from '../../plugins/paypal-payment';
 import type { IPlugin } from '@vbwd/view-component';
 
 // Initialize API with stored auth token before mounting app
@@ -27,6 +28,7 @@ const availablePlugins: Record<string, IPlugin> = {
   landing1: landing1Plugin,
   checkout: checkoutPlugin,
   'stripe-payment': stripePaymentPlugin,
+  'paypal-payment': paypalPaymentPlugin,
 };
 
 async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean }>> {

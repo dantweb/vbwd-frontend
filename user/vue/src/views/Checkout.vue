@@ -390,12 +390,17 @@ const missingRequirements = computed(() => {
   return missing;
 });
 
-// Redirect to Stripe payment when checkout succeeds with stripe payment method
+// Redirect to payment provider when checkout succeeds
 watch(() => store.checkoutResult, (result) => {
   if (result && store.paymentMethodCode === 'stripe') {
     const invoiceId = result.invoice?.id;
     if (invoiceId) {
       router.push({ path: '/pay/stripe', query: { invoice: invoiceId } });
+    }
+  } else if (result && store.paymentMethodCode === 'paypal') {
+    const invoiceId = result.invoice?.id;
+    if (invoiceId) {
+      router.push({ path: '/pay/paypal', query: { invoice: invoiceId } });
     }
   }
 });

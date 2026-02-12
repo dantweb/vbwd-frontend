@@ -10,6 +10,7 @@ export interface Plan {
   description?: string;
   price: number;
   display_price?: number;
+  price_float?: number;
   currency: string;
   billing_period: string;
 }
@@ -125,12 +126,25 @@ export const useCheckoutStore = defineStore('checkout', () => {
   });
 
   // Actions
+  function normalizePrice(raw: unknown): number {
+    if (typeof raw === 'number') return raw;
+    if (typeof raw === 'string') return parseFloat(raw) || 0;
+    if (raw && typeof raw === 'object') {
+      const obj = raw as Record<string, unknown>;
+      if (obj.price_decimal) return parseFloat(String(obj.price_decimal)) || 0;
+    }
+    return 0;
+  }
+
   async function loadPlan(slug: string) {
     loading.value = true;
     error.value = null;
     try {
-      const response = await api.get(`/tarif-plans/${slug}`) as { plan: Plan };
-      plan.value = response.plan || response as unknown as Plan;
+      const response = await api.get(`/tarif-plans/${slug}`) as { plan: Plan } & Plan;
+      const rawPlan = response.plan || response as unknown as Plan;
+      // API may return price as {currency_code, price_decimal} object; normalize to number
+      rawPlan.price = normalizePrice(rawPlan.price_float ?? rawPlan.display_price ?? rawPlan.price);
+      plan.value = rawPlan;
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } }; message?: string };
       error.value = err.response?.data?.error || err.message || 'Failed to load plan';

@@ -264,12 +264,17 @@ function formatBillingPeriod(period?: string): string {
   return periodMap[period] || period.toLowerCase();
 }
 
-// Redirect to Stripe payment when checkout succeeds with stripe payment method
+// Redirect to payment provider when checkout succeeds
 watch(() => checkoutStore.checkoutResult, (result) => {
   if (result && checkoutStore.paymentMethodCode === 'stripe') {
     const invoiceId = result.invoice?.id;
     if (invoiceId) {
       router.push({ path: '/pay/stripe', query: { invoice: invoiceId } });
+    }
+  } else if (result && checkoutStore.paymentMethodCode === 'paypal') {
+    const invoiceId = result.invoice?.id;
+    if (invoiceId) {
+      router.push({ path: '/pay/paypal', query: { invoice: invoiceId } });
     }
   }
 });
