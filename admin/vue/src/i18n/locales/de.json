@@ -93,6 +93,7 @@
     "inactive": "Inaktiv",
     "suspended": "Gesperrt",
     "pending": "Ausstehend",
+    "rolesLabel": "Rollen",
     "roles": {
       "user": "Benutzer",
       "admin": "Administrator",
@@ -209,6 +210,7 @@
     "statuses": {
       "active": "Aktiv",
       "cancelled": "Gekündigt",
+      "canceled": "Storniert",
       "pastDue": "Überfällig",
       "trialing": "Testphase",
       "paused": "Pausiert",

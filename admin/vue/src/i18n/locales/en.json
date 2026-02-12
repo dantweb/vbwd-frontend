@@ -93,6 +93,7 @@
     "inactive": "Inactive",
     "suspended": "Suspended",
     "pending": "Pending",
+    "rolesLabel": "Roles",
     "roles": {
       "user": "User",
       "admin": "Admin",
@@ -211,6 +212,7 @@
     "statuses": {
       "active": "Active",
       "cancelled": "Cancelled",
+      "canceled": "Canceled",
       "pastDue": "Past Due",
       "trialing": "Trialing",
       "paused": "Paused",

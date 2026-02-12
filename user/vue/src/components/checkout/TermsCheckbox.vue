@@ -45,12 +45,14 @@
         >
           {{ $t('components.termsCheckbox.popupLoading') }}
         </div>
+        <!-- eslint-disable vue/no-v-html -->
         <div
           v-else
           data-testid="terms-content"
           class="popup-body"
           v-html="renderedContent"
         />
+        <!-- eslint-enable vue/no-v-html -->
         <div class="popup-footer">
           <button
             class="btn primary"
@@ -80,11 +82,21 @@ const showPopup = ref(false);
 const loading = ref(false);
 const terms = ref<{ title: string; content: string } | null>(null);
 
-// Simple markdown-like rendering (headers, paragraphs, lists)
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Sanitize then apply markdown-like rendering (headers, paragraphs, lists)
 const renderedContent = computed(() => {
   if (!terms.value) return 'Loading...';
 
-  return terms.value.content
+  const sanitized = escapeHtml(terms.value.content);
+  return sanitized
     .replace(/^### (.+)$/gm, '<h4>$1</h4>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/^- (.+)$/gm, '<li>$1</li>')

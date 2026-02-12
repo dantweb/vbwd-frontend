@@ -35,8 +35,10 @@ describe('Users.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/users' },
         { path: '/admin/users', name: 'users', component: Users },
-        { path: '/admin/users/:id', name: 'user-details', component: { template: '<div>User Details</div>' } }
+        { path: '/admin/users/:id', name: 'user-details', component: { template: '<div>User Details</div>' } },
+        { path: '/admin/users/:id/edit', name: 'user-edit', component: { template: '<div>User Edit</div>' } }
       ]
     });
 

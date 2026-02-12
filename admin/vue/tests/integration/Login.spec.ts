@@ -39,6 +39,7 @@ describe('Login.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/login' },
         { path: '/admin/login', name: 'login', component: Login },
         { path: '/admin/dashboard', name: 'dashboard', component: { template: '<div>Dashboard</div>' } },
         { path: '/admin/forbidden', name: 'forbidden', component: { template: '<div>Forbidden</div>' } }

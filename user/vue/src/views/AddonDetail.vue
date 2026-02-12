@@ -173,18 +173,37 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { useI18n } from 'vue-i18n';
 import { useSubscriptionStore } from '../stores/subscription';
 
 const route = useRoute();
-const { t } = useI18n();
 const subscriptionStore = useSubscriptionStore();
 
 const addonSubId = route.params.id as string;
 
+interface AddonSubInvoice {
+  invoice_number: string;
+  status: string;
+  amount: string | number;
+  currency: string;
+}
+
+interface AddonSubscription {
+  status: string;
+  starts_at: string | null;
+  expires_at: string | null;
+  cancelled_at: string | null;
+  addon?: {
+    name: string;
+    description?: string | null;
+    price?: string | number;
+    billing_period?: string;
+  };
+  invoice?: AddonSubInvoice;
+}
+
 const loading = ref(true);
 const error = ref<string | null>(null);
-const addonSub = ref<any>(null);
+const addonSub = ref<AddonSubscription | null>(null);
 const showCancelConfirm = ref(false);
 const cancelling = ref(false);
 const cancelSuccess = ref(false);

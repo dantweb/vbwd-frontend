@@ -140,7 +140,7 @@ describe('webhooks store', () => {
   describe('reset', () => {
     it('resets store to initial state', () => {
       const store = useWebhooksStore();
-      store.webhooks = [{ id: '1' } as any];
+      store.webhooks = [{ id: '1', url: 'https://example.com', events: [], status: 'active' as const }];
       store.total = 10;
       store.error = 'some error';
 

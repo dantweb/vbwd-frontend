@@ -65,9 +65,11 @@ describe('Plans.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/plans' },
         { path: '/admin/plans', name: 'plans', component: Plans },
         { path: '/admin/plans/new', name: 'plan-new', component: { template: '<div>New Plan</div>' } },
-        { path: '/admin/plans/:id', name: 'plan-details', component: { template: '<div>Plan Details</div>' } }
+        { path: '/admin/plans/:id', name: 'plan-details', component: { template: '<div>Plan Details</div>' } },
+        { path: '/admin/plans/:id/edit', name: 'plan-edit', component: { template: '<div>Plan Edit</div>' } }
       ]
     });
 

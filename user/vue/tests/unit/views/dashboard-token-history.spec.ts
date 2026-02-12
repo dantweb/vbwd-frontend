@@ -33,9 +33,18 @@ const RouterLinkStub = {
   props: ['to']
 };
 
+interface MockTransaction {
+  id: string;
+  transaction_type: string;
+  amount: number;
+  balance_after: number;
+  description: string | null;
+  created_at: string;
+}
+
 let pinia: Pinia;
 
-function mockApiWithTokens(transactions: any[] = []) {
+function mockApiWithTokens(transactions: MockTransaction[] = []) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url.startsWith('/user/tokens/transactions')) return Promise.resolve({ transactions });
     if (url === '/user/subscriptions') return Promise.resolve({ subscriptions: [] });

@@ -301,7 +301,7 @@ async function handleSaveConfig(): Promise<void> {
   successMessage.value = null;
   try {
     await pluginsStore.savePluginConfig(pluginName, { ...configValues });
-    successMessage.value = t('plugins.detail.configSaved');
+    successMessage.value = t('adminPlugins.detail.configSaved');
     setTimeout(() => {
       successMessage.value = null;
     }, 3000);
@@ -325,7 +325,7 @@ async function handleActivate(): Promise<void> {
 }
 
 async function handleDeactivate(): Promise<void> {
-  if (!confirm(t('plugins.detail.confirmDeactivate'))) return;
+  if (!confirm(t('adminPlugins.detail.confirmDeactivate'))) return;
   try {
     await pluginsStore.deactivatePlugin(pluginName);
     if (plugin.value) {
@@ -338,7 +338,7 @@ async function handleDeactivate(): Promise<void> {
 }
 
 async function handleUninstall(): Promise<void> {
-  if (!confirm(t('plugins.detail.confirmUninstall'))) return;
+  if (!confirm(t('adminPlugins.detail.confirmUninstall'))) return;
   try {
     await pluginsStore.uninstallPlugin(pluginName);
     router.push('/admin/settings');

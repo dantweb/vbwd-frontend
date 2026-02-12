@@ -35,6 +35,7 @@ describe('Subscriptions.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/subscriptions' },
         { path: '/admin/subscriptions', name: 'subscriptions', component: Subscriptions },
         { path: '/admin/subscriptions/:id', name: 'subscription-details', component: { template: '<div>Details</div>' } }
       ]

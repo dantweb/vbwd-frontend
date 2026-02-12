@@ -68,9 +68,22 @@ const planSpecificAddon = {
   tarif_plans: [{ id: 'plan-pro', name: 'Pro' }]
 };
 
+interface MockAddon {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: string;
+  currency: string;
+  billing_period: string;
+  is_active: boolean;
+  tarif_plan_ids?: string[];
+  tarif_plans?: { id: string; name: string }[];
+}
+
 let pinia: Pinia;
 
-function mockApi(addons: any[] = [independentAddon, planSpecificAddon]) {
+function mockApi(addons: MockAddon[] = [independentAddon, planSpecificAddon]) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/addons') return Promise.resolve({ addons });
     if (url === '/user/subscriptions/active') return Promise.resolve({ subscription: { status: 'active' } });

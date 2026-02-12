@@ -10,21 +10,21 @@ vi.mock('@/stores/auth', () => ({
 describe('AuthGuard', () => {
   let mockNext: ReturnType<typeof vi.fn>;
   let mockAuthStore: {
-    isAuthenticated: { value: boolean };
-    user: { value: null | { id: string } };
+    isAuthenticated: boolean;
+    user: null | { id: string };
   };
 
   beforeEach(() => {
     mockNext = vi.fn();
     mockAuthStore = {
-      isAuthenticated: { value: false },
-      user: { value: null },
+      isAuthenticated: false,
+      user: null,
     };
-    vi.mocked(authStore.useAuthStore).mockReturnValue(mockAuthStore as any);
+    vi.mocked(authStore.useAuthStore).mockReturnValue(mockAuthStore as unknown as ReturnType<typeof authStore.useAuthStore>);
   });
 
   it('should allow access when user is authenticated and route requires auth', () => {
-    mockAuthStore.isAuthenticated.value = true;
+    mockAuthStore.isAuthenticated = true;
     const guard = createAuthGuard();
 
     const to = { meta: { requiresAuth: true }, fullPath: '/dashboard' } as any;
@@ -36,7 +36,7 @@ describe('AuthGuard', () => {
   });
 
   it('should redirect to login when not authenticated and route requires auth', () => {
-    mockAuthStore.isAuthenticated.value = false;
+    mockAuthStore.isAuthenticated = false;
     const guard = createAuthGuard();
 
     const to = { meta: { requiresAuth: true }, fullPath: '/dashboard' } as any;
@@ -51,7 +51,7 @@ describe('AuthGuard', () => {
   });
 
   it('should redirect away from guest routes when authenticated', () => {
-    mockAuthStore.isAuthenticated.value = true;
+    mockAuthStore.isAuthenticated = true;
     const guard = createAuthGuard();
 
     const to = { meta: { requiresGuest: true }, fullPath: '/login' } as any;
@@ -63,7 +63,7 @@ describe('AuthGuard', () => {
   });
 
   it('should allow guest routes when not authenticated', () => {
-    mockAuthStore.isAuthenticated.value = false;
+    mockAuthStore.isAuthenticated = false;
     const guard = createAuthGuard();
 
     const to = { meta: { requiresGuest: true }, fullPath: '/login' } as any;
@@ -75,7 +75,7 @@ describe('AuthGuard', () => {
   });
 
   it('should allow access to public routes', () => {
-    mockAuthStore.isAuthenticated.value = false;
+    mockAuthStore.isAuthenticated = false;
     const guard = createAuthGuard();
 
     const to = { meta: {}, fullPath: '/about' } as any;
@@ -87,7 +87,7 @@ describe('AuthGuard', () => {
   });
 
   it('should use custom route names from options', () => {
-    mockAuthStore.isAuthenticated.value = false;
+    mockAuthStore.isAuthenticated = false;
     const guard = createAuthGuard({
       loginRoute: 'auth-login',
       dashboardRoute: 'home',

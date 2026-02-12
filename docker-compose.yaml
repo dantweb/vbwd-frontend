@@ -48,6 +48,7 @@ services:
     working_dir: /app
     volumes:
       - ./admin/vue:/app
+      - ./admin/plugins:/plugins
       - ./core:/core
     ports:
       - "5174:5173"
@@ -86,6 +87,7 @@ services:
     working_dir: /app
     volumes:
       - ./admin/vue:/app
+      - ./admin/plugins:/plugins
       - ./core:/core
       - admin_node_modules:/app/node_modules
     command: sh -c "npm install && npm run test"

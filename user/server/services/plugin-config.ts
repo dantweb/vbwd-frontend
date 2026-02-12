@@ -2,7 +2,6 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSy
 import { join, resolve } from 'path';
 import type {
   PluginRegistry,
-  PluginRegistryEntry,
   PluginConfigField,
   AdminConfig,
   UserPluginEntry,

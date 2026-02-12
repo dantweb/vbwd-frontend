@@ -79,7 +79,7 @@
               <span>{{ formatDate(user.created_at) }}</span>
             </div>
             <div class="info-item">
-              <label>{{ $t('users.roles') }}</label>
+              <label>{{ $t('users.rolesLabel') }}</label>
               <div class="roles-list">
                 <span
                   v-for="role in user.roles"

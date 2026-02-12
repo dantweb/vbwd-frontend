@@ -2,21 +2,21 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory, type RouteRecordRaw } from 'vue-router'
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component'
 import type { IPlugin, IPlatformSDK } from '@vbwd/view-component'
-import { defineComponent, h } from 'vue'
+import { h } from 'vue'
 
-const DummyPage = defineComponent({
+const DummyPage = {
   name: 'DummyPage',
   render() {
     return h('div', 'Plugin Page')
   }
-})
+}
 
-const AdminLayout = defineComponent({
+const AdminLayout = {
   name: 'AdminLayout',
   render() {
     return h('div', { class: 'admin-layout' }, [h('router-view')])
   }
-})
+}
 
 function createPluginWithRoute(): IPlugin {
   return {

@@ -66,6 +66,9 @@ export interface IPlugin {
    * Use for removing registered routes, components, stores, etc.
    */
   uninstall?(): void | Promise<void>;
+
+  /** Internal active state for plugin lifecycle tracking */
+  _active?: boolean;
 }
 
 /**
@@ -156,6 +159,7 @@ export interface IRouteConfig {
   path: string;
   name: string;
   component: () => Promise<{ default: unknown }>;
+  meta?: Record<string, unknown>;
   [key: string]: unknown;
 }
 

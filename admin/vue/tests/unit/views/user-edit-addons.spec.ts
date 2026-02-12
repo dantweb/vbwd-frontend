@@ -58,7 +58,7 @@ const mockAddonSubs = [
   }
 ];
 
-function setupApiMocks(overrides: Record<string, any> = {}) {
+function setupApiMocks(overrides: Record<string, unknown> = {}) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/admin/users/1') {
       return Promise.resolve(overrides.user || { user: mockUser });

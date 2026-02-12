@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import Dashboard from '@/views/Dashboard.vue'
 import { PlatformSDK } from '@vbwd/view-component'
 import type { ComponentDefinition } from '@vbwd/view-component'
-import { defineComponent, h, nextTick } from 'vue'
+import { h, nextTick } from 'vue'
 
 // Mock the API module
 vi.mock('@/api', () => ({
@@ -46,19 +46,19 @@ vi.mock('@/i18n', () => ({
   availableLocales: ['en', 'de']
 }))
 
-const TestWidget = defineComponent({
+const TestWidget = {
   name: 'TestWidget',
   render() {
     return h('div', { 'data-testid': 'test-widget' }, 'Test Widget Content')
   }
-})
+}
 
-const AnotherWidget = defineComponent({
+const AnotherWidget = {
   name: 'AnotherWidget',
   render() {
     return h('div', { 'data-testid': 'another-widget' }, 'Another Widget')
   }
-})
+}
 
 function mountDashboard(sdk?: PlatformSDK) {
   return mount(Dashboard, {

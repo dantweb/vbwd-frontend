@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import pluginsRegistry from '../../../plugins/plugins.json';
-import savedConfigs from '../../../plugins/config.json';
+import pluginsRegistry from '@plugins/plugins.json';
+import savedConfigs from '@plugins/config.json';
 
 export interface PluginEntry {
   name: string;
@@ -62,9 +62,9 @@ const registry = pluginsRegistry as PluginRegistryFile;
 const configs = savedConfigs as Record<string, Record<string, unknown>>;
 
 // Dynamic imports for per-plugin config and admin-config JSON files
-const pluginConfigModules = import.meta.glob('../../../plugins/*/config.json', { eager: true }) as Record<string, { default: Record<string, PluginConfigField> }>;
-const pluginAdminConfigModules = import.meta.glob('../../../plugins/*/admin-config.json', { eager: true }) as Record<string, { default: { tabs: AdminConfigTab[] } }>;
-const pluginIndexModules = import.meta.glob('../../../plugins/*/index.ts', { eager: true }) as Record<string, { [key: string]: { name: string; version: string; description?: string } }>;
+const pluginConfigModules = import.meta.glob('@plugins/*/config.json', { eager: true }) as Record<string, { default: Record<string, PluginConfigField> }>;
+const pluginAdminConfigModules = import.meta.glob('@plugins/*/admin-config.json', { eager: true }) as Record<string, { default: { tabs: AdminConfigTab[] } }>;
+const pluginIndexModules = import.meta.glob('@plugins/*/index.ts', { eager: true }) as Record<string, { [key: string]: { name: string; version: string; description?: string } }>;
 
 function getPluginDescription(name: string): string {
   for (const [path, mod] of Object.entries(pluginIndexModules)) {

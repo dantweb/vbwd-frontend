@@ -63,7 +63,7 @@ vi.mock('../../../src/composables/useAnalytics', () => ({
   useAnalytics: () => ({ track: vi.fn() })
 }))
 vi.mock('../../../src/utils/debounce', () => ({
-  debounce: (fn: Function) => fn
+  debounce: (fn: (...args: unknown[]) => unknown) => fn
 }))
 
 const RouterLinkStub = {
@@ -156,7 +156,7 @@ describe('PublicCheckoutView', () => {
       return Promise.resolve({})
     })
 
-    const wrapper = mountView()
+    mountView()
     await flushPromises()
 
     expect(api.get).toHaveBeenCalledWith('/tarif-plans/pro')

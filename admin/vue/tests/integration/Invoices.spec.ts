@@ -35,6 +35,7 @@ describe('Invoices.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/invoices' },
         { path: '/admin/invoices', name: 'invoices', component: Invoices },
         { path: '/admin/invoices/:id', name: 'invoice-details', component: { template: '<div>Details</div>' } }
       ]

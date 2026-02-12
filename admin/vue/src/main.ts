@@ -11,7 +11,7 @@ import {
   PlatformSDK
 } from '@vbwd/view-component';
 import { analyticsWidgetPlugin } from '@plugins/analytics-widget';
-import pluginsRegistry from '../../plugins/plugins.json';
+import pluginsRegistry from '@plugins/plugins.json';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
 
 // Configure auth store with admin-specific settings

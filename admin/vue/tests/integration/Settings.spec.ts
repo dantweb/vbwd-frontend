@@ -41,6 +41,7 @@ describe('Settings.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/settings' },
         { path: '/admin/settings', name: 'settings', component: Settings },
         { path: '/admin/settings/token-bundles/new', name: 'token-bundle-new', component: { template: '<div />' } },
         { path: '/admin/settings/token-bundles/:id', name: 'token-bundle-edit', component: { template: '<div />' } }

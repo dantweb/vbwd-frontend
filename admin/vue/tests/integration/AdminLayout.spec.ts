@@ -38,12 +38,18 @@ describe('AdminLayout.vue', () => {
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
+        { path: '/', redirect: '/admin/dashboard' },
         { path: '/admin/login', name: 'login', component: { template: '<div>Login</div>' } },
         { path: '/admin/dashboard', name: 'dashboard', component: { template: '<div class="test-content">Dashboard Content</div>' } },
         { path: '/admin/users', name: 'users', component: { template: '<div>Users</div>' } },
         { path: '/admin/plans', name: 'plans', component: { template: '<div>Plans</div>' } },
         { path: '/admin/analytics', name: 'analytics', component: { template: '<div>Analytics</div>' } },
-        { path: '/admin/profile', name: 'profile', component: { template: '<div>Profile</div>' } }
+        { path: '/admin/profile', name: 'profile', component: { template: '<div>Profile</div>' } },
+        { path: '/admin/add-ons', name: 'add-ons', component: { template: '<div>Add-Ons</div>' } },
+        { path: '/admin/subscriptions', name: 'subscriptions', component: { template: '<div>Subscriptions</div>' } },
+        { path: '/admin/invoices', name: 'invoices', component: { template: '<div>Invoices</div>' } },
+        { path: '/admin/settings', name: 'settings', component: { template: '<div>Settings</div>' } },
+        { path: '/admin/payment-methods', name: 'payment-methods', component: { template: '<div>Payment Methods</div>' } }
       ]
     });
 

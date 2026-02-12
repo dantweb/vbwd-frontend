@@ -33,9 +33,16 @@ const RouterLinkStub = {
   props: ['to']
 };
 
+interface MockAddonSub {
+  id: string;
+  addon_id: string;
+  status: string;
+  addon: { name: string; slug: string };
+}
+
 let pinia: Pinia;
 
-function mockApiWithAddons(addonSubs: any[] = []) {
+function mockApiWithAddons(addonSubs: MockAddonSub[] = []) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/user/addons') return Promise.resolve({ addon_subscriptions: addonSubs });
     if (url === '/user/subscriptions') return Promise.resolve({ subscriptions: [] });

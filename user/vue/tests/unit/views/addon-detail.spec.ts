@@ -45,7 +45,7 @@ const mockActiveAddonSub = {
   is_valid: true,
   starts_at: '2026-01-01T00:00:00',
   expires_at: '2027-01-01T00:00:00',
-  cancelled_at: null,
+  cancelled_at: null as string | null,
   created_at: '2026-01-01T00:00:00',
   addon: {
     name: 'Extra Storage',
@@ -70,7 +70,7 @@ const mockCancelledAddonSub = {
   cancelled_at: '2026-06-01T00:00:00',
 };
 
-function mockApiForAddon(addonSub: any) {
+function mockApiForAddon(addonSub: typeof mockActiveAddonSub) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/user/addons/addon-sub-1') {
       return Promise.resolve({ addon_subscription: addonSub });

@@ -82,7 +82,7 @@ async function handleLogin(): Promise<void> {
     }
 
     router.push('/admin/dashboard');
-  } catch (e) {
+  } catch {
     error.value = t('auth.invalidCredentials');
   } finally {
     loading.value = false;
