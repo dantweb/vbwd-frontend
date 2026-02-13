@@ -1,4 +1,6 @@
 import type { IPlugin, IPlatformSDK } from '@vbwd/view-component';
+import en from './locales/en.json';
+import de from './locales/de.json';
 
 export const landing1Plugin: IPlugin = {
   name: 'landing1',
@@ -13,6 +15,16 @@ export const landing1Plugin: IPlugin = {
       component: () => import('./Landing1View.vue') as Promise<{ default: unknown }>,
       meta: { requiresAuth: false }
     });
+
+    sdk.addRoute({
+      path: '/embed/landing1',
+      name: 'landing1-embed',
+      component: () => import('./EmbedLanding1View.vue') as Promise<{ default: unknown }>,
+      meta: { requiresAuth: false, embed: true }
+    });
+
+    sdk.addTranslations('en', en);
+    sdk.addTranslations('de', de);
   },
 
   activate(): void {

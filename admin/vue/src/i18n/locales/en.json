@@ -131,6 +131,8 @@
     "postalCode": "Postal Code",
     "country": "Country",
     "phone": "Phone",
+    "company": "Company",
+    "taxNumber": "Tax / VAT Number",
     "selectCountry": "Select Country",
     "creating": "Creating...",
     "tokenBalance": "Token Balance",

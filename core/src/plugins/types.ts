@@ -44,6 +44,12 @@ export interface IPlugin {
   dependencies?: string[] | Record<string, string>;
 
   /**
+   * Plugin-bundled translations
+   * Key = locale code (e.g. 'en', 'de'), Value = translation messages object
+   */
+  translations?: Record<string, Record<string, unknown>>;
+
+  /**
    * Install hook - called when plugin is installed
    * Receives PlatformSDK instance for registering routes, components, stores, etc.
    */
@@ -226,4 +232,16 @@ export interface IPlatformSDK {
    * Get all registered stores
    */
   getStores(): Record<string, IStoreOptions>;
+
+  /**
+   * Merge translations into the app's i18n instance
+   * @param locale Locale code (e.g. 'en', 'de')
+   * @param messages Translation messages object
+   */
+  addTranslations(locale: string, messages: Record<string, unknown>): void;
+
+  /**
+   * Get all collected translations
+   */
+  getTranslations(): Record<string, Record<string, unknown>>;
 }

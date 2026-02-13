@@ -58,7 +58,9 @@
     "invoices": "Rechnungen",
     "plans": "Tarife",
     "tokens": "Token",
-    "addons": "Add-ons"
+    "addons": "Add-ons",
+    "appearance": "Darstellung",
+    "chat": "Chat"
   },
   "layout": {
     "logo": "VBWD",
@@ -375,44 +377,6 @@
       }
     }
   },
-  "checkout": {
-    "title": "Kasse",
-    "loading": "Tarifdetails werden geladen...",
-    "success": {
-      "title": "Bestellung erstellt",
-      "subscriptionStatus": "Abonnementstatus:",
-      "statusPending": "Ausstehend",
-      "statusActive": "Aktiv",
-      "invoiceLabel": "Rechnung:",
-      "paymentRequired": "Schließen Sie die Zahlung ab, um Ihr Abonnement zu aktivieren.",
-      "invoiceItems": "Rechnungspositionen",
-      "totalLabel": "Gesamt:",
-      "viewSubscription": "Abonnement anzeigen",
-      "viewInvoice": "Rechnung anzeigen"
-    },
-    "orderSummary": {
-      "title": "Bestellübersicht"
-    },
-    "tokenBundles": {
-      "title": "Token-Pakete hinzufügen"
-    },
-    "addonsSection": {
-      "title": "Add-ons"
-    },
-    "requirements": {
-      "title": "Zum Abschluss der Bestellung:",
-      "signIn": "Anmelden oder Konto erstellen",
-      "billingAddress": "Rechnungsadresse ausfüllen",
-      "paymentMethod": "Zahlungsmethode auswählen",
-      "acceptTerms": "Geschäftsbedingungen akzeptieren"
-    },
-    "payButton": "{amount} bezahlen",
-    "submitting": "Verarbeite...",
-    "noPlanSelected": "Kein Tarif ausgewählt. Bitte wählen Sie zuerst einen Tarif.",
-    "errors": {
-      "failedToLoad": "Tarifdetails konnten nicht geladen werden"
-    }
-  },
   "login": {
     "title": "Anmelden",
     "emailLabel": "E-Mail",
@@ -501,12 +465,6 @@
       "loginButton": "Anmelden"
     }
   },
-  "landing1": {
-    "title": "Wählen Sie Ihren Tarif",
-    "subtitle": "Wählen Sie den Tarif, der am besten zu Ihnen passt",
-    "noPlans": "Derzeit sind keine Tarife verfügbar.",
-    "choosePlan": "Tarif wählen"
-  },
   "planDetail": {
     "title": "Tarifdetails",
     "loading": "Tarifdetails werden geladen...",
@@ -545,65 +503,5 @@
   "notFound": {
     "message": "Die angeforderte Seite existiert nicht.",
     "backHome": "Zurück zum Dashboard"
-  },
-  "stripe": {
-    "payment": {
-      "redirecting": "Weiterleitung zu Stripe...",
-      "retry": "Erneut versuchen",
-      "error": "Zahlungssitzung konnte nicht erstellt werden",
-      "noInvoice": "Keine Rechnung angegeben. Bitte schließen Sie zuerst den Checkout ab."
-    },
-    "success": {
-      "title": "Zahlung erfolgreich",
-      "message": "Ihre Zahlung wurde verarbeitet. Ihr Abonnement ist jetzt aktiv.",
-      "verifying": "Zahlung wird überprüft...",
-      "processing": "Ihre Zahlung wird verarbeitet. Dies kann einen Moment dauern.",
-      "viewInvoices": "Rechnungen anzeigen"
-    },
-    "cancel": {
-      "title": "Zahlung abgebrochen",
-      "message": "Ihre Zahlung wurde abgebrochen. Ihre Rechnung ist noch ausstehend.",
-      "tryAgain": "Erneut versuchen"
-    }
-  },
-  "paypal": {
-    "payment": {
-      "redirecting": "Weiterleitung zu PayPal...",
-      "retry": "Erneut versuchen",
-      "error": "PayPal-Zahlungssitzung konnte nicht erstellt werden",
-      "noInvoice": "Keine Rechnung angegeben. Bitte schließen Sie zuerst den Checkout ab."
-    },
-    "success": {
-      "title": "Zahlung erfolgreich",
-      "message": "Ihre PayPal-Zahlung wurde verarbeitet. Ihr Abonnement ist jetzt aktiv.",
-      "verifying": "Ihre PayPal-Zahlung wird abgeschlossen...",
-      "processing": "Ihre Zahlung wird verarbeitet. Dies kann einen Moment dauern.",
-      "viewInvoices": "Rechnungen anzeigen"
-    },
-    "cancel": {
-      "title": "Zahlung abgebrochen",
-      "message": "Ihre PayPal-Zahlung wurde abgebrochen. Ihre Rechnung ist noch ausstehend.",
-      "tryAgain": "Erneut versuchen"
-    }
-  },
-  "yookassa": {
-    "payment": {
-      "redirecting": "Weiterleitung zu YooKassa...",
-      "retry": "Erneut versuchen",
-      "error": "YooKassa-Zahlungssitzung konnte nicht erstellt werden",
-      "noInvoice": "Keine Rechnung angegeben. Bitte schließen Sie zuerst den Checkout ab."
-    },
-    "success": {
-      "title": "Zahlung erfolgreich",
-      "message": "Ihre YooKassa-Zahlung wurde verarbeitet. Ihr Abonnement ist jetzt aktiv.",
-      "verifying": "Ihre Zahlung wird überprüft...",
-      "processing": "Ihre Zahlung wird verarbeitet. Dies kann einen Moment dauern.",
-      "viewInvoices": "Rechnungen anzeigen"
-    },
-    "cancel": {
-      "title": "Zahlung abgebrochen",
-      "message": "Ihre YooKassa-Zahlung wurde abgebrochen. Ihre Rechnung ist noch ausstehend.",
-      "tryAgain": "Erneut versuchen"
-    }
   }
 }

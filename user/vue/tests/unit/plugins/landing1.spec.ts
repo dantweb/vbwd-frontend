@@ -44,10 +44,10 @@ describe('Landing1 Plugin', () => {
     await registry.installAll(sdk)
 
     const routes = sdk.getRoutes()
-    expect(routes).toHaveLength(1)
-    expect(routes[0].path).toBe('/landing1')
-    expect(routes[0].name).toBe('landing1')
-    expect(routes[0].meta).toEqual({ requiresAuth: false })
+    const landing1Route = routes.find(r => r.path === '/landing1')
+    expect(landing1Route).toBeDefined()
+    expect(landing1Route!.name).toBe('landing1')
+    expect(landing1Route!.meta).toEqual({ requiresAuth: false })
   })
 
   it('should have activate method', () => {

@@ -47,6 +47,20 @@
         >
           {{ $t('nav.addons') }}
         </router-link>
+        <router-link
+          to="/dashboard/appearance"
+          class="nav-item"
+          data-testid="nav-appearance"
+        >
+          {{ $t('nav.appearance') }}
+        </router-link>
+        <router-link
+          to="/dashboard/chat"
+          class="nav-item"
+          data-testid="nav-chat"
+        >
+          {{ $t('nav.chat') }}
+        </router-link>
       </nav>
       <div class="sidebar-footer">
         <!-- Cart Icon -->
@@ -276,8 +290,8 @@ onUnmounted(() => {
 
 .sidebar {
   width: 250px;
-  background-color: #2c3e50;
-  color: white;
+  background-color: var(--vbwd-sidebar-bg, #2c3e50);
+  color: var(--vbwd-sidebar-text, rgba(255, 255, 255, 0.8));
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -302,14 +316,14 @@ onUnmounted(() => {
 .nav-item {
   display: block;
   padding: 12px 20px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--vbwd-sidebar-text, rgba(255, 255, 255, 0.8));
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .nav-item:hover,
 .nav-item.router-link-active {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--vbwd-sidebar-active-bg, rgba(255, 255, 255, 0.1));
   color: white;
 }
 
@@ -510,7 +524,7 @@ onUnmounted(() => {
 .checkout-btn {
   width: 100%;
   padding: 10px;
-  background: #3498db;
+  background: var(--vbwd-color-primary, #3498db);
   color: white;
   border: none;
   border-radius: 4px;
@@ -521,14 +535,14 @@ onUnmounted(() => {
 }
 
 .checkout-btn:hover {
-  background: #2980b9;
+  background: var(--vbwd-color-primary-hover, #2980b9);
 }
 
 .main-content {
   flex: 1;
   margin-left: 250px;
   padding: 30px;
-  background-color: #f5f5f5;
+  background-color: var(--vbwd-page-bg, #f5f5f5);
   min-height: 100vh;
 }
 </style>

@@ -131,6 +131,8 @@
     "postalCode": "Postleitzahl",
     "country": "Land",
     "phone": "Telefon",
+    "company": "Firma",
+    "taxNumber": "Steuer- / USt-IdNr.",
     "selectCountry": "Land auswählen",
     "creating": "Erstellen...",
     "tokenBalance": "Token-Guthaben",

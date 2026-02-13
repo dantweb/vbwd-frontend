@@ -215,20 +215,118 @@
                 >
               </div>
             </div>
-          </section>
-
-          <!-- Balance Section -->
-          <section class="form-section">
-            <h3>{{ $t('profile.balance') }}</h3>
 
             <div class="form-group">
-              <label for="balance">{{ $t('users.tokenBalance') }}</label>
+              <label for="phone">{{ $t('users.phone') }}</label>
               <input
-                id="balance"
-                v-model="formData.balance"
-                name="balance"
+                id="phone"
+                v-model="formData.phone"
+                name="phone"
+                type="tel"
+                class="form-input"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="company">{{ $t('users.company') }}</label>
+              <input
+                id="company"
+                v-model="formData.company"
+                name="company"
+                type="text"
+                class="form-input"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="taxNumber">{{ $t('users.taxNumber') }}</label>
+              <input
+                id="taxNumber"
+                v-model="formData.tax_number"
+                name="taxNumber"
+                type="text"
+                class="form-input"
+              >
+            </div>
+          </section>
+
+          <!-- Address Section -->
+          <section class="form-section">
+            <h3>{{ $t('profile.addressInfo') }}</h3>
+
+            <div class="form-group">
+              <label for="addressLine1">{{ $t('users.addressLine1') }}</label>
+              <input
+                id="addressLine1"
+                v-model="formData.address_line_1"
+                name="addressLine1"
+                type="text"
+                class="form-input"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="addressLine2">{{ $t('users.addressLine2') }}</label>
+              <input
+                id="addressLine2"
+                v-model="formData.address_line_2"
+                name="addressLine2"
+                type="text"
+                class="form-input"
+              >
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="postalCode">{{ $t('users.postalCode') }}</label>
+                <input
+                  id="postalCode"
+                  v-model="formData.postal_code"
+                  name="postalCode"
+                  type="text"
+                  class="form-input"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="city">{{ $t('users.city') }}</label>
+                <input
+                  id="city"
+                  v-model="formData.city"
+                  name="city"
+                  type="text"
+                  class="form-input"
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="country">{{ $t('users.country') }}</label>
+              <input
+                id="country"
+                v-model="formData.country"
+                name="country"
+                type="text"
+                placeholder="DE"
+                maxlength="2"
+                class="form-input"
+                style="max-width: 100px; text-transform: uppercase;"
+              >
+            </div>
+          </section>
+
+          <!-- Token Balance Section -->
+          <section class="form-section">
+            <h3>{{ $t('users.tokenBalance') }}</h3>
+
+            <div class="form-group">
+              <label for="tokenBalance">{{ $t('users.tokenBalance') }}</label>
+              <input
+                id="tokenBalance"
+                v-model="formData.token_balance"
+                name="tokenBalance"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 data-testid="balance-input"
                 class="form-input balance-input"
@@ -574,8 +672,16 @@ interface FormData {
   is_active: boolean;
   first_name: string;
   last_name: string;
+  phone: string;
+  address_line_1: string;
+  address_line_2: string;
+  city: string;
+  postal_code: string;
+  country: string;
+  company: string;
+  tax_number: string;
   new_password: string;
-  balance: string;
+  token_balance: string;
 }
 
 const formData = ref<FormData>({
@@ -583,8 +689,16 @@ const formData = ref<FormData>({
   is_active: true,
   first_name: '',
   last_name: '',
+  phone: '',
+  address_line_1: '',
+  address_line_2: '',
+  city: '',
+  postal_code: '',
+  country: '',
+  company: '',
+  tax_number: '',
   new_password: '',
-  balance: '0.00',
+  token_balance: '0',
 });
 
 // Role is handled separately as a single value
@@ -688,17 +802,25 @@ async function fetchUser(): Promise<void> {
     originalRole.value = userRole;
     selectedRole.value = userRole;
 
-    // Get balance from user details
-    const details = (user as unknown as { details?: { balance?: number } }).details || {};
-    const balance = details.balance ?? 0;
+    // Get details and token balance
+    const details = (user as unknown as { details?: Record<string, unknown> }).details || {};
+    const tokenBalance = (user as unknown as { token_balance?: number }).token_balance ?? 0;
 
     formData.value = {
       email: user.email,
       is_active: user.is_active,
-      first_name: extractName(user.name, 'first'),
-      last_name: extractName(user.name, 'last'),
+      first_name: (details.first_name as string) || extractName(user.name, 'first'),
+      last_name: (details.last_name as string) || extractName(user.name, 'last'),
+      phone: (details.phone as string) || '',
+      address_line_1: (details.address_line_1 as string) || '',
+      address_line_2: (details.address_line_2 as string) || '',
+      city: (details.city as string) || '',
+      postal_code: (details.postal_code as string) || '',
+      country: (details.country as string) || '',
+      company: (details.company as string) || '',
+      tax_number: (details.tax_number as string) || '',
       new_password: '',
-      balance: balance.toFixed(2),
+      token_balance: String(tokenBalance),
     };
   } catch (error) {
     loadError.value = (error as Error).message || t('users.loadFailed');
@@ -738,25 +860,29 @@ async function handleSubmit(): Promise<void> {
   submitting.value = true;
 
   try {
-    // Build name from first/last
-    const name = [formData.value.first_name, formData.value.last_name]
-      .filter(Boolean)
-      .join(' ') || undefined;
-
-    // Build update payload, only include password if provided
-    const updatePayload: { is_active: boolean; name?: string; password?: string; balance?: number } = {
+    // Build update payload with individual detail fields
+    const updatePayload: Record<string, unknown> = {
       is_active: formData.value.is_active,
-      name,
+      first_name: formData.value.first_name,
+      last_name: formData.value.last_name,
+      phone: formData.value.phone,
+      address_line_1: formData.value.address_line_1,
+      address_line_2: formData.value.address_line_2,
+      city: formData.value.city,
+      postal_code: formData.value.postal_code,
+      country: formData.value.country,
+      company: formData.value.company,
+      tax_number: formData.value.tax_number,
     };
 
     if (formData.value.new_password) {
       updatePayload.password = formData.value.new_password;
     }
 
-    // Parse balance as float
-    const balanceValue = parseFloat(formData.value.balance);
-    if (!isNaN(balanceValue)) {
-      updatePayload.balance = balanceValue;
+    // Parse token balance as integer
+    const tokenValue = parseInt(formData.value.token_balance, 10);
+    if (!isNaN(tokenValue)) {
+      updatePayload.token_balance = tokenValue;
     }
 
     await usersStore.updateUser(userId, updatePayload);

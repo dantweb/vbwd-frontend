@@ -1,4 +1,6 @@
 import type { IPlugin, IPlatformSDK } from '@vbwd/view-component';
+import en from './locales/en.json';
+import de from './locales/de.json';
 
 export const checkoutPlugin: IPlugin = {
   name: 'checkout',
@@ -13,6 +15,9 @@ export const checkoutPlugin: IPlugin = {
       component: () => import('./PublicCheckoutView.vue') as Promise<{ default: unknown }>,
       meta: { requiresAuth: false }
     });
+
+    sdk.addTranslations('en', en);
+    sdk.addTranslations('de', de);
   },
 
   activate(): void {

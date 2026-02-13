@@ -1,4 +1,6 @@
 import type { IPlugin, IPlatformSDK } from '@vbwd/view-component';
+import en from './locales/en.json';
+import de from './locales/de.json';
 
 export const yookassaPaymentPlugin: IPlugin = {
   name: 'yookassa-payment',
@@ -25,6 +27,9 @@ export const yookassaPaymentPlugin: IPlugin = {
       component: () => import('./YooKassaCancelView.vue'),
       meta: { requiresAuth: true }
     });
+
+    sdk.addTranslations('en', en);
+    sdk.addTranslations('de', de);
   },
 
   activate() { this._active = true; },

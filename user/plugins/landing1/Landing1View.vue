@@ -88,7 +88,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
-interface TarifPlan {
+export interface TarifPlan {
   id: string;
   name: string;
   slug: string;
@@ -98,6 +98,14 @@ interface TarifPlan {
   billing_period?: string;
   is_active?: boolean;
 }
+
+const props = defineProps<{
+  embedMode?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'plan-selected', plan: { slug: string; name: string; price: number; currency: string }): void;
+}>();
 
 const router = useRouter();
 const { t } = useI18n();
@@ -122,7 +130,16 @@ async function loadPlans() {
 }
 
 function choosePlan(plan: TarifPlan) {
-  router.push({ path: '/checkout', query: { tarif_plan_id: plan.slug } });
+  if (props.embedMode) {
+    emit('plan-selected', {
+      slug: plan.slug,
+      name: plan.name,
+      price: plan.display_price,
+      currency: plan.display_currency,
+    });
+  } else {
+    router.push({ path: '/checkout', query: { tarif_plan_id: plan.slug } });
+  }
 }
 
 function formatPrice(price: number, currency?: string): string {

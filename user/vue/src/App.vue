@@ -1,12 +1,18 @@
 <template>
   <div id="app">
-    <UserLayout v-if="isAuthenticated">
+    <!-- Embed routes: no layout, no session modal -->
+    <router-view v-if="isEmbedRoute" />
+
+    <!-- Authenticated routes: full layout -->
+    <UserLayout v-else-if="isAuthenticated">
       <router-view />
     </UserLayout>
+
+    <!-- Public routes: no layout -->
     <router-view v-else />
 
-    <!-- Session Expired Modal -->
-    <SessionExpiredModal />
+    <!-- Session Expired Modal (hidden in embed mode) -->
+    <SessionExpiredModal v-if="!isEmbedRoute" />
   </div>
 </template>
 
@@ -17,6 +23,9 @@ import UserLayout from './layouts/UserLayout.vue';
 import SessionExpiredModal from './components/SessionExpiredModal.vue';
 
 const route = useRoute();
+
+const isEmbedRoute = computed(() => route.meta.embed === true);
+
 const isAuthenticated = computed(() => {
   return route.meta.requiresAuth !== false && localStorage.getItem('auth_token');
 });
@@ -31,8 +40,8 @@ const isAuthenticated = computed(() => {
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--vbwd-page-bg, #f5f5f5);
+  color: var(--vbwd-text-body, #333);
 }
 
 #app {

@@ -486,7 +486,7 @@ onMounted(() => {
 
 h1 {
   margin-bottom: 30px;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
 }
 
 .loading {
@@ -498,8 +498,8 @@ h1 {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3498db;
+  border: 3px solid var(--vbwd-border-light, #f3f3f3);
+  border-top: 3px solid var(--vbwd-color-primary, #3498db);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
@@ -513,7 +513,7 @@ h1 {
 .retry-btn {
   margin-left: 15px;
   padding: 8px 16px;
-  background: #3498db;
+  background: var(--vbwd-color-primary, #3498db);
   color: white;
   border: none;
   border-radius: 4px;
@@ -527,23 +527,23 @@ h1 {
 }
 
 .card {
-  background: white;
+  background: var(--vbwd-card-bg, #ffffff);
   padding: 25px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--vbwd-card-shadow, 0 2px 5px rgba(0, 0, 0, 0.05));
 }
 
 .card h2 {
   margin-bottom: 20px;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
   font-size: 1.2rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--vbwd-border-light, #eee);
   padding-bottom: 10px;
 }
 
 .card h3 {
   margin: 20px 0 15px;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
   font-size: 1rem;
 }
 
@@ -574,7 +574,7 @@ h1 {
 .info-item span {
   font-size: 1rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
 }
 
 .status-badge {
@@ -591,7 +591,7 @@ h1 {
 }
 
 .balance {
-  color: #27ae60 !important;
+  color: var(--vbwd-color-success, #27ae60) !important;
   font-weight: 600 !important;
 }
 
@@ -622,7 +622,7 @@ h1 {
 .form-group input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--vbwd-border-color, #ddd);
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
@@ -630,7 +630,7 @@ h1 {
 
 .form-group input:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--vbwd-color-primary, #3498db);
 }
 
 .form-group input::placeholder {
@@ -646,7 +646,7 @@ h1 {
 .form-actions {
   margin-top: 20px;
   padding-top: 15px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--vbwd-border-light, #eee);
 }
 
 .btn {
@@ -659,12 +659,12 @@ h1 {
 }
 
 .btn.primary {
-  background-color: #3498db;
+  background-color: var(--vbwd-color-primary, #3498db);
   color: white;
 }
 
 .btn.primary:hover:not(:disabled) {
-  background-color: #2980b9;
+  background-color: var(--vbwd-color-primary-hover, #2980b9);
 }
 
 .btn.secondary {
@@ -700,7 +700,7 @@ h1 {
 }
 
 .toast.success {
-  background-color: #27ae60;
+  background-color: var(--vbwd-color-success, #27ae60);
   color: white;
 }
 </style>

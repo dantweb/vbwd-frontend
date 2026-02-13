@@ -10,6 +10,8 @@ import { checkoutPlugin } from '../../plugins/checkout';
 import { stripePaymentPlugin } from '../../plugins/stripe-payment';
 import { paypalPaymentPlugin } from '../../plugins/paypal-payment';
 import { yookassaPaymentPlugin } from '../../plugins/yookassa-payment';
+import { themeSwitcherPlugin } from '../../plugins/theme-switcher';
+import { chatPlugin } from '../../plugins/chat';
 import type { IPlugin } from '@vbwd/view-component';
 
 // Initialize API with stored auth token before mounting app
@@ -31,6 +33,8 @@ const availablePlugins: Record<string, IPlugin> = {
   'stripe-payment': stripePaymentPlugin,
   'paypal-payment': paypalPaymentPlugin,
   'yookassa-payment': yookassaPaymentPlugin,
+  'theme-switcher': themeSwitcherPlugin,
+  chat: chatPlugin,
 };
 
 async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean }>> {
@@ -52,7 +56,7 @@ async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean 
 (async () => {
   try {
     const registry = new PluginRegistry();
-    const sdk = new PlatformSDK();
+    const sdk = new PlatformSDK(i18n);
 
     // Fetch plugin status at runtime (not build time)
     const enabledPlugins = await fetchPluginRegistry();

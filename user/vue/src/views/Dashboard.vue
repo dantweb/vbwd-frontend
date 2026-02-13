@@ -483,7 +483,7 @@ onMounted(() => {
 
 h1 {
   margin-bottom: 30px;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
 }
 
 .loading-state,
@@ -496,8 +496,8 @@ h1 {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3498db;
+  border: 3px solid var(--vbwd-border-light, #f3f3f3);
+  border-top: 3px solid var(--vbwd-color-primary, #3498db);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
@@ -511,7 +511,7 @@ h1 {
 .retry-btn {
   margin-top: 15px;
   padding: 10px 20px;
-  background: #3498db;
+  background: var(--vbwd-color-primary, #3498db);
   color: white;
   border: none;
   border-radius: 4px;
@@ -531,17 +531,17 @@ h1 {
 }
 
 .card {
-  background: white;
+  background: var(--vbwd-card-bg, #ffffff);
   padding: 25px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--vbwd-card-shadow, 0 2px 5px rgba(0, 0, 0, 0.05));
 }
 
 .card h3 {
   margin-bottom: 20px;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
   font-size: 1.1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--vbwd-border-light, #eee);
   padding-bottom: 10px;
 }
 
@@ -549,8 +549,8 @@ h1 {
   display: block;
   margin-top: 15px;
   padding-top: 15px;
-  border-top: 1px solid #eee;
-  color: #3498db;
+  border-top: 1px solid var(--vbwd-border-light, #eee);
+  color: var(--vbwd-color-primary, #3498db);
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -569,7 +569,7 @@ h1 {
 .avatar {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, var(--vbwd-color-primary, #3498db), var(--vbwd-color-primary-hover, #2980b9));
   color: white;
   border-radius: 50%;
   display: flex;
@@ -588,12 +588,12 @@ h1 {
 .user-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
 }
 
 .user-email {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--vbwd-text-muted, #666);
 }
 
 .user-status {
@@ -621,7 +621,7 @@ h1 {
 .plan-name {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
 }
 
 .plan-status {
@@ -659,17 +659,17 @@ h1 {
 }
 
 .detail-item .label {
-  color: #666;
+  color: var(--vbwd-text-muted, #666);
   font-size: 0.9rem;
 }
 
 .detail-item .value {
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
 }
 
 .detail-item .value.highlight {
-  color: #27ae60;
+  color: var(--vbwd-color-success, #27ae60);
   font-weight: 600;
 }
 
@@ -689,7 +689,7 @@ h1 {
   margin-top: 15px;
   display: inline-block;
   padding: 10px 20px;
-  background: #3498db;
+  background: var(--vbwd-color-primary, #3498db);
   color: white;
   text-decoration: none;
   border-radius: 4px;
@@ -939,11 +939,11 @@ h1 {
 }
 
 .token-amount.credit {
-  color: #27ae60;
+  color: var(--vbwd-color-success, #27ae60);
 }
 
 .token-amount.debit {
-  color: #e74c3c;
+  color: var(--vbwd-color-danger, #e74c3c);
 }
 
 /* Actions Card */
@@ -957,7 +957,7 @@ h1 {
   display: block;
   padding: 12px 15px;
   background-color: #f8f9fa;
-  color: #2c3e50;
+  color: var(--vbwd-text-heading, #2c3e50);
   text-decoration: none;
   border-radius: 4px;
   text-align: center;
@@ -966,7 +966,7 @@ h1 {
 }
 
 .action-btn:hover {
-  background-color: #3498db;
+  background-color: var(--vbwd-color-primary, #3498db);
   color: white;
 }
 </style>

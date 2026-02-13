@@ -1,4 +1,6 @@
 import type { IPlugin, IPlatformSDK } from '@vbwd/view-component';
+import en from './locales/en.json';
+import de from './locales/de.json';
 
 export const paypalPaymentPlugin: IPlugin = {
   name: 'paypal-payment',
@@ -25,6 +27,9 @@ export const paypalPaymentPlugin: IPlugin = {
       component: () => import('./PayPalCancelView.vue'),
       meta: { requiresAuth: true }
     });
+
+    sdk.addTranslations('en', en);
+    sdk.addTranslations('de', de);
   },
 
   activate() { this._active = true; },

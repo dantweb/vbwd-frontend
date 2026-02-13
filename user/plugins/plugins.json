@@ -23,6 +23,24 @@
       "version": "1.0.0",
       "installedAt": "2026-02-12T12:00:00.000Z",
       "source": "local"
+    },
+    "yookassa-payment": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-02-12T12:00:00.000Z",
+      "source": "local"
+    },
+    "theme-switcher": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-02-13T12:00:00.000Z",
+      "source": "local"
+    },
+    "chat": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-02-13T14:00:00.000Z",
+      "source": "local"
     }
   }
 }

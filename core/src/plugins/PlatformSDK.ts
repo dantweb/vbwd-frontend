@@ -6,6 +6,13 @@ import type {
   ComponentDefinition,
   IStoreOptions
 } from './types';
+import { deepMerge } from '../utils/deep-merge';
+
+interface I18nInstance {
+  global: {
+    mergeLocaleMessage(locale: string, messages: Record<string, unknown>): void;
+  };
+}
 
 /**
  * Platform SDK Implementation
@@ -24,6 +31,16 @@ export class PlatformSDK implements IPlatformSDK {
 
   // Registered stores
   private stores: Record<string, IStoreOptions> = {};
+
+  // Collected translations
+  private translations: Record<string, Record<string, unknown>> = {};
+
+  // vue-i18n instance (optional — injected at bootstrap)
+  private i18n: I18nInstance | null = null;
+
+  constructor(i18n?: I18nInstance) {
+    this.i18n = i18n || null;
+  }
 
   /**
    * Register a Vue Router route
@@ -73,5 +90,26 @@ export class PlatformSDK implements IPlatformSDK {
    */
   getStores(): Record<string, IStoreOptions> {
     return this.stores;
+  }
+
+  /**
+   * Merge translations for a locale
+   */
+  addTranslations(locale: string, messages: Record<string, unknown>): void {
+    if (!this.translations[locale]) {
+      this.translations[locale] = {};
+    }
+    this.translations[locale] = deepMerge(this.translations[locale], messages);
+
+    if (this.i18n) {
+      this.i18n.global.mergeLocaleMessage(locale, messages);
+    }
+  }
+
+  /**
+   * Get all collected translations
+   */
+  getTranslations(): Record<string, Record<string, unknown>> {
+    return { ...this.translations };
   }
 }
