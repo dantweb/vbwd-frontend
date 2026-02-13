@@ -48,6 +48,7 @@
           {{ $t('nav.addons') }}
         </router-link>
         <router-link
+          v-if="enabledPlugins.has('theme-switcher')"
           to="/dashboard/appearance"
           class="nav-item"
           data-testid="nav-appearance"
@@ -55,6 +56,7 @@
           {{ $t('nav.appearance') }}
         </router-link>
         <router-link
+          v-if="enabledPlugins.has('chat')"
           to="/dashboard/chat"
           class="nav-item"
           data-testid="nav-chat"
@@ -193,10 +195,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCartStore } from '@vbwd/view-component';
 import { storeToRefs } from 'pinia';
+
+const enabledPlugins = inject<Set<string>>('enabledPlugins', new Set());
 
 const router = useRouter();
 

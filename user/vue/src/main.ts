@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, reactive } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
@@ -61,11 +61,16 @@ async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean 
     // Fetch plugin status at runtime (not build time)
     const enabledPlugins = await fetchPluginRegistry();
 
+    // Build set of enabled plugin names for nav visibility
+    const enabledPluginNames = reactive(new Set<string>(
+      Object.entries(enabledPlugins)
+        .filter(([name, entry]) => entry.enabled && availablePlugins[name])
+        .map(([name]) => name)
+    ));
+
     // Only register and install plugins that are enabled
-    for (const [name, entry] of Object.entries(enabledPlugins)) {
-      if (entry.enabled && availablePlugins[name]) {
-        registry.register(availablePlugins[name]);
-      }
+    for (const name of enabledPluginNames) {
+      registry.register(availablePlugins[name]);
     }
 
     await registry.installAll(sdk);
@@ -84,15 +89,14 @@ async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean 
     });
 
     // Activate all registered plugins (they're all enabled)
-    for (const [name, entry] of Object.entries(enabledPlugins)) {
-      if (entry.enabled && availablePlugins[name]) {
-        await registry.activate(name);
-      }
+    for (const name of enabledPluginNames) {
+      await registry.activate(name);
     }
 
     // Make available via provide/inject
     app.provide('pluginRegistry', registry);
     app.provide('platformSDK', sdk);
+    app.provide('enabledPlugins', enabledPluginNames);
 
     // Re-resolve current URL so dynamically added routes are matched
     await router.replace(location.pathname + location.search + location.hash);
