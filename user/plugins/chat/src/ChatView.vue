@@ -1,5 +1,8 @@
 <template>
-  <div class="chat-container" data-testid="chat-container">
+  <div
+    class="chat-container"
+    data-testid="chat-container"
+  >
     <ChatHeader
       :balance="balance"
       :model-name="config.model"

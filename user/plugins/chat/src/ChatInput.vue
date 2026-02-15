@@ -1,5 +1,8 @@
 <template>
-  <div class="chat-input-wrapper" data-testid="chat-input-wrapper">
+  <div
+    class="chat-input-wrapper"
+    data-testid="chat-input-wrapper"
+  >
     <div class="input-row">
       <textarea
         ref="inputRef"

@@ -63,9 +63,9 @@
             <div class="info-item">
               <label>{{ $t('common.status') }}</label>
               <span
-                :data-testid="`status-${invoice.status}`"
+                :data-testid="`status-${invoice.status.toLowerCase()}`"
                 class="status-badge"
-                :class="invoice.status"
+                :class="invoice.status.toLowerCase()"
               >
                 {{ formatStatus(invoice.status) }}
               </span>
@@ -118,7 +118,7 @@
                 <td>
                   <span
                     class="type-badge"
-                    :class="item.type"
+                    :class="item.type?.toLowerCase()"
                   >{{ itemTypeLabel(item.type) }}</span>
                 </td>
                 <td>
@@ -245,7 +245,7 @@
             {{ processing ? $t('invoices.sending') : $t('invoices.resend') }}
           </button>
           <button
-            v-if="invoice.status === 'pending'"
+            v-if="invoice.status === 'PENDING'"
             data-testid="mark-paid-button"
             class="action-btn mark-paid-btn"
             :disabled="processing"
@@ -254,7 +254,7 @@
             {{ processing ? $t('common.processing') : $t('invoices.markAsPaid') }}
           </button>
           <button
-            v-if="invoice.status === 'pending'"
+            v-if="invoice.status === 'PENDING'"
             data-testid="void-button"
             class="action-btn void-btn"
             :disabled="processing"
@@ -263,7 +263,7 @@
             {{ processing ? $t('common.processing') : $t('invoices.void') }}
           </button>
           <button
-            v-if="invoice.status === 'paid'"
+            v-if="invoice.status === 'PAID'"
             data-testid="refund-button"
             class="action-btn refund-btn"
             :disabled="processing"

@@ -58,7 +58,6 @@ import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
-
 const authStore = useAuthStore();
 const router = useRouter();
 
@@ -72,17 +71,40 @@ async function handleLogin(): Promise<void> {
   loading.value = true;
 
   try {
+    // Log before login
+    if (typeof window !== 'undefined') {
+      console.log('[LOGIN] Starting login...');
+      (window as any).__LOGIN_DEBUG__ = { started: true, timestamp: new Date().toISOString() };
+    }
+
     await authStore.login({ email: username.value, password: password.value });
+
+    if (typeof window !== 'undefined') {
+      console.log('[LOGIN] Login completed');
+      (window as any).__LOGIN_DEBUG__ = {
+        completed: true,
+        hasToken: !!authStore.token,
+        hasUser: !!authStore.user,
+        isAdmin: authStore.isAdmin,
+        timestamp: new Date().toISOString(),
+      };
+    }
 
     // Check if user has admin role
     if (!authStore.isAdmin) {
+      console.log('[LOGIN] User is not admin, redirecting to forbidden');
       authStore.logout();
       router.push('/admin/forbidden');
       return;
     }
 
+    console.log('[LOGIN] Admin user confirmed, redirecting to dashboard');
     router.push('/admin/dashboard');
-  } catch {
+  } catch (err) {
+    console.error('[LOGIN] Error:', err);
+    if (typeof window !== 'undefined') {
+      (window as any).__LOGIN_ERROR__ = { error: String(err), timestamp: new Date().toISOString() };
+    }
     error.value = t('auth.invalidCredentials');
   } finally {
     loading.value = false;

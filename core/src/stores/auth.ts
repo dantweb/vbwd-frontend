@@ -90,7 +90,7 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state): boolean => !!state.token && !!state.user,
 
-    isAdmin: (state): boolean => state.user?.roles?.includes('admin') ?? false,
+    isAdmin: (state): boolean => state.user?.roles?.includes('ADMIN') ?? false,
 
     hasRole: (state) => {
       return (role: string): boolean => state.user?.roles?.includes(role) ?? false;
@@ -136,20 +136,37 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
 
       try {
-        const response = await config.apiClient.post<LoginResponse>(
+        const rawResponse = await config.apiClient.post<any>(
           config.loginEndpoint!,
           credentials
         );
 
+        // The response should directly contain token and user
+        // The backend response format is: { success, token, user, user_id, error }
+        const response = rawResponse;
+
+        // Extract and set the token first
         this.token = response.token;
         this.refreshToken = response.refresh_token || null;
         this.user = response.user;
 
-        // Set token in API client
-        config.apiClient.setToken(this.token);
+        // Debug logging
+        if (typeof window !== 'undefined') {
+          (window as any).__AUTH_DEBUG__ = {
+            responseUser: response.user,
+            stateUser: this.user,
+            stateUserRoles: this.user?.roles,
+            timestamp: new Date().toISOString(),
+          };
+        }
 
-        // Persist to localStorage
-        localStorage.setItem(config.storageKey, this.token);
+        // Set token in API client
+        if (this.token) {
+          config.apiClient.setToken(this.token);
+
+          // Persist to localStorage
+          localStorage.setItem(config.storageKey, this.token);
+        }
         if (this.refreshToken) {
           localStorage.setItem(config.refreshStorageKey!, this.refreshToken);
         }
@@ -157,6 +174,15 @@ export const useAuthStore = defineStore('auth', {
         return response;
       } catch (error) {
         this.error = (error as Error).message || 'Login failed';
+        // Debug: log the error
+        if (typeof window !== 'undefined') {
+          (window as any).__AUTH_ERROR__ = {
+            message: this.error,
+            error: String(error),
+            timestamp: new Date().toISOString(),
+          };
+          console.error('[AUTH STORE ERROR]', this.error, error);
+        }
         throw error;
       } finally {
         this.loading = false;

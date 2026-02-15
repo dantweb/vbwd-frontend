@@ -14,7 +14,7 @@ export interface AdminPlan {
   price?: AdminPlanPrice | number;
   price_float?: number;
   currency?: string;
-  billing_period: 'MONTHLY' | 'YEARLY' | 'QUARTERLY' | 'WEEKLY' | 'ONE_TIME' | 'monthly' | 'yearly' | 'quarterly' | 'weekly' | 'one_time';
+  billing_period: 'MONTHLY' | 'YEARLY' | 'QUARTERLY' | 'WEEKLY' | 'ONE_TIME';
   features?: string[] | Record<string, unknown>;
   limits?: Record<string, number>;
   is_active: boolean;
@@ -156,6 +156,38 @@ export const usePlanAdminStore = defineStore('planAdmin', {
       } catch (error) {
         this.error = (error as Error).message || 'Failed to get subscriber count';
         throw error;
+      }
+    },
+
+    async deletePlan(planId: string): Promise<void> {
+      this.error = null;
+
+      try {
+        await api.delete(`/admin/tarif-plans/${planId}`);
+
+        // Update local state
+        const index = this.plans.findIndex(p => p.id === planId);
+        if (index !== -1) {
+          this.plans.splice(index, 1);
+        }
+
+        if (this.selectedPlan?.id === planId) {
+          this.selectedPlan = null;
+        }
+      } catch (error) {
+        // Extract error message from API response if available
+        let errorMessage = 'Failed to delete plan';
+        if (error instanceof Error) {
+          // Try to extract error from API response
+          const apiError = (error as any).response?.data?.error;
+          if (apiError) {
+            errorMessage = apiError;
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        this.error = errorMessage;
+        throw new Error(errorMessage);
       }
     },
 

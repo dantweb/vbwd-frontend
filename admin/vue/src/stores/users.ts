@@ -11,6 +11,14 @@ export interface User {
   created_at?: string;
 }
 
+export interface DeletionInfo {
+  user_id: string;
+  email: string;
+  has_cascade_dependencies: boolean;
+  invoice_count: number;
+  subscription_count: number;
+}
+
 export interface UserDetail extends User {
   subscription?: {
     plan: string | null;
@@ -228,6 +236,58 @@ export const useUsersStore = defineStore('users', {
         this.loading = false;
       }
     },
+
+    async getDeletionInfo(userId: string): Promise<DeletionInfo> {
+      this.error = null;
+
+      try {
+        const response = await api.get(`/admin/users/${userId}/deletion-info`) as { user_id: string; email: string; has_cascade_dependencies: boolean; invoice_count: number; subscription_count: number };
+        return {
+          user_id: response.user_id,
+          email: response.email,
+          has_cascade_dependencies: response.has_cascade_dependencies,
+          invoice_count: response.invoice_count,
+          subscription_count: response.subscription_count,
+        };
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to get deletion info';
+        throw error;
+      }
+    },
+
+    async deleteUser(userId: string, force: boolean = false): Promise<void> {
+      this.error = null;
+
+      try {
+        await api.delete(`/admin/users/${userId}`, { data: { force } });
+
+        // Update local state
+        const index = this.users.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          this.users.splice(index, 1);
+          this.total -= 1;
+        }
+
+        if (this.selectedUser?.id === userId) {
+          this.selectedUser = null;
+        }
+      } catch (error) {
+        // Extract error message from API response if available
+        let errorMessage = 'Failed to delete user';
+        if (error instanceof Error) {
+          // Try to extract error from API response
+          const apiError = (error as any).response?.data?.error;
+          if (apiError) {
+            errorMessage = apiError;
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        this.error = errorMessage;
+        throw new Error(errorMessage);
+      }
+    },
+
 
     async impersonateUser(userId: string): Promise<{ token: string; expires_in: number }> {
       this.loading = true;

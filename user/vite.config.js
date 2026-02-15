@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'vue/src')
+      '@': resolve(__dirname, 'vue/src'),
+      '@plugins': resolve(__dirname, 'plugins')
     },
     dedupe: ['pinia', 'vue']
   },

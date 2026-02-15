@@ -12,6 +12,12 @@
           {{ $t('nav.dashboard') }}
         </router-link>
         <router-link
+          to="/dashboard/taro"
+          class="nav-item"
+        >
+          {{ $t('nav.taro') }}
+        </router-link>
+        <router-link
           to="/dashboard/profile"
           class="nav-item"
         >

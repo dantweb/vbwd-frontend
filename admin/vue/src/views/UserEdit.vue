@@ -414,7 +414,7 @@
               <td>
                 <span
                   class="status-badge"
-                  :class="subscription.status"
+                  :class="subscription.status.toLowerCase()"
                 >
                   {{ formatStatus(subscription.status) }}
                 </span>
@@ -506,7 +506,7 @@
               <td>
                 <span
                   class="status-badge"
-                  :class="invoice.status"
+                  :class="invoice.status.toLowerCase()"
                 >
                   {{ formatInvoiceStatus(invoice.status) }}
                 </span>
@@ -606,7 +606,7 @@
               <td>
                 <span
                   class="status-badge"
-                  :class="addon.status"
+                  :class="addon.status.toLowerCase()"
                 >
                   {{ formatStatus(addon.status) }}
                 </span>

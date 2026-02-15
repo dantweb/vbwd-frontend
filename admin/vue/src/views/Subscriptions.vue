@@ -38,19 +38,19 @@
         <option value="">
           {{ $t('common.all') }} {{ $t('common.status') }}
         </option>
-        <option value="active">
+        <option value="ACTIVE">
           {{ $t('subscriptions.statuses.active') }}
         </option>
-        <option value="cancelled">
+        <option value="CANCELLED">
           {{ $t('subscriptions.statuses.cancelled') }}
         </option>
-        <option value="past_due">
+        <option value="PAST_DUE">
           {{ $t('subscriptions.statuses.pastDue') }}
         </option>
-        <option value="trialing">
+        <option value="TRIALING">
           {{ $t('subscriptions.statuses.trialing') }}
         </option>
-        <option value="paused">
+        <option value="PAUSED">
           {{ $t('subscriptions.statuses.paused') }}
         </option>
       </select>
@@ -163,9 +163,9 @@
           <td>{{ subscription.plan_name }}</td>
           <td>
             <span
-              :data-testid="`status-${subscription.status}`"
+              :data-testid="`status-${subscription.status.toLowerCase()}`"
               class="status-badge"
-              :class="subscription.status"
+              :class="subscription.status.toLowerCase()"
             >
               {{ formatStatus(subscription.status) }}
             </span>

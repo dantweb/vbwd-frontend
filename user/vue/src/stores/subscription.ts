@@ -15,7 +15,7 @@ export interface Subscription {
   user_id: string;
   tarif_plan_id: string;
   pending_plan_id: string | null;
-  status: 'active' | 'cancelling' | 'cancelled' | 'paused' | 'expired';
+  status: 'ACTIVE' | 'CANCELLED' | 'PAUSED' | 'EXPIRED' | 'PENDING';
   is_valid: boolean;
   days_remaining: number;
   started_at: string | null;
@@ -82,10 +82,10 @@ export const useSubscriptionStore = defineStore('subscription', {
       return this.subscription?.plan?.id || this.subscription?.tarif_plan_id || null;
     },
     activeAddons(): AddonSubscription[] {
-      return this.addonSubscriptions.filter(a => a.status === 'active');
+      return this.addonSubscriptions.filter(a => a.status === 'ACTIVE');
     },
     inactiveAddons(): AddonSubscription[] {
-      return this.addonSubscriptions.filter(a => a.status !== 'active' && a.status !== 'pending');
+      return this.addonSubscriptions.filter(a => a.status !== 'ACTIVE' && a.status !== 'PENDING');
     }
   },
 

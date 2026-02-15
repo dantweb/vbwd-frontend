@@ -48,7 +48,7 @@
             >{{ subscription.plan?.name || $t('subscription.currentPlan.noPlan') }}</span>
             <span
               class="plan-status"
-              :class="subscription.status"
+              :class="subscription.status.toLowerCase()"
               data-testid="plan-status"
             >
               {{ formatStatus(subscription.status) }}
@@ -159,7 +159,7 @@
             {{ $t('subscription.manage.changePlan') }}
           </router-link>
           <button
-            v-if="subscription.status === 'active'"
+            v-if="subscription.status === 'ACTIVE'"
             class="btn danger"
             data-testid="cancel-subscription"
             @click="showCancelModal = true"
@@ -255,7 +255,7 @@
                 <td>
                   <span
                     class="status-badge"
-                    :class="invoice.status"
+                    :class="invoice.status.toLowerCase()"
                   >
                     {{ invoice.status }}
                   </span>
@@ -375,7 +375,7 @@
             <span class="value">
               <span
                 class="status-badge"
-                :class="selectedInvoice.status"
+                :class="selectedInvoice.status.toLowerCase()"
               >
                 {{ selectedInvoice.status }}
               </span>

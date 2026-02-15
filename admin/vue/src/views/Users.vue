@@ -47,6 +47,55 @@
       </select>
     </div>
 
+    <!-- Bulk Actions -->
+    <div
+      v-if="selectedUsers.size > 0"
+      class="bulk-actions"
+      data-testid="bulk-actions"
+    >
+      <span class="selection-info">{{ $t('common.selected', { count: selectedUsers.size }) }}</span>
+      <button
+        class="bulk-btn suspend"
+        :disabled="processingBulk"
+        data-testid="bulk-suspend-btn"
+        @click="handleBulkSuspend"
+      >
+        {{ $t('users.bulkSuspend') }}
+      </button>
+      <button
+        class="bulk-btn activate"
+        :disabled="processingBulk"
+        data-testid="bulk-activate-btn"
+        @click="handleBulkActivate"
+      >
+        {{ $t('users.bulkActivate') }}
+      </button>
+      <button
+        class="bulk-btn delete"
+        :disabled="processingBulk"
+        data-testid="bulk-delete-btn"
+        @click="handleBulkDelete"
+      >
+        {{ $t('users.bulkDelete') }}
+      </button>
+    </div>
+
+    <!-- Bulk Messages -->
+    <div
+      v-if="bulkSuccessMessage"
+      class="bulk-message success"
+      data-testid="bulk-success-message"
+    >
+      {{ bulkSuccessMessage }}
+    </div>
+    <div
+      v-if="bulkErrorMessage"
+      class="bulk-message error"
+      data-testid="bulk-error-message"
+    >
+      {{ bulkErrorMessage }}
+    </div>
+
     <div
       v-if="loading"
       data-testid="loading-spinner"
@@ -85,6 +134,15 @@
     >
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="allVisibleSelected && sortedUsers.length > 0"
+              :indeterminate="selectedUsers.size > 0 && !allVisibleSelected"
+              data-testid="select-all-checkbox"
+              @change="toggleSelectAll"
+            >
+          </th>
           <th
             class="sortable"
             :class="{ sorted: sortColumn === 'email', 'sort-asc': sortColumn === 'email' && sortDirection === 'asc', 'sort-desc': sortColumn === 'email' && sortDirection === 'desc' }"
@@ -130,9 +188,20 @@
           :key="user.id"
           :data-testid="`user-row-${user.id}`"
           class="user-row"
-          @click="navigateToEdit(user.id)"
+          :class="{ selected: selectedUsers.has(user.id) }"
         >
-          <td>{{ user.email }}</td>
+          <td
+            class="checkbox-col"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="selectedUsers.has(user.id)"
+              :data-testid="`select-user-${user.id}`"
+              @change="toggleUser(user.id)"
+            >
+          </td>
+          <td @click="navigateToEdit(user.id)">{{ user.email }}</td>
           <td>{{ user.name || '-' }}</td>
           <td>
             <span
@@ -202,6 +271,10 @@ const searchQuery = ref('');
 const statusFilter = ref('');
 const page = ref(1);
 const perPage = ref(20);
+const selectedUsers = ref(new Set<string>());
+const processingBulk = ref(false);
+const bulkSuccessMessage = ref('');
+const bulkErrorMessage = ref('');
 
 // Sorting state
 type SortColumn = 'email' | 'name' | 'status' | 'created_at' | null;
@@ -254,6 +327,11 @@ const sortedUsers = computed(() => {
 
     return sortDirection.value === 'asc' ? comparison : -comparison;
   });
+});
+
+const allVisibleSelected = computed(() => {
+  if (sortedUsers.value.length === 0) return false;
+  return sortedUsers.value.every(user => selectedUsers.value.has(user.id));
 });
 
 async function fetchUsers(): Promise<void> {
@@ -312,6 +390,188 @@ function formatDate(dateString?: string): string {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString();
 }
+
+function toggleUser(userId: string): void {
+  if (selectedUsers.value.has(userId)) {
+    selectedUsers.value.delete(userId);
+  } else {
+    selectedUsers.value.add(userId);
+  }
+}
+
+function toggleSelectAll(): void {
+  if (allVisibleSelected.value) {
+    sortedUsers.value.forEach(user => selectedUsers.value.delete(user.id));
+  } else {
+    sortedUsers.value.forEach(user => selectedUsers.value.add(user.id));
+  }
+}
+
+async function handleBulkSuspend(): Promise<void> {
+  if (selectedUsers.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const userIds = Array.from(selectedUsers.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const userId of userIds) {
+      try {
+        await usersStore.suspendUser(userId, 'Bulk suspended by admin');
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedUsers.value.clear();
+    bulkSuccessMessage.value = `${successCount} user(s) suspended${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to suspend users';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkActivate(): Promise<void> {
+  if (selectedUsers.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const userIds = Array.from(selectedUsers.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const userId of userIds) {
+      try {
+        await usersStore.activateUser(userId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedUsers.value.clear();
+    bulkSuccessMessage.value = `${successCount} user(s) activated${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to activate users';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkDelete(): Promise<void> {
+  if (selectedUsers.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const userIds = Array.from(selectedUsers.value);
+
+    // Get deletion info for each user to check for dependencies
+    let userWithDependencies: Array<{ userId: string; invoiceCount: number; subscriptionCount: number }> = [];
+
+    for (const userId of userIds) {
+      try {
+        const info = await usersStore.getDeletionInfo(userId);
+        if (info.has_cascade_dependencies) {
+          userWithDependencies.push({
+            userId: info.user_id,
+            invoiceCount: info.invoice_count,
+            subscriptionCount: info.subscription_count
+          });
+        }
+      } catch {
+        // If we can't get deletion info, proceed with normal delete
+      }
+    }
+
+    // If there are users with dependencies, ask for two-step confirmation
+    if (userWithDependencies.length > 0) {
+      const dependencyInfo = userWithDependencies
+        .map(u => `${u.userId}: ${u.invoiceCount} invoice(s), ${u.subscriptionCount} subscription(s)`)
+        .join('\n');
+
+      const firstConfirm = confirm(
+        `WARNING: ${userWithDependencies.length} user(s) have transaction history:\n${dependencyInfo}\n\nAll invoices, subscriptions, and related data will be PERMANENTLY DELETED.\n\nDo you understand this will delete all transaction history?`
+      );
+
+      if (!firstConfirm) {
+        processingBulk.value = false;
+        return;
+      }
+
+      // Second confirmation
+      const secondConfirm = confirm(
+        `This is the FINAL confirmation. Click OK to permanently delete ${userWithDependencies.length} user(s) and ALL their transaction history. This cannot be undone.`
+      );
+
+      if (!secondConfirm) {
+        processingBulk.value = false;
+        return;
+      }
+    } else {
+      // Simple confirmation for users without dependencies
+      if (!confirm(`Are you sure you want to delete ${userIds.length} user(s)? This action cannot be undone.`)) {
+        processingBulk.value = false;
+        return;
+      }
+    }
+
+    // Perform deletion
+    let successCount = 0;
+    const failedUsers: { id: string; reason: string }[] = [];
+
+    for (const userId of userIds) {
+      try {
+        const hasDependencies = userWithDependencies.some(u => u.userId === userId);
+        await usersStore.deleteUser(userId, hasDependencies);
+        successCount++;
+      } catch (err) {
+        failedUsers.push({
+          id: userId,
+          reason: (err as Error).message || 'Failed to delete'
+        });
+      }
+    }
+
+    selectedUsers.value.clear();
+
+    if (successCount > 0) {
+      await fetchUsers();
+    }
+
+    if (failedUsers.length > 0) {
+      const reasons = failedUsers.map(u => u.reason).join(', ');
+      bulkErrorMessage.value = `${successCount} user(s) deleted. ${failedUsers.length} could not be deleted: ${reasons}`;
+    } else {
+      bulkSuccessMessage.value = `${successCount} user(s) deleted successfully`;
+      setTimeout(() => {
+        bulkSuccessMessage.value = '';
+      }, 3000);
+    }
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to delete users';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
 
 onMounted(() => {
   fetchUsers();
@@ -528,5 +788,106 @@ onMounted(() => {
 .pagination-info {
   color: #666;
   font-size: 0.9rem;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #f0f4f8;
+  border-left: 4px solid #3498db;
+  border-radius: 4px;
+  data-testid: bulk-actions;
+}
+
+.selection-info {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.bulk-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-btn.suspend {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.bulk-btn.suspend:hover:not(:disabled) {
+  background: #ffeaa7;
+}
+
+.bulk-btn.activate {
+  background: #d4edda;
+  color: #155724;
+}
+
+.bulk-btn.activate:hover:not(:disabled) {
+  background: #c3e6cb;
+}
+
+.bulk-btn.delete {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bulk-btn.delete:hover:not(:disabled) {
+  background: #f5c6cb;
+}
+
+.checkbox-col {
+  width: 40px;
+  text-align: center;
+  padding: 0;
+}
+
+.users-table th.checkbox-col {
+  padding: 12px 15px;
+}
+
+.users-table td.checkbox-col {
+  padding: 12px 15px;
+}
+
+.checkbox-col input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.user-row.selected {
+  background-color: #e3f2fd;
+}
+
+.bulk-message {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.bulk-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.bulk-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 </style>

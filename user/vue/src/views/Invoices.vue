@@ -50,16 +50,16 @@
             <option value="">
               {{ $t('invoices.filters.allStatuses') }}
             </option>
-            <option value="paid">
+            <option value="PAID">
               {{ $t('invoices.filters.paid') }}
             </option>
-            <option value="pending">
+            <option value="PENDING">
               {{ $t('invoices.filters.pending') }}
             </option>
-            <option value="overdue">
+            <option value="OVERDUE">
               {{ $t('invoices.filters.overdue') }}
             </option>
-            <option value="refunded">
+            <option value="REFUNDED">
               {{ $t('invoices.filters.refunded') }}
             </option>
           </select>
@@ -147,7 +147,7 @@
             <td>
               <span
                 class="status"
-                :class="invoice.status"
+                :class="invoice.status.toLowerCase()"
                 :data-testid="`invoice-status-${invoice.id}`"
               >
                 {{ invoice.status }}

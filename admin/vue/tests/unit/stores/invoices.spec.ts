@@ -159,7 +159,7 @@ describe('invoices store', () => {
   describe('reset', () => {
     it('resets store to initial state', async () => {
       const store = useInvoicesStore();
-      store.invoices = [{ id: '1', invoice_number: 'INV-001', amount: 0, status: 'paid' as const }];
+      store.invoices = [{ id: '1', invoice_number: 'INV-001', amount: 0, status: 'PAID' as const }];
       store.total = 10;
       store.error = 'some error';
 

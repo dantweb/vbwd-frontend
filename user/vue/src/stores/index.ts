@@ -10,3 +10,6 @@ export type { Invoice } from './invoices';
 
 export { usePlansStore } from './plans';
 export type { Plan } from './plans';
+
+export { useTaroStore } from '@plugins/taro/src/stores/taro';
+export type { TaroSession, TaroCard, DailyLimits, PaginationInfo, FetchHistoryParams } from '@plugins/taro/src/stores/taro';

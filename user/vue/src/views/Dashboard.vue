@@ -85,7 +85,7 @@
             >{{ subscription.plan?.name || $t('dashboard.subscriptionCard.noPlan') }}</span>
             <span
               class="plan-status"
-              :class="subscription.status"
+              :class="subscription.status.toLowerCase()"
               data-testid="subscription-status"
             >
               {{ formatStatus(subscription.status) }}
@@ -154,7 +154,7 @@
             </div>
             <span
               class="history-status"
-              :class="sub.status"
+              :class="sub.status.toLowerCase()"
               data-testid="history-status"
             >
               {{ formatStatus(sub.status) }}
@@ -207,7 +207,7 @@
               <span class="addon-name">{{ addon.addon?.name || 'Add-on' }}</span>
               <span
                 class="addon-status"
-                :class="addon.status"
+                :class="addon.status.toLowerCase()"
               >{{ formatStatus(addon.status) }}</span>
             </router-link>
           </div>
@@ -293,7 +293,7 @@
               <span class="invoice-amount">{{ formatPrice(invoice.amount) }}</span>
               <span
                 class="invoice-status"
-                :class="invoice.status"
+                :class="invoice.status.toLowerCase()"
               >
                 {{ invoice.status }}
               </span>

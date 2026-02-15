@@ -10,7 +10,7 @@ export interface Invoice {
   subscription_id?: string;
   amount: number;
   currency?: string;
-  status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
   due_date?: string;
   paid_at?: string;
   created_at?: string;
@@ -135,11 +135,11 @@ export const useInvoicesStore = defineStore('invoices', {
 
         // Update local state
         if (this.selectedInvoice?.id === invoiceId) {
-          this.selectedInvoice.status = 'refunded';
+          this.selectedInvoice.status = 'REFUNDED';
         }
         const index = this.invoices.findIndex(i => i.id === invoiceId);
         if (index !== -1) {
-          this.invoices[index].status = 'refunded';
+          this.invoices[index].status = 'REFUNDED';
         }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to process refund';
@@ -160,11 +160,11 @@ export const useInvoicesStore = defineStore('invoices', {
 
         // Update local state
         if (this.selectedInvoice?.id === invoiceId) {
-          this.selectedInvoice.status = 'paid';
+          this.selectedInvoice.status = 'PAID';
         }
         const index = this.invoices.findIndex(i => i.id === invoiceId);
         if (index !== -1) {
-          this.invoices[index].status = 'paid';
+          this.invoices[index].status = 'PAID';
         }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to mark invoice as paid';
@@ -172,6 +172,11 @@ export const useInvoicesStore = defineStore('invoices', {
       } finally {
         this.loading = false;
       }
+    },
+
+    async markInvoicePaid(invoiceId: string): Promise<void> {
+      // Alias for bulk operations
+      return this.markPaid(invoiceId, 'MANUAL');
     },
 
     async resendInvoice(invoiceId: string): Promise<void> {
@@ -197,11 +202,11 @@ export const useInvoicesStore = defineStore('invoices', {
 
         // Update local state
         if (this.selectedInvoice?.id === invoiceId) {
-          this.selectedInvoice.status = 'cancelled';
+          this.selectedInvoice.status = 'CANCELLED';
         }
         const index = this.invoices.findIndex(i => i.id === invoiceId);
         if (index !== -1) {
-          this.invoices[index].status = 'cancelled';
+          this.invoices[index].status = 'CANCELLED';
         }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to void invoice';
@@ -227,6 +232,42 @@ export const useInvoicesStore = defineStore('invoices', {
       } catch (error) {
         this.error = (error as Error).message || 'Failed to duplicate invoice';
         throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async deleteInvoice(invoiceId: string): Promise<void> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        await api.delete(`/admin/invoices/${invoiceId}`);
+
+        // Update local state
+        const index = this.invoices.findIndex(i => i.id === invoiceId);
+        if (index !== -1) {
+          this.invoices.splice(index, 1);
+          this.total -= 1;
+        }
+
+        if (this.selectedInvoice?.id === invoiceId) {
+          this.selectedInvoice = null;
+        }
+      } catch (error) {
+        // Extract error message from API response if available
+        let errorMessage = 'Failed to delete invoice';
+        if (error instanceof Error) {
+          // Try to extract error from API response
+          const apiError = (error as any).response?.data?.error;
+          if (apiError) {
+            errorMessage = apiError;
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        this.error = errorMessage;
+        throw new Error(errorMessage);
       } finally {
         this.loading = false;
       }

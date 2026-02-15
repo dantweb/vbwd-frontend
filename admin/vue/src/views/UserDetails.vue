@@ -107,7 +107,7 @@
               <label>{{ $t('subscriptions.status') }}</label>
               <span
                 class="subscription-status"
-                :class="user.subscription.status"
+                :class="user.subscription.status?.toLowerCase()"
               >
                 {{ user.subscription.status || $t('common.na') }}
               </span>

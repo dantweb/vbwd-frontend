@@ -16,6 +16,14 @@ down:
 build:
 	docker-compose build
 
+# Build containers without cache
+build-nocache:
+	docker-compose build --no-cache
+
+# Clean Docker cache and rebuild
+rebuild-nocache: clean
+	docker-compose build --no-cache user-app admin-app
+
 # Start development mode
 dev:
 	docker-compose --profile dev up -d user-dev admin-dev

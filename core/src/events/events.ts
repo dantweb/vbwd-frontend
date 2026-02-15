@@ -114,7 +114,7 @@ export interface PaymentPayload {
   transactionId?: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'succeeded' | 'failed' | 'refunded';
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
   error?: string;
 }
 

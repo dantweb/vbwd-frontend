@@ -8,7 +8,7 @@ export interface Subscription {
   user_name?: string;
   plan_id?: string;
   plan_name: string;
-  status: 'active' | 'cancelled' | 'past_due' | 'trialing' | 'paused' | 'pending' | 'expired';
+  status: 'ACTIVE' | 'CANCELLED' | 'PAST_DUE' | 'TRIALING' | 'PAUSED' | 'PENDING' | 'EXPIRED';
   current_period_start?: string;
   current_period_end?: string;
   created_at?: string;
@@ -119,11 +119,11 @@ export const useSubscriptionsStore = defineStore('subscriptions', {
 
         // Update local state
         if (this.selectedSubscription?.id === subscriptionId) {
-          this.selectedSubscription.status = 'cancelled';
+          this.selectedSubscription.status = 'CANCELLED';
         }
         const index = this.subscriptions.findIndex(s => s.id === subscriptionId);
         if (index !== -1) {
-          this.subscriptions[index].status = 'cancelled';
+          this.subscriptions[index].status = 'CANCELLED';
         }
       } catch (error) {
         this.error = (error as Error).message || 'Failed to cancel subscription';

@@ -47,6 +47,55 @@
       </router-link>
     </div>
 
+    <!-- Bulk Actions -->
+    <div
+      v-if="selectedMethods.size > 0"
+      class="bulk-actions"
+      data-testid="bulk-actions"
+    >
+      <span class="selection-info">{{ $t('common.selected', { count: selectedMethods.size }) }}</span>
+      <button
+        class="bulk-btn activate"
+        :disabled="processingBulk"
+        data-testid="bulk-activate-btn"
+        @click="handleBulkActivate"
+      >
+        {{ $t('paymentMethods.bulkActivate') }}
+      </button>
+      <button
+        class="bulk-btn deactivate"
+        :disabled="processingBulk"
+        data-testid="bulk-deactivate-btn"
+        @click="handleBulkDeactivate"
+      >
+        {{ $t('paymentMethods.bulkDeactivate') }}
+      </button>
+      <button
+        class="bulk-btn delete"
+        :disabled="processingBulk"
+        data-testid="bulk-delete-btn"
+        @click="handleBulkDelete"
+      >
+        {{ $t('paymentMethods.bulkDelete') }}
+      </button>
+    </div>
+
+    <!-- Bulk Messages -->
+    <div
+      v-if="bulkSuccessMessage"
+      class="bulk-message success"
+      data-testid="bulk-success-message"
+    >
+      {{ bulkSuccessMessage }}
+    </div>
+    <div
+      v-if="bulkErrorMessage"
+      class="bulk-message error"
+      data-testid="bulk-error-message"
+    >
+      {{ bulkErrorMessage }}
+    </div>
+
     <table
       v-else
       class="data-table"
@@ -54,6 +103,15 @@
     >
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="allVisibleSelected && sortedMethods.length > 0"
+              :indeterminate="selectedMethods.size > 0 && !allVisibleSelected"
+              data-testid="select-all-checkbox"
+              @change="toggleSelectAll"
+            >
+          </th>
           <th>{{ $t('paymentMethods.position') }}</th>
           <th>{{ $t('paymentMethods.code') }}</th>
           <th>{{ $t('paymentMethods.name') }}</th>
@@ -66,7 +124,19 @@
         <tr
           v-for="method in sortedMethods"
           :key="method.id"
+          :class="{ selected: selectedMethods.has(method.id) }"
         >
+          <td
+            class="checkbox-col"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="selectedMethods.has(method.id)"
+              :data-testid="`select-method-${method.id}`"
+              @change="toggleMethod(method.id)"
+            >
+          </td>
           <td>{{ method.position }}</td>
           <td>
             <code>{{ method.code }}</code>
@@ -170,9 +240,18 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const actionLoading = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
+const selectedMethods = ref(new Set<string>());
+const processingBulk = ref(false);
+const bulkSuccessMessage = ref('');
+const bulkErrorMessage = ref('');
 
 const paymentMethods = computed(() => store.paymentMethods);
 const sortedMethods = computed(() => store.sortedByPosition);
+
+const allVisibleSelected = computed(() => {
+  if (sortedMethods.value.length === 0) return false;
+  return sortedMethods.value.every(method => selectedMethods.value.has(method.id));
+});
 
 async function loadPaymentMethods(): Promise<void> {
   loading.value = true;
@@ -248,6 +327,140 @@ function showSuccess(message: string): void {
   setTimeout(() => {
     successMessage.value = null;
   }, 3000);
+}
+
+function toggleMethod(methodId: string): void {
+  if (selectedMethods.value.has(methodId)) {
+    selectedMethods.value.delete(methodId);
+  } else {
+    selectedMethods.value.add(methodId);
+  }
+}
+
+function toggleSelectAll(): void {
+  if (allVisibleSelected.value) {
+    sortedMethods.value.forEach(method => selectedMethods.value.delete(method.id));
+  } else {
+    sortedMethods.value.forEach(method => selectedMethods.value.add(method.id));
+  }
+}
+
+async function handleBulkActivate(): Promise<void> {
+  if (selectedMethods.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const methodIds = Array.from(selectedMethods.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const methodId of methodIds) {
+      try {
+        await store.activatePaymentMethod(methodId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedMethods.value.clear();
+    bulkSuccessMessage.value = `${successCount} payment method(s) activated${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await loadPaymentMethods();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to activate payment methods';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkDeactivate(): Promise<void> {
+  if (selectedMethods.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const methodIds = Array.from(selectedMethods.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const methodId of methodIds) {
+      try {
+        await store.deactivatePaymentMethod(methodId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedMethods.value.clear();
+    bulkSuccessMessage.value = `${successCount} payment method(s) deactivated${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await loadPaymentMethods();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to deactivate payment methods';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkDelete(): Promise<void> {
+  if (selectedMethods.value.size === 0) return;
+
+  if (!confirm(t('paymentMethods.confirmDeleteBulk'))) {
+    return;
+  }
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const methodIds = Array.from(selectedMethods.value);
+    let successCount = 0;
+    const failedMethods: { id: string; reason: string }[] = [];
+
+    for (const methodId of methodIds) {
+      try {
+        await store.deletePaymentMethod(methodId);
+        successCount++;
+      } catch (err) {
+        failedMethods.push({
+          id: methodId,
+          reason: (err as Error).message || 'Failed to delete'
+        });
+      }
+    }
+
+    selectedMethods.value.clear();
+
+    if (successCount > 0) {
+      await loadPaymentMethods();
+    }
+
+    if (failedMethods.length > 0) {
+      const reasons = failedMethods.map(m => m.reason).join(', ');
+      bulkErrorMessage.value = `${successCount} payment method(s) deleted. ${failedMethods.length} could not be deleted: ${reasons}`;
+    } else {
+      bulkSuccessMessage.value = `${successCount} payment method(s) deleted successfully`;
+      setTimeout(() => {
+        bulkSuccessMessage.value = '';
+      }, 3000);
+    }
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to delete payment methods';
+  } finally {
+    processingBulk.value = false;
+  }
 }
 
 onMounted(() => {
@@ -430,5 +643,105 @@ code {
   padding: 12px 20px;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #f0f4f8;
+  border-left: 4px solid #3498db;
+  border-radius: 4px;
+}
+
+.selection-info {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.bulk-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-btn.activate {
+  background: #d4edda;
+  color: #155724;
+}
+
+.bulk-btn.activate:hover:not(:disabled) {
+  background: #c3e6cb;
+}
+
+.bulk-btn.deactivate {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.bulk-btn.deactivate:hover:not(:disabled) {
+  background: #ffeaa7;
+}
+
+.bulk-btn.delete {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bulk-btn.delete:hover:not(:disabled) {
+  background: #f5c6cb;
+}
+
+.checkbox-col {
+  width: 40px;
+  text-align: center;
+  padding: 0;
+}
+
+.data-table th.checkbox-col {
+  padding: 12px;
+}
+
+.data-table td.checkbox-col {
+  padding: 12px;
+}
+
+.checkbox-col input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.data-table tbody tr.selected {
+  background-color: #e3f2fd;
+}
+
+.bulk-message {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.bulk-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.bulk-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 </style>

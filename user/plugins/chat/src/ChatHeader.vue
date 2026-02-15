@@ -1,7 +1,12 @@
 <template>
-  <div class="chat-header" data-testid="chat-header">
+  <div
+    class="chat-header"
+    data-testid="chat-header"
+  >
     <div class="header-left">
-      <h2 class="chat-title">{{ $t('chat.title') }}</h2>
+      <h2 class="chat-title">
+        {{ $t('chat.title') }}
+      </h2>
       <span
         class="balance-display"
         :class="{ 'balance-low': balance < 10 }"

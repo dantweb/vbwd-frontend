@@ -145,17 +145,17 @@
               name="status"
               class="form-select"
             >
-              <option value="active">
+              <option value="ACTIVE">
                 {{ $t('subscriptions.statuses.active') }}
               </option>
-              <option value="trialing">
+              <option value="TRIALING">
                 {{ $t('subscriptions.statuses.trialing') }}
               </option>
             </select>
           </div>
 
           <div
-            v-if="formData.status === 'trialing'"
+            v-if="formData.status === 'TRIALING'"
             class="form-group"
           >
             <label for="trialDays">{{ $t('subscriptions.trialDays') }}</label>

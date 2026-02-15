@@ -143,13 +143,13 @@
           <option value="">
             -- {{ $t('addOns.billingPeriod') }} --
           </option>
-          <option value="monthly">
+          <option value="MONTHLY">
             {{ $t('addOns.monthly') }}
           </option>
-          <option value="yearly">
+          <option value="YEARLY">
             {{ $t('addOns.yearly') }}
           </option>
-          <option value="one_time">
+          <option value="ONE_TIME">
             {{ $t('addOns.oneTime') }}
           </option>
         </select>

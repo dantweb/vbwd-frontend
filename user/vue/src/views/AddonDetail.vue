@@ -39,7 +39,7 @@
           </h2>
           <span
             class="status-badge"
-            :class="addonSub.status"
+            :class="addonSub.status.toLowerCase()"
             data-testid="addon-status"
           >
             {{ formatStatus(addonSub.status) }}
@@ -99,7 +99,7 @@
               <span class="label">{{ $t('addons.detail.status') }}</span>
               <span
                 class="status-badge small"
-                :class="addonSub.invoice.status"
+                :class="addonSub.invoice.status.toLowerCase()"
               >
                 {{ addonSub.invoice.status }}
               </span>
@@ -210,7 +210,7 @@ const cancelSuccess = ref(false);
 
 const canCancel = computed(() => {
   return addonSub.value &&
-    (addonSub.value.status === 'active' || addonSub.value.status === 'pending') &&
+    (addonSub.value.status === 'ACTIVE' || addonSub.value.status === 'PENDING') &&
     !cancelSuccess.value;
 });
 

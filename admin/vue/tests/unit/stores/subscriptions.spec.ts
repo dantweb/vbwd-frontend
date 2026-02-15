@@ -150,8 +150,8 @@ describe('SubscriptionsStore', () => {
 
   it('resets store state', () => {
     const store = useSubscriptionsStore();
-    store.subscriptions = [{ id: '1', user_email: 'test@test.com', plan_name: 'Pro', status: 'active' }];
-    store.selectedSubscription = { id: '1', user_email: 'test@test.com', plan_name: 'Pro', status: 'active' };
+    store.subscriptions = [{ id: '1', user_email: 'test@test.com', plan_name: 'Pro', status: 'ACTIVE' }];
+    store.selectedSubscription = { id: '1', user_email: 'test@test.com', plan_name: 'Pro', status: 'ACTIVE' };
     store.error = 'Some error';
 
     store.reset();

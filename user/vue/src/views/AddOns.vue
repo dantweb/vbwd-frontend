@@ -216,7 +216,7 @@ const error = ref<string | null>(null);
 const subscriptionStore = useSubscriptionStore();
 
 const hasActiveSubscription = computed(() => {
-  return subscriptionStore.subscription?.status === 'active';
+  return subscriptionStore.subscription?.status === 'ACTIVE';
 });
 
 // Plan-specific add-ons (bound to one or more tariff plans)

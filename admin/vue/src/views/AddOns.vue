@@ -33,6 +33,55 @@
       </label>
     </div>
 
+    <!-- Bulk Actions -->
+    <div
+      v-if="selectedAddons.size > 0"
+      class="bulk-actions"
+      data-testid="bulk-actions"
+    >
+      <span class="selection-info">{{ $t('common.selected', { count: selectedAddons.size }) }}</span>
+      <button
+        class="bulk-btn activate"
+        :disabled="processingBulk"
+        data-testid="bulk-activate-btn"
+        @click="handleBulkActivate"
+      >
+        {{ $t('addOns.bulkActivate') }}
+      </button>
+      <button
+        class="bulk-btn deactivate"
+        :disabled="processingBulk"
+        data-testid="bulk-deactivate-btn"
+        @click="handleBulkDeactivate"
+      >
+        {{ $t('addOns.bulkDeactivate') }}
+      </button>
+      <button
+        class="bulk-btn delete"
+        :disabled="processingBulk"
+        data-testid="bulk-delete-btn"
+        @click="handleBulkDelete"
+      >
+        {{ $t('addOns.bulkDelete') }}
+      </button>
+    </div>
+
+    <!-- Bulk Messages -->
+    <div
+      v-if="bulkSuccessMessage"
+      class="bulk-message success"
+      data-testid="bulk-success-message"
+    >
+      {{ bulkSuccessMessage }}
+    </div>
+    <div
+      v-if="bulkErrorMessage"
+      class="bulk-message error"
+      data-testid="bulk-error-message"
+    >
+      {{ bulkErrorMessage }}
+    </div>
+
     <div
       v-if="loading"
       data-testid="loading-spinner"
@@ -77,6 +126,15 @@
     >
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="allVisibleSelected && sortedAddons.length > 0"
+              :indeterminate="selectedAddons.size > 0 && !allVisibleSelected"
+              data-testid="select-all-checkbox"
+              @change="toggleSelectAll"
+            >
+          </th>
           <th
             class="sortable"
             :class="{ sorted: sortColumn === 'name' }"
@@ -113,9 +171,20 @@
           :key="addon.id"
           :data-testid="`addon-row-${addon.id}`"
           class="addon-row"
-          @click="navigateToAddon(addon.id)"
+          :class="{ selected: selectedAddons.has(addon.id) }"
         >
-          <td>{{ addon.name }}</td>
+          <td
+            class="checkbox-col"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="selectedAddons.has(addon.id)"
+              :data-testid="`select-addon-${addon.id}`"
+              @change="toggleAddon(addon.id)"
+            >
+          </td>
+          <td @click="navigateToAddon(addon.id)">{{ addon.name }}</td>
           <td><code>{{ addon.slug }}</code></td>
           <td>{{ formatPrice(addon.price, addon.currency) }}</td>
           <td data-testid="addon-plans">
@@ -194,6 +263,10 @@ const addonStore = useAddonStore();
 
 const includeInactive = ref(true);
 const searchQuery = ref('');
+const selectedAddons = ref(new Set<string>());
+const processingBulk = ref(false);
+const bulkSuccessMessage = ref('');
+const bulkErrorMessage = ref('');
 
 type SortColumn = 'name' | 'price' | 'status' | null;
 type SortDirection = 'asc' | 'desc';
@@ -234,6 +307,11 @@ const sortedAddons = computed(() => {
 
     return sortDirection.value === 'asc' ? comparison : -comparison;
   });
+});
+
+const allVisibleSelected = computed(() => {
+  if (sortedAddons.value.length === 0) return false;
+  return sortedAddons.value.every(addon => selectedAddons.value.has(addon.id));
 });
 
 function handleSort(column: SortColumn): void {
@@ -307,6 +385,140 @@ function formatBillingPeriod(period: string): string {
   const key = `addOns.${period.toLowerCase()}` as string;
   const translated = t(key);
   return translated !== key ? translated : period;
+}
+
+function toggleAddon(addonId: string): void {
+  if (selectedAddons.value.has(addonId)) {
+    selectedAddons.value.delete(addonId);
+  } else {
+    selectedAddons.value.add(addonId);
+  }
+}
+
+function toggleSelectAll(): void {
+  if (allVisibleSelected.value) {
+    sortedAddons.value.forEach(addon => selectedAddons.value.delete(addon.id));
+  } else {
+    sortedAddons.value.forEach(addon => selectedAddons.value.add(addon.id));
+  }
+}
+
+async function handleBulkActivate(): Promise<void> {
+  if (selectedAddons.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const addonIds = Array.from(selectedAddons.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const addonId of addonIds) {
+      try {
+        await addonStore.activateAddon(addonId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedAddons.value.clear();
+    bulkSuccessMessage.value = `${successCount} add-on(s) activated${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await fetchAddons();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to activate add-ons';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkDeactivate(): Promise<void> {
+  if (selectedAddons.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const addonIds = Array.from(selectedAddons.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const addonId of addonIds) {
+      try {
+        await addonStore.deactivateAddon(addonId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedAddons.value.clear();
+    bulkSuccessMessage.value = `${successCount} add-on(s) deactivated${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await fetchAddons();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to deactivate add-ons';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkDelete(): Promise<void> {
+  if (selectedAddons.value.size === 0) return;
+
+  if (!confirm(t('addOns.confirmDeleteBulk'))) {
+    return;
+  }
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const addonIds = Array.from(selectedAddons.value);
+    let successCount = 0;
+    const failedAddons: { id: string; reason: string }[] = [];
+
+    for (const addonId of addonIds) {
+      try {
+        await addonStore.deleteAddon(addonId);
+        successCount++;
+      } catch (err) {
+        failedAddons.push({
+          id: addonId,
+          reason: (err as Error).message || 'Failed to delete'
+        });
+      }
+    }
+
+    selectedAddons.value.clear();
+
+    if (successCount > 0) {
+      await fetchAddons();
+    }
+
+    if (failedAddons.length > 0) {
+      const reasons = failedAddons.map(a => a.reason).join(', ');
+      bulkErrorMessage.value = `${successCount} add-on(s) deleted. ${failedAddons.length} could not be deleted: ${reasons}`;
+    } else {
+      bulkSuccessMessage.value = `${successCount} add-on(s) deleted successfully`;
+      setTimeout(() => {
+        bulkSuccessMessage.value = '';
+      }, 3000);
+    }
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to delete add-ons';
+  } finally {
+    processingBulk.value = false;
+  }
 }
 
 onMounted(() => {
@@ -525,5 +737,105 @@ onMounted(() => {
 .plan-badge.all-plans {
   background: #e8f5e9;
   color: #2e7d32;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #f0f4f8;
+  border-left: 4px solid #3498db;
+  border-radius: 4px;
+}
+
+.selection-info {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.bulk-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-btn.activate {
+  background: #d4edda;
+  color: #155724;
+}
+
+.bulk-btn.activate:hover:not(:disabled) {
+  background: #c3e6cb;
+}
+
+.bulk-btn.deactivate {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.bulk-btn.deactivate:hover:not(:disabled) {
+  background: #ffeaa7;
+}
+
+.bulk-btn.delete {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bulk-btn.delete:hover:not(:disabled) {
+  background: #f5c6cb;
+}
+
+.checkbox-col {
+  width: 40px;
+  text-align: center;
+  padding: 0;
+}
+
+.addons-table th.checkbox-col {
+  padding: 12px 15px;
+}
+
+.addons-table td.checkbox-col {
+  padding: 12px 15px;
+}
+
+.checkbox-col input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.addon-row.selected {
+  background-color: #e3f2fd;
+}
+
+.bulk-message {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.bulk-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.bulk-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 </style>

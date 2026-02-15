@@ -53,7 +53,7 @@ export function usePaymentStatus(
       const data = await api.get(`${apiPrefix}/session-status/${id}`) as Record<string, unknown>;
       statusData.value = data;
       const status = data?.status;
-      if (status === 'complete' || status === 'paid') {
+      if (status === 'complete' || status === 'PAID') {
         confirmed.value = true;
         stopPolling();
         return true;

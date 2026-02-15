@@ -58,7 +58,7 @@
         >
           {{ $t('checkout.success.subscriptionStatus') }}
           <span data-testid="subscription-status">
-            {{ checkoutStore.checkoutResult.subscription.status === 'pending' ? $t('checkout.success.statusPending') : $t('checkout.success.statusActive') }}
+            {{ checkoutStore.checkoutResult.subscription.status === 'PENDING' ? $t('checkout.success.statusPending') : $t('checkout.success.statusActive') }}
           </span>
         </p>
         <p data-testid="invoice-number">

@@ -1,0 +1,835 @@
+<template>
+  <div
+    class="taro-container"
+    data-testid="taro-dashboard"
+  >
+    <!-- Page Header -->
+    <div class="taro-header">
+      <h1>{{ $t('taro.title') }}</h1>
+      <p class="subtitle">
+        {{ $t('taro.subtitle') }}
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div
+      v-if="taroStore.loading && !taroStore.currentSession"
+      class="loading-state"
+    >
+      <div class="spinner" />
+      <p>{{ $t('common.loading') }}</p>
+    </div>
+
+    <!-- Error State -->
+    <div
+      v-else-if="taroStore.error"
+      class="error-state"
+      data-testid="taro-error"
+    >
+      <div class="error-message">
+        <p>{{ $t('common.error') }}: {{ taroStore.error }}</p>
+        <button
+          class="btn btn-primary"
+          @click="retryOperation"
+        >
+          {{ $t('common.retry') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div
+      v-else
+      class="taro-content"
+    >
+      <!-- Daily Limits Card -->
+      <div
+        class="limits-card card"
+        data-testid="daily-limits-card"
+      >
+        <div class="card-header">
+          <h2>{{ $t('taro.dailyLimits') }}</h2>
+          <button
+            :disabled="taroStore.limitsLoading"
+            class="btn-icon"
+            :title="$t('common.refresh')"
+            data-testid="refresh-limits-btn"
+            @click="refreshLimits"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64M3.51 15A9 9 0 0 0 18.36 18.36" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="limits-content">
+          <div class="limit-item">
+            <span class="label">{{ $t('taro.dailyTotal') }}</span>
+            <span class="value">{{ taroStore.dailyLimits?.daily_total || 0 }}</span>
+          </div>
+          <div class="limit-item">
+            <span class="label">{{ $t('taro.dailyRemaining') }}</span>
+            <span
+              class="value highlight"
+              :class="{ 'text-warning': taroStore.sessionsRemaining === 0 }"
+            >
+              {{ taroStore.sessionsRemaining }}
+            </span>
+          </div>
+          <div class="limit-item">
+            <span class="label">{{ $t('taro.planName') }}</span>
+            <span class="value">{{ taroStore.dailyLimits?.plan_name || 'Unknown' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session Expiry Warning -->
+      <div
+        v-if="taroStore.hasExpiryWarning"
+        class="warning-card card"
+        data-testid="expiry-warning"
+      >
+        <div class="warning-content">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2v2m0-4h-2V7h2v6" />
+          </svg>
+          <div>
+            <p class="warning-title">
+              {{ $t('taro.sessionExpiring') }}
+            </p>
+            <p class="warning-message">
+              {{ $t('taro.sessionExpiresIn', { minutes: taroStore.sessionTimeRemaining }) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Session Card -->
+      <div
+        v-if="taroStore.hasActiveSession"
+        class="session-card card"
+        data-testid="active-session-card"
+      >
+        <div class="card-header">
+          <h2>{{ $t('taro.currentSession') }}</h2>
+          <span class="badge badge-active">{{ $t('taro.active') }}</span>
+        </div>
+
+        <div class="session-content">
+          <!-- Cards Grid -->
+          <div class="cards-grid">
+            <CardDisplay
+              v-for="card in taroStore.currentSession?.cards"
+              :key="card.card_id"
+              :card="card"
+              @card-click="selectCard"
+            />
+          </div>
+
+          <!-- Session Info -->
+          <div class="session-info">
+            <div class="info-row">
+              <span class="label">{{ $t('taro.followUps') }}</span>
+              <span class="value">
+                {{ taroStore.currentSession?.follow_up_count || 0 }}/{{
+                  taroStore.currentSession?.max_follow_ups || 3
+                }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">{{ $t('taro.tokensUsed') }}</span>
+              <span class="value">{{ taroStore.currentSession?.tokens_consumed || 0 }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">{{ $t('taro.timeRemaining') }}</span>
+              <span
+                class="value"
+                :class="{ 'text-warning': taroStore.sessionTimeRemaining <= 3 }"
+              >
+                {{ taroStore.sessionTimeRemaining }} min
+              </span>
+            </div>
+          </div>
+
+          <!-- Follow-Up Section -->
+          <div
+            v-if="taroStore.canAddFollowUp"
+            class="follow-up-section"
+            data-testid="follow-up-section"
+          >
+            <h3>{{ $t('taro.askFollowUp') }}</h3>
+            <div class="form-group">
+              <textarea
+                v-model="followUpQuestion"
+                :placeholder="$t('taro.followUpPlaceholder')"
+                class="form-control"
+                rows="3"
+                data-testid="follow-up-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ $t('taro.followUpType') }}</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input
+                    v-model="selectedFollowUpType"
+                    type="radio"
+                    value="SAME_CARDS"
+                    data-testid="followup-same-cards"
+                  >
+                  <span>{{ $t('taro.sameCards') }}</span>
+                </label>
+                <label class="radio-option">
+                  <input
+                    v-model="selectedFollowUpType"
+                    type="radio"
+                    value="ADDITIONAL"
+                    data-testid="followup-additional"
+                  >
+                  <span>{{ $t('taro.additionalCard') }}</span>
+                </label>
+                <label class="radio-option">
+                  <input
+                    v-model="selectedFollowUpType"
+                    type="radio"
+                    value="NEW_SPREAD"
+                    data-testid="followup-new-spread"
+                  >
+                  <span>{{ $t('taro.newSpread') }}</span>
+                </label>
+              </div>
+            </div>
+
+            <button
+              :disabled="taroStore.loading || !followUpQuestion.trim()"
+              class="btn btn-primary"
+              data-testid="submit-follow-up-btn"
+              @click="submitFollowUp"
+            >
+              {{ taroStore.loading ? $t('common.submitting') : $t('taro.submitFollowUp') }}
+            </button>
+          </div>
+
+          <!-- Follow-ups Exhausted -->
+          <div
+            v-else
+            class="info-message"
+          >
+            <p>{{ $t('taro.maxFollowUpsReached') }}</p>
+          </div>
+
+          <!-- Close Session Button -->
+          <button
+            class="btn btn-secondary"
+            data-testid="close-session-btn"
+            @click="closeCurrentSession"
+          >
+            {{ $t('taro.closeSession') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Create New Session Card -->
+      <div
+        v-else
+        class="create-session-card card"
+        data-testid="create-session-card"
+      >
+        <div class="card-header">
+          <h2>{{ $t('taro.startNewSession') }}</h2>
+        </div>
+
+        <div class="create-content">
+          <p class="description">
+            {{ $t('taro.createSessionDescription') }}
+          </p>
+
+          <div class="session-benefits">
+            <div class="benefit-item">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+              </svg>
+              <div>
+                <h4>{{ $t('taro.benefit1Title') }}</h4>
+                <p>{{ $t('taro.benefit1Desc') }}</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+              </svg>
+              <div>
+                <h4>{{ $t('taro.benefit2Title') }}</h4>
+                <p>{{ $t('taro.benefit2Desc') }}</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m4.41-11.59L11 13.41 7.59 9.99 6.18 11.4 11 16.22l7.41-7.41-1.41-1.41z" />
+              </svg>
+              <div>
+                <h4>{{ $t('taro.benefit3Title') }}</h4>
+                <p>{{ $t('taro.benefit3Desc') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            :disabled="taroStore.loading || !taroStore.canCreateSession"
+            class="btn btn-primary btn-large"
+            data-testid="create-session-btn"
+            @click="createNewSession"
+          >
+            <span v-if="taroStore.loading">{{ $t('taro.creatingSession') }}</span>
+            <span v-else>{{ $t('taro.createSession') }}</span>
+          </button>
+
+          <p
+            v-if="!taroStore.canCreateSession"
+            class="limit-warning"
+          >
+            {{ $t('taro.dailyLimitReached') }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Session History -->
+      <SessionHistory
+        :sessions="taroStore.sessionHistory"
+        :loading="taroStore.historyLoading"
+        :has-more="taroStore.hasMoreHistory"
+        @load-more="loadMoreHistory"
+      />
+    </div>
+
+    <!-- Selected Card Detail Modal -->
+    <CardDetailModal
+      v-if="selectedCardId"
+      :card-id="selectedCardId"
+      @close="selectedCardId = null"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useTaroStore } from '@/stores';
+import CardDisplay from './components/CardDisplay.vue';
+import SessionHistory from './components/SessionHistory.vue';
+import CardDetailModal from './components/CardDetailModal.vue';
+
+const taroStore = useTaroStore();
+const followUpQuestion = ref('');
+const selectedFollowUpType = ref<'SAME_CARDS' | 'ADDITIONAL' | 'NEW_SPREAD'>('SAME_CARDS');
+const selectedCardId = ref<string | null>(null);
+
+onMounted(async () => {
+  // Initialize store if needed
+  if (!taroStore.dailyLimits) {
+    await taroStore.initialize();
+  }
+});
+
+const createNewSession = async () => {
+  try {
+    await taroStore.createSession();
+    // Refresh limits after creation
+    await taroStore.fetchDailyLimits();
+  } catch (error) {
+    console.error('Failed to create session:', error);
+  }
+};
+
+const submitFollowUp = async () => {
+  if (!followUpQuestion.value.trim()) {
+    return;
+  }
+
+  try {
+    await taroStore.addFollowUp(
+      followUpQuestion.value,
+      selectedFollowUpType.value
+    );
+    // Reset form
+    followUpQuestion.value = '';
+    selectedFollowUpType.value = 'SAME_CARDS';
+    // Refresh limits to get updated session state
+    await taroStore.fetchDailyLimits();
+  } catch (error) {
+    console.error('Failed to submit follow-up:', error);
+  }
+};
+
+const closeCurrentSession = () => {
+  taroStore.closeSession();
+};
+
+const selectCard = (cardId: string) => {
+  selectedCardId.value = cardId;
+};
+
+const loadMoreHistory = async () => {
+  try {
+    await taroStore.loadMoreHistory();
+  } catch (error) {
+    console.error('Failed to load more history:', error);
+  }
+};
+
+const refreshLimits = async () => {
+  try {
+    await taroStore.fetchDailyLimits();
+  } catch (error) {
+    console.error('Failed to refresh limits:', error);
+  }
+};
+
+const retryOperation = async () => {
+  taroStore.error = null;
+  await taroStore.initialize();
+};
+</script>
+
+<style scoped>
+.taro-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.taro-header {
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
+.taro-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+}
+
+.taro-content {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+/* Cards */
+.card {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Limits Card */
+.limits-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.limit-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.limit-item .label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.limit-item .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.limit-item .value.highlight {
+  color: var(--color-success);
+}
+
+.limit-item .value.text-warning {
+  color: var(--color-warning);
+}
+
+/* Warning Card */
+.warning-card {
+  background: linear-gradient(135deg, var(--color-warning-light) 0%, var(--color-warning-lighter) 100%);
+  border-color: var(--color-warning);
+  border-left: 4px solid var(--color-warning);
+}
+
+.warning-content {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+.warning-content svg {
+  color: var(--color-warning);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-title {
+  font-weight: 600;
+  color: var(--color-warning-dark);
+  margin-bottom: var(--spacing-xs);
+}
+
+.warning-message {
+  color: var(--color-warning-dark);
+  opacity: 0.9;
+}
+
+/* Session Card */
+.session-card .cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.session-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-row .label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.info-row .value {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+}
+
+.info-row .value.text-warning {
+  color: var(--color-warning);
+}
+
+/* Follow-up Section */
+.follow-up-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.follow-up-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.2s;
+}
+
+.radio-option:hover {
+  background-color: var(--color-background);
+}
+
+.radio-option input[type="radio"] {
+  cursor: pointer;
+}
+
+/* Create Session Card */
+.create-session-card .create-content {
+  text-align: center;
+}
+
+.description {
+  font-size: 1.05rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.session-benefits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  text-align: left;
+}
+
+.benefit-item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.benefit-item svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.benefit-item h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.benefit-item p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.btn-large {
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.limit-warning {
+  color: var(--color-warning);
+  font-size: 0.9rem;
+}
+
+/* Info Message */
+.info-message {
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  border-left: 4px solid var(--color-info);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-info);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-active {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+/* Loading & Error */
+.loading-state {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.error-message {
+  color: var(--color-error-dark);
+  text-align: center;
+}
+
+.error-message p {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Buttons */
+.btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 8px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .taro-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .session-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .limit-item .value {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: var(--spacing-md);
+  }
+}
+</style>

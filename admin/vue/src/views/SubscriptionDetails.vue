@@ -63,9 +63,9 @@
             <div class="info-item">
               <label>{{ $t('subscriptions.status') }}</label>
               <span
-                :data-testid="`status-${subscription.status}`"
+                :data-testid="`status-${subscription.status.toLowerCase()}`"
                 class="status-badge"
-                :class="subscription.status"
+                :class="subscription.status.toLowerCase()"
               >
                 {{ formatStatus(subscription.status) }}
               </span>
@@ -122,7 +122,7 @@
                 <td>
                   <span
                     class="payment-status"
-                    :class="payment.status"
+                    :class="payment.status.toLowerCase()"
                   >
                     {{ payment.status }}
                   </span>
@@ -139,7 +139,7 @@
         </div>
 
         <div
-          v-if="subscription.status === 'active'"
+          v-if="subscription.status === 'ACTIVE'"
           class="actions-section"
         >
           <button

@@ -9,7 +9,7 @@ export interface Invoice {
   invoice_number: string;
   amount: string;
   currency: string;
-  status: 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
   payment_method: string | null;
   payment_ref: string | null;
   is_payable: boolean;

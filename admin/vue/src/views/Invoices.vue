@@ -29,22 +29,79 @@
         <option value="">
           {{ $t('common.all') }} {{ $t('common.status') }}
         </option>
-        <option value="pending">
+        <option value="PENDING">
           {{ $t('invoices.statuses.pending') }}
         </option>
-        <option value="paid">
+        <option value="PAID">
           {{ $t('invoices.statuses.paid') }}
         </option>
-        <option value="failed">
+        <option value="FAILED">
           {{ $t('invoices.statuses.failed') }}
         </option>
-        <option value="cancelled">
+        <option value="CANCELLED">
           {{ $t('invoices.statuses.cancelled') }}
         </option>
-        <option value="refunded">
+        <option value="REFUNDED">
           {{ $t('invoices.statuses.refunded') }}
         </option>
       </select>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div
+      v-if="selectedInvoices.size > 0"
+      class="bulk-actions"
+      data-testid="bulk-actions"
+    >
+      <span class="selection-info">{{ $t('common.selected', { count: selectedInvoices.size }) }}</span>
+      <button
+        class="bulk-btn mark-paid"
+        :disabled="processingBulk"
+        data-testid="bulk-mark-paid-btn"
+        @click="handleBulkMarkPaid"
+      >
+        {{ $t('invoices.bulkMarkPaid') }}
+      </button>
+      <button
+        class="bulk-btn void"
+        :disabled="processingBulk"
+        data-testid="bulk-void-btn"
+        @click="handleBulkVoid"
+      >
+        {{ $t('invoices.bulkVoid') }}
+      </button>
+      <button
+        class="bulk-btn refund"
+        :disabled="processingBulk"
+        data-testid="bulk-refund-btn"
+        @click="handleBulkRefund"
+      >
+        {{ $t('invoices.bulkRefund') }}
+      </button>
+      <button
+        class="bulk-btn delete"
+        :disabled="processingBulk"
+        data-testid="bulk-delete-btn"
+        @click="handleBulkDelete"
+      >
+        {{ $t('invoices.bulkDelete') }}
+      </button>
+    </div>
+
+    <!-- Bulk Messages -->
+    <div
+      v-if="bulkSuccessMessage"
+      class="bulk-message success"
+      data-testid="bulk-success-message"
+    >
+      {{ bulkSuccessMessage }}
+    </div>
+    <div
+      v-if="bulkErrorMessage"
+      class="bulk-message error"
+      data-testid="bulk-error-message"
+    >
+      {{ bulkErrorMessage }}
     </div>
 
     <div
@@ -85,6 +142,15 @@
     >
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="allVisibleSelected && sortedInvoices.length > 0"
+              :indeterminate="selectedInvoices.size > 0 && !allVisibleSelected"
+              data-testid="select-all-checkbox"
+              @change="toggleSelectAll"
+            >
+          </th>
           <th
             class="sortable"
             :class="{ sorted: sortColumn === 'invoice_number', 'sort-asc': sortColumn === 'invoice_number' && sortDirection === 'asc', 'sort-desc': sortColumn === 'invoice_number' && sortDirection === 'desc' }"
@@ -138,16 +204,27 @@
           :key="invoice.id"
           :data-testid="`invoice-row-${invoice.id}`"
           class="invoice-row"
-          @click="navigateToInvoice(invoice.id)"
+          :class="{ selected: selectedInvoices.has(invoice.id) }"
         >
-          <td>{{ invoice.invoice_number }}</td>
+          <td
+            class="checkbox-col"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="selectedInvoices.has(invoice.id)"
+              :data-testid="`select-invoice-${invoice.id}`"
+              @change="toggleInvoice(invoice.id)"
+            >
+          </td>
+          <td @click="navigateToInvoice(invoice.id)">{{ invoice.invoice_number }}</td>
           <td>{{ invoice.user_email }}</td>
           <td>{{ formatAmount(invoice.amount, invoice.currency) }}</td>
           <td>
             <span
-              :data-testid="`status-${invoice.status}`"
+              :data-testid="`status-${invoice.status.toLowerCase()}`"
               class="status-badge"
-              :class="invoice.status"
+              :class="invoice.status.toLowerCase()"
             >
               {{ formatStatus(invoice.status) }}
             </span>
@@ -198,6 +275,10 @@ const statusFilter = ref('');
 const searchQuery = ref('');
 const page = ref(1);
 const perPage = ref(20);
+const selectedInvoices = ref(new Set<string>());
+const processingBulk = ref(false);
+const bulkSuccessMessage = ref('');
+const bulkErrorMessage = ref('');
 
 // Sorting state
 type SortColumn = 'invoice_number' | 'user_email' | 'amount' | 'status' | 'created_at' | null;
@@ -255,6 +336,11 @@ const total = computed(() => invoicesStore.total);
 const loading = computed(() => invoicesStore.loading);
 const error = computed(() => invoicesStore.error);
 const totalPages = computed(() => Math.ceil(total.value / perPage.value));
+
+const allVisibleSelected = computed(() => {
+  if (sortedInvoices.value.length === 0) return false;
+  return sortedInvoices.value.every(invoice => selectedInvoices.value.has(invoice.id));
+});
 
 async function fetchInvoices(): Promise<void> {
   try {
@@ -325,6 +411,170 @@ function handleSort(column: SortColumn): void {
 function getSortIndicator(column: SortColumn): string {
   if (sortColumn.value !== column) return '';
   return sortDirection.value === 'asc' ? '▲' : '▼';
+}
+
+function toggleInvoice(invoiceId: string): void {
+  if (selectedInvoices.value.has(invoiceId)) {
+    selectedInvoices.value.delete(invoiceId);
+  } else {
+    selectedInvoices.value.add(invoiceId);
+  }
+}
+
+function toggleSelectAll(): void {
+  if (allVisibleSelected.value) {
+    sortedInvoices.value.forEach(invoice => selectedInvoices.value.delete(invoice.id));
+  } else {
+    sortedInvoices.value.forEach(invoice => selectedInvoices.value.add(invoice.id));
+  }
+}
+
+async function handleBulkMarkPaid(): Promise<void> {
+  if (selectedInvoices.value.size === 0) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const invoiceIds = Array.from(selectedInvoices.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const invoiceId of invoiceIds) {
+      try {
+        await invoicesStore.markInvoicePaid(invoiceId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedInvoices.value.clear();
+    bulkSuccessMessage.value = `${successCount} invoice(s) marked as paid${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await fetchInvoices();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to mark invoices as paid';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkVoid(): Promise<void> {
+  if (selectedInvoices.value.size === 0) return;
+
+  if (!confirm(t('invoices.confirmVoid'))) {
+    return;
+  }
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const invoiceIds = Array.from(selectedInvoices.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const invoiceId of invoiceIds) {
+      try {
+        await invoicesStore.voidInvoice(invoiceId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedInvoices.value.clear();
+    bulkSuccessMessage.value = `${successCount} invoice(s) voided${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await fetchInvoices();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to void invoices';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkRefund(): Promise<void> {
+  if (selectedInvoices.value.size === 0) return;
+
+  if (!confirm(t('invoices.confirmRefund'))) {
+    return;
+  }
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const invoiceIds = Array.from(selectedInvoices.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const invoiceId of invoiceIds) {
+      try {
+        await invoicesStore.refundInvoice(invoiceId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedInvoices.value.clear();
+    bulkSuccessMessage.value = `${successCount} invoice(s) refunded${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await fetchInvoices();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to refund invoices';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
+async function handleBulkDelete(): Promise<void> {
+  if (selectedInvoices.value.size === 0) return;
+
+  if (!confirm(t('invoices.confirmDelete'))) {
+    return;
+  }
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const invoiceIds = Array.from(selectedInvoices.value);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const invoiceId of invoiceIds) {
+      try {
+        await invoicesStore.deleteInvoice(invoiceId);
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    selectedInvoices.value.clear();
+    bulkSuccessMessage.value = `${successCount} invoice(s) deleted${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+    await fetchInvoices();
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to delete invoices';
+  } finally {
+    processingBulk.value = false;
+  }
 }
 
 onMounted(() => {
@@ -533,5 +783,114 @@ onMounted(() => {
   margin-left: 5px;
   font-size: 0.8em;
   color: #3498db;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #f0f4f8;
+  border-left: 4px solid #3498db;
+  border-radius: 4px;
+}
+
+.selection-info {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.bulk-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-btn.mark-paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.bulk-btn.mark-paid:hover:not(:disabled) {
+  background: #c3e6cb;
+}
+
+.bulk-btn.void {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.bulk-btn.void:hover:not(:disabled) {
+  background: #ffeaa7;
+}
+
+.bulk-btn.refund {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.bulk-btn.refund:hover:not(:disabled) {
+  background: #b8daff;
+}
+
+.bulk-btn.delete {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bulk-btn.delete:hover:not(:disabled) {
+  background: #f5c6cb;
+}
+
+.checkbox-col {
+  width: 40px;
+  text-align: center;
+  padding: 0;
+}
+
+.invoices-table th.checkbox-col {
+  padding: 12px 15px;
+}
+
+.invoices-table td.checkbox-col {
+  padding: 12px 15px;
+}
+
+.checkbox-col input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.invoice-row.selected {
+  background-color: #e3f2fd;
+}
+
+.bulk-message {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.bulk-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.bulk-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 </style>

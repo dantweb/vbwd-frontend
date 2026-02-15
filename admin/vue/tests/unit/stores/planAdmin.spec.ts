@@ -119,7 +119,7 @@ describe('PlanAdminStore', () => {
 
   it('resets store state', () => {
     const store = usePlanAdminStore();
-    store.plans = [{ id: '1', name: 'Free', price: 0, billing_period: 'monthly' as const, is_active: true }];
+    store.plans = [{ id: '1', name: 'Free', price: 0, billing_period: 'MONTHLY' as const, is_active: true }];
     store.error = 'Some error';
 
     store.reset();

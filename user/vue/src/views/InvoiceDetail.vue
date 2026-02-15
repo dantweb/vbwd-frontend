@@ -37,7 +37,7 @@
           <h2>Invoice {{ invoice.invoice_number }}</h2>
           <span
             class="status-badge"
-            :class="invoice.status"
+            :class="invoice.status.toLowerCase()"
           >{{ invoice.status }}</span>
         </div>
 
@@ -87,7 +87,7 @@
                 <td>
                   <span
                     class="type-badge"
-                    :class="item.type"
+                    :class="item.type?.toLowerCase()"
                   >{{ itemTypeLabel(item.type) }}</span>
                 </td>
                 <td>

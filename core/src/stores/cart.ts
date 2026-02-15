@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
  * Cart item types following Liskov Substitution Principle
  * Any item type can be substituted without breaking cart behavior
  */
-export type CartItemType = 'plan' | 'token_bundle' | 'addon';
+export type CartItemType = 'PLAN' | 'TOKEN_BUNDLE' | 'ADD_ON';
 
 /**
  * Interface for cart items - extensible via metadata
@@ -69,7 +69,7 @@ function saveToStorage(items: ICartItem[]): void {
  * import { useCartStore } from '@vbwd/view-component';
  *
  * const cart = useCartStore();
- * cart.addItem({ type: 'token_bundle', id: '1', name: '1000 Tokens', price: 10 });
+ * cart.addItem({ type: 'TOKEN_BUNDLE', id: '1', name: '1000 Tokens', price: 10 });
  * console.log(cart.total); // 10
  * ```
  */

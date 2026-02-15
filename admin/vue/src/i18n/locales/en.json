@@ -37,7 +37,8 @@
     "description": "Description",
     "none": "None",
     "na": "N/A",
-    "clear": "Clear"
+    "clear": "Clear",
+    "selected": "{count} selected"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -119,6 +120,9 @@
     "totalPayments": "Total Payments",
     "suspendUser": "Suspend User",
     "activateUser": "Activate User",
+    "bulkSuspend": "Suspend Selected",
+    "bulkActivate": "Activate Selected",
+    "bulkDelete": "Delete Selected",
     "emailPlaceholder": "user{'@'}example.com",
     "passwordPlaceholder": "Minimum 8 characters",
     "emailRequired": "Email is required",
@@ -197,7 +201,10 @@
     "failedToSavePlan": "Failed to save plan",
     "failedToArchivePlan": "Failed to archive plan",
     "failedToReactivatePlan": "Failed to reactivate plan",
-    "failedToCopyPlan": "Failed to copy plan"
+    "failedToCopyPlan": "Failed to copy plan",
+    "bulkActivate": "Activate Selected",
+    "bulkDeactivate": "Deactivate Selected",
+    "bulkDelete": "Delete Selected"
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -289,7 +296,14 @@
     "resend": "Resend Invoice",
     "markAsPaid": "Mark as Paid",
     "void": "Void Invoice",
-    "refund": "Refund"
+    "refund": "Refund",
+    "bulkMarkPaid": "Mark Paid",
+    "bulkVoid": "Void Selected",
+    "bulkRefund": "Refund Selected",
+    "bulkDelete": "Delete Selected",
+    "confirmDelete": "Delete invoice(s)? This action cannot be undone.",
+    "confirmVoid": "Void invoice(s)? This action cannot be undone.",
+    "confirmRefund": "Refund invoice(s)? This action cannot be undone."
   },
   "webhooks": {
     "title": "Webhooks",

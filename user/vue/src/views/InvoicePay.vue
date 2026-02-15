@@ -45,7 +45,7 @@
             <span class="value">
               <span
                 class="status-badge"
-                :class="invoice.status"
+                :class="invoice.status.toLowerCase()"
               >{{ invoice.status }}</span>
             </span>
           </div>
