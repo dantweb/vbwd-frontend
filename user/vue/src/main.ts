@@ -12,6 +12,7 @@ import { paypalPaymentPlugin } from '../../plugins/paypal-payment';
 import { yookassaPaymentPlugin } from '../../plugins/yookassa-payment';
 import { themeSwitcherPlugin } from '../../plugins/theme-switcher';
 import { chatPlugin } from '../../plugins/chat';
+import { taroPlugin } from '../../plugins/taro';
 import type { IPlugin } from '@vbwd/view-component';
 
 // Initialize API with stored auth token before mounting app
@@ -35,6 +36,7 @@ const availablePlugins: Record<string, IPlugin> = {
   'yookassa-payment': yookassaPaymentPlugin,
   'theme-switcher': themeSwitcherPlugin,
   chat: chatPlugin,
+  taro: taroPlugin,
 };
 
 async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean }>> {
