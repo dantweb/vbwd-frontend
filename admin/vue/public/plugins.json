@@ -1,0 +1,10 @@
+{
+  "plugins": {
+    "analytics-widget": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-02-10T00:00:00.000Z",
+      "source": "local"
+    }
+  }
+}

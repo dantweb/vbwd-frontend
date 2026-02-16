@@ -19,6 +19,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@plugins/*": ["../plugins/*"],
+      "@userPlugins/*": ["../user/plugins/*"],
       "vue": ["./node_modules/vue"],
       "@vbwd/view-component": ["./node_modules/@vbwd/view-component"]
     },
@@ -30,6 +31,8 @@
     "src/**/*.vue",
     "../plugins/**/*.ts",
     "../plugins/**/*.vue",
+    "../user/plugins/**/*.ts",
+    "../user/plugins/**/*.vue",
     "tests/**/*.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]

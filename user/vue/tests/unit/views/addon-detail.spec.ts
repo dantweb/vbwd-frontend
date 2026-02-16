@@ -41,7 +41,7 @@ const mockActiveAddonSub = {
   addon_id: 'addon-1',
   subscription_id: null,
   invoice_id: 'inv-1',
-  status: 'active',
+  status: 'ACTIVE',
   is_valid: true,
   starts_at: '2026-01-01T00:00:00',
   expires_at: '2027-01-01T00:00:00',
@@ -65,7 +65,7 @@ const mockActiveAddonSub = {
 
 const mockCancelledAddonSub = {
   ...mockActiveAddonSub,
-  status: 'cancelled',
+  status: 'CANCELLED',
   is_valid: false,
   cancelled_at: '2026-06-01T00:00:00',
 };

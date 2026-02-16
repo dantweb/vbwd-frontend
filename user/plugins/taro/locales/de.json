@@ -42,6 +42,22 @@
       "loadMore": "Mehr laden",
       "loading": "Lesenhistorie wird geladen..."
     },
+    "position": {
+      "label": "Position",
+      "past": "Vergangenheit",
+      "present": "Gegenwart",
+      "future": "Zukunft"
+    },
+    "orientation": {
+      "label": "Ausrichtung",
+      "upright": "Aufrecht",
+      "reversed": "Umgekehrt"
+    },
+    "loadingInterpretation": "Interpretation wird geladen...",
+    "interpretation": "Interpretation",
+    "interpretationNotYetGenerated": "Interpretation noch nicht generiert",
+    "cardId": "Karten-ID",
+    "arcanaId": "Arkana-ID",
     "card": {
       "title": "Kartendetails",
       "arcana": "Arkana",

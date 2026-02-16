@@ -147,7 +147,7 @@ run_admin_style() {
     # TypeScript check
     echo ""
     echo "Running TypeScript check for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx vue-tsc --noEmit" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx --yes vue-tsc --noEmit" ; then
         print_success "TypeScript check passed"
     else
         print_error "TypeScript check failed"
@@ -173,7 +173,7 @@ run_user_style() {
     # TypeScript check
     echo ""
     echo "Running TypeScript check for user..."
-    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx vue-tsc --noEmit" ; then
+    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx --yes vue-tsc --noEmit" ; then
         print_success "TypeScript check passed"
     else
         print_error "TypeScript check failed"
@@ -188,7 +188,7 @@ run_admin_unit() {
     cd "$FRONTEND_DIR"
 
     echo "Running unit tests for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx vitest run tests/unit/" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx --yes vitest run tests/unit/ --reporter=default --reporter=hanging-process 2>&1 | tail -20" ; then
         print_success "Unit tests passed"
     else
         print_error "Unit tests failed"
@@ -203,7 +203,7 @@ run_user_unit() {
     cd "$FRONTEND_DIR"
 
     echo "Running unit tests for user..."
-    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx vitest run vue/tests/unit/" ; then
+    if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx --yes vitest run vue/tests/unit/ --reporter=default --reporter=hanging-process 2>&1 | tail -20" ; then
         print_success "Unit tests passed"
     else
         print_error "Unit tests failed"
@@ -218,7 +218,7 @@ run_admin_integration() {
     cd "$FRONTEND_DIR"
 
     echo "Running integration tests for admin..."
-    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx vitest run tests/integration/" ; then
+    if docker-compose run --rm admin-test sh -c "npm install 2>&1 || true; npx --yes vitest run tests/integration/ --reporter=default --reporter=hanging-process 2>&1 | tail -20" ; then
         print_success "Integration tests passed"
     else
         print_error "Integration tests failed"
@@ -235,7 +235,7 @@ run_user_integration() {
     echo "Running integration tests for user..."
     # Check if user has actual integration test files (not just empty directory)
     if docker-compose run --rm user-test sh -c "ls vue/tests/integration/*.spec.ts vue/tests/integration/**/*.spec.ts 2>/dev/null | head -1 | grep -q ." 2>/dev/null; then
-        if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx vitest run vue/tests/integration/" ; then
+        if docker-compose run --rm user-test sh -c "npm install 2>&1 || true; npx --yes vitest run vue/tests/integration/ --reporter=default --reporter=hanging-process 2>&1 | tail -20" ; then
             print_success "Integration tests passed"
         else
             print_error "Integration tests failed"
@@ -259,7 +259,7 @@ run_admin_e2e() {
         -v "$FRONTEND_DIR/core:/core" \
         -w /app \
         mcr.microsoft.com/playwright:v1.57.0-jammy \
-        sh -c "npm install 2>&1 || true; npx playwright install --with-deps chromium && npx playwright test" ; then
+        sh -c "npm install 2>&1 || true; npx --yes playwright install --with-deps chromium && npx --yes playwright test --reporter=list 2>&1 | tail -30" ; then
         print_success "E2E tests passed"
     else
         print_error "E2E tests failed"
@@ -280,7 +280,7 @@ run_user_e2e() {
         -v "$FRONTEND_DIR/core:/core" \
         -w /app \
         mcr.microsoft.com/playwright:v1.57.0-jammy \
-        sh -c "npm install 2>&1 || true; npx playwright install --with-deps chromium && npx playwright test" ; then
+        sh -c "npm install 2>&1 || true; npx --yes playwright install --with-deps chromium && npx --yes playwright test --reporter=list 2>&1 | tail -30" ; then
         print_success "E2E tests passed"
     else
         print_error "E2E tests failed"

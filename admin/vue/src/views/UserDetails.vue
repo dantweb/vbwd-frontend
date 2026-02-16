@@ -141,6 +141,16 @@
             </div>
           </div>
         </div>
+
+        <!-- Plugin Extensions -->
+        <component
+          :is="Section"
+          v-for="(Section, index) in pluginSections"
+          :key="index"
+          :user="user"
+          :loading="loading"
+          :user-id="userId"
+        />
       </div>
 
       <div class="user-actions">
@@ -176,6 +186,7 @@
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUsersStore } from '@/stores/users';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 const route = useRoute();
 const router = useRouter();
@@ -186,6 +197,7 @@ const loading = computed(() => usersStore.loading);
 const error = computed(() => usersStore.error);
 
 const userId = computed(() => route.params.id as string);
+const pluginSections = computed(() => extensionRegistry.getUserDetailsSections());
 
 async function fetchUser(): Promise<void> {
   try {

@@ -337,6 +337,16 @@
             </div>
           </section>
 
+          <!-- Plugin Extensions -->
+          <component
+            :is="Section"
+            v-for="(Section, index) in pluginSections"
+            :key="index"
+            :user="usersStore.selectedUser"
+            :loading="loadingUser"
+            :user-id="userId"
+          />
+
           <!-- Form Actions -->
           <div class="form-actions">
             <button
@@ -648,6 +658,7 @@ import { useI18n } from 'vue-i18n';
 import { useUsersStore } from '@/stores/users';
 import { useSubscriptionsStore, type Subscription } from '@/stores/subscriptions';
 import { useInvoicesStore, type Invoice } from '@/stores/invoices';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 import { api } from '@/api';
 
 const route = useRoute();
@@ -706,6 +717,9 @@ const selectedRole = ref<string>('user');
 const originalRole = ref<string>('user');
 
 const userId = route.params.id as string;
+
+// Plugin extensions
+const pluginSections = computed(() => extensionRegistry.getUserDetailsSections());
 
 // Subscriptions state
 const subscriptionsLoading = ref(false);

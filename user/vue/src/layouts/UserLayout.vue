@@ -250,7 +250,7 @@ function toggleCart() {
 function goToCheckout() {
   showCart.value = false;
   // Navigate to checkout with cart items
-  const planItems = cartItems.value.filter(i => i.type === 'plan');
+  const planItems = cartItems.value.filter(i => i.type === 'PLAN');
   if (planItems.length > 0) {
     router.push({ name: 'checkout', params: { planSlug: planItems[0].id } });
   } else {

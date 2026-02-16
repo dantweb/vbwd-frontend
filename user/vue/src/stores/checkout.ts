@@ -201,9 +201,9 @@ export const useCheckoutStore = defineStore('checkout', () => {
       }
 
       // Map cart items to checkout selections
-      const planItem = cartItems.find(item => item.type === 'plan');
-      const bundleItems = cartItems.filter(item => item.type === 'token_bundle');
-      const addonItems = cartItems.filter(item => item.type === 'addon');
+      const planItem = cartItems.find(item => item.type === 'PLAN');
+      const bundleItems = cartItems.filter(item => item.type === 'TOKEN_BUNDLE');
+      const addonItems = cartItems.filter(item => item.type === 'ADD_ON');
 
       // If cart has a plan, load the full plan data
       if (planItem) {

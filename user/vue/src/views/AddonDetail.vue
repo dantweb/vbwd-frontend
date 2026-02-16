@@ -113,7 +113,7 @@
 
         <!-- Cancel notice -->
         <div
-          v-if="addonSub.status === 'cancelled'"
+          v-if="addonSub.status === 'CANCELLED'"
           class="cancel-notice"
           data-testid="cancel-notice"
         >
@@ -242,7 +242,7 @@ async function handleCancel(): Promise<void> {
 }
 
 function formatStatus(status: string): string {
-  return status ? status.charAt(0).toUpperCase() + status.slice(1) : '-';
+  return status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '-';
 }
 
 function formatDate(dateStr: string | null | undefined): string {

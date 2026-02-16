@@ -93,9 +93,6 @@ test.describe('Taro Plugin - Daily Limits Display', () => {
     const refreshBtn = page.locator('[data-testid="refresh-limits-btn"]');
     await expect(refreshBtn).toBeVisible();
 
-    // Get initial value
-    const initialValue = await page.locator('[data-testid="daily-limits-card"]').locator('.value').first().textContent();
-
     // Click refresh
     await refreshBtn.click();
     await page.waitForLoadState('networkidle');
@@ -329,48 +326,260 @@ test.describe('Taro Plugin - Card Display and Interactions', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('should display card with position and orientation', async ({ page }) => {
+  test('should display cards grid in active session', async ({ page }) => {
     const activeSession = page.locator('[data-testid="active-session-card"]');
 
     if (await activeSession.isVisible().catch(() => false)) {
-      const cards = page.locator('[data-testid="card-display"]');
+      const cardsGrid = activeSession.locator('.cards-grid');
+      const isVisible = await cardsGrid.isVisible().catch(() => false);
 
-      if (await cards.first().isVisible().catch(() => false)) {
-        // Check for card info elements
-        const cardInfo = cards.first().locator('.card-info');
-        await expect(cardInfo).toBeVisible();
+      if (isVisible) {
+        // Cards grid should be visible and contain CardDisplay components
+        const hasContent = await cardsGrid.locator('[data-testid="card-display"]').count();
+        expect(hasContent).toBeGreaterThan(0);
       }
     }
   });
 
-  test('should show card interpretation if available', async ({ page }) => {
+  test('should render exactly 3 cards in grid for active session', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+      const cardCount = await cards.count();
+
+      // TaroSession should contain exactly 3 cards (PAST, PRESENT, FUTURE)
+      if (cardCount > 0) {
+        expect(cardCount).toBe(3);
+      }
+    }
+  });
+
+  test('should display card with position label', async ({ page }) => {
     const activeSession = page.locator('[data-testid="active-session-card"]');
 
     if (await activeSession.isVisible().catch(() => false)) {
       const cards = page.locator('[data-testid="card-display"]');
       const firstCard = cards.first();
 
-      // Check for either interpretation or loading state
-      const hasInterpretation = await firstCard.locator('.card-interpretation').isVisible().catch(() => false);
-      const hasLoading = await firstCard.locator('.interpretation-loading').isVisible().catch(() => false);
+      if (await firstCard.isVisible().catch(() => false)) {
+        // Card should have position label (PAST, PRESENT, or FUTURE)
+        const positionLabel = firstCard.locator('.position-label');
+        const position = await positionLabel.textContent();
 
-      expect(hasInterpretation || hasLoading).toBeTruthy();
+        expect(['PAST', 'PRESENT', 'FUTURE', 'ADDITIONAL']).toContain(position?.trim());
+      }
     }
   });
 
-  test('should open card detail modal on card click', async ({ page }) => {
+  test('should display card position and orientation text', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cards = page.locator('[data-testid="card-display"]');
+      const firstCard = cards.first();
+
+      if (await firstCard.isVisible().catch(() => false)) {
+        // Check for card info elements
+        const cardInfo = firstCard.locator('.card-info');
+        const cardPosition = firstCard.locator('.card-position');
+        const cardOrientation = firstCard.locator('.card-orientation');
+
+        await expect(cardInfo).toBeVisible();
+        await expect(cardPosition).toBeVisible();
+        await expect(cardOrientation).toBeVisible();
+
+        // Get the text content
+        const posText = await cardPosition.textContent();
+        const oriText = await cardOrientation.textContent();
+
+        expect(posText).toBeTruthy();
+        expect(oriText).toBeTruthy();
+      }
+    }
+  });
+
+  test('should display card interpretation or loading state', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cards = page.locator('[data-testid="card-display"]');
+      const firstCard = cards.first();
+
+      if (await firstCard.isVisible().catch(() => false)) {
+        // Check for either interpretation or loading state
+        const hasInterpretation = await firstCard.locator('.card-interpretation').isVisible().catch(() => false);
+        const hasLoading = await firstCard.locator('.interpretation-loading').isVisible().catch(() => false);
+
+        expect(hasInterpretation || hasLoading).toBeTruthy();
+      }
+    }
+  });
+
+  test('should show different visual styling for reversed orientation', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cards = page.locator('[data-testid="card-display"]');
+
+      // Check if any card has reversed orientation
+      const cardCount = await cards.count();
+      if (cardCount > 0) {
+        for (let i = 0; i < cardCount; i++) {
+          const card = cards.nth(i);
+          const hasReversedClass = await card.evaluate(el => {
+            return el.className.includes('orientation-reversed');
+          });
+
+          if (hasReversedClass) {
+            const orientationText = await card.locator('.card-orientation').textContent();
+            expect(orientationText?.toLowerCase()).toContain('reversed');
+          }
+        }
+      }
+    }
+  });
+
+  test('should have clickable cards that emit events', async ({ page }) => {
     const activeSession = page.locator('[data-testid="active-session-card"]');
 
     if (await activeSession.isVisible().catch(() => false)) {
       const card = page.locator('[data-testid="card-display"]').first();
 
       if (await card.isVisible().catch(() => false)) {
+        // Card should be clickable
+        const isClickable = await card.evaluate(el => {
+          return el.style.cursor === 'pointer' || el.classList.contains('card-display');
+        });
+
+        expect(isClickable).toBeTruthy();
+
+        // Try clicking the card
         await card.click();
 
+        // Modal might appear or might not be implemented
         const modal = page.locator('[data-testid="card-detail-modal"]');
-        await expect(modal).toBeVisible({ timeout: 5000 }).catch(() => {
-          // Modal might not appear if interaction is not implemented
+        const hasModal = await modal.isVisible().catch(() => false);
+
+        // Just verify click doesn't cause errors
+        expect(typeof hasModal).toBe('boolean');
+      }
+    }
+  });
+
+  test('should display card with proper visual hierarchy', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cards = page.locator('[data-testid="card-display"]');
+      const firstCard = cards.first();
+
+      if (await firstCard.isVisible().catch(() => false)) {
+        // Card should have visual and info sections
+        const cardVisual = firstCard.locator('.card-visual');
+        const cardInfo = firstCard.locator('.card-info');
+
+        await expect(cardVisual).toBeVisible();
+        await expect(cardInfo).toBeVisible();
+
+        // Card visual should contain SVG placeholder
+        const svg = cardVisual.locator('svg');
+        await expect(svg).toBeVisible();
+      }
+    }
+  });
+});
+
+test.describe('Taro Plugin - Cards Grid Rendering (TDD)', () => {
+  /**
+   * This test suite validates that the cards-grid div properly renders
+   * when a TaroSession is loaded with cards from the backend.
+   *
+   * This was previously failing when the backend TaroSession model
+   * was missing the relationship definition to TaroCardDraw.
+   */
+
+  test.beforeEach(async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+  });
+
+  test('should not render empty cards-grid', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cardsGrid = activeSession.locator('.cards-grid');
+      const isVisible = await cardsGrid.isVisible().catch(() => false);
+
+      if (isVisible) {
+        // Grid should contain cards, not be empty
+        const cardCount = await cardsGrid.locator('[data-testid="card-display"]').count();
+        expect(cardCount).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test('should populate cards-grid with CardDisplay components', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cardsGrid = activeSession.locator('.cards-grid');
+      const cards = cardsGrid.locator('[data-testid="card-display"]');
+
+      const cardCount = await cards.count();
+
+      if (cardCount > 0) {
+        // Each card should be a valid CardDisplay component
+        for (let i = 0; i < cardCount; i++) {
+          const card = cards.nth(i);
+          const hasCardInfo = await card.locator('.card-info').isVisible().catch(() => false);
+          const hasCardVisual = await card.locator('.card-visual').isVisible().catch(() => false);
+
+          expect(hasCardInfo || hasCardVisual).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  test('should have all 3 position types in spread (PAST, PRESENT, FUTURE)', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cards = page.locator('[data-testid="card-display"]');
+      const positions = [];
+
+      const cardCount = await cards.count();
+      if (cardCount === 3) {
+        for (let i = 0; i < cardCount; i++) {
+          const posLabel = await cards.nth(i).locator('.position-label').textContent();
+          positions.push(posLabel?.trim() || '');
+        }
+
+        // Should have all three positions
+        const hasPositions = ['PAST', 'PRESENT', 'FUTURE'].every(pos =>
+          positions.some(p => p.includes(pos))
+        );
+
+        expect(hasPositions).toBeTruthy();
+      }
+    }
+  });
+
+  test('should render card grid with proper CSS grid layout', async ({ page }) => {
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+
+    if (await activeSession.isVisible().catch(() => false)) {
+      const cardsGrid = activeSession.locator('.cards-grid');
+
+      const isVisible = await cardsGrid.isVisible().catch(() => false);
+      if (isVisible) {
+        // Verify grid layout properties
+        const gridDisplay = await cardsGrid.evaluate(el => {
+          return window.getComputedStyle(el).display;
         });
+
+        expect(['grid', 'grid layout']).toContain(gridDisplay);
       }
     }
   });

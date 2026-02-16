@@ -29,6 +29,8 @@ export interface UserDetail extends User {
     total_payments: number;
     last_login?: string | null;
   };
+  daily_taro_sessions_used?: number;
+  daily_taro_limit?: number;
 }
 
 export interface FetchUsersParams {
@@ -306,6 +308,31 @@ export const useUsersStore = defineStore('users', {
 
     clearSelectedUser(): void {
       this.selectedUser = null;
+    },
+
+    async resetTaroSessions(userId: string): Promise<void> {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await api.post(`/taro/admin/users/${userId}/reset-sessions`) as {
+          success: boolean;
+          reset_count: number;
+          daily_limit: number;
+          daily_remaining: number;
+          daily_used: number;
+        };
+
+        // Update selected user with reset data if it's the one being reset
+        if (this.selectedUser && this.selectedUser.id === userId && response.success) {
+          this.selectedUser.daily_taro_sessions_used = response.daily_used;
+          this.selectedUser.daily_taro_limit = response.daily_limit;
+        }
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to reset Taro sessions';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
     },
 
     reset(): void {

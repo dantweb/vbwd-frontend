@@ -201,7 +201,9 @@
               @change="toggleUser(user.id)"
             >
           </td>
-          <td @click="navigateToEdit(user.id)">{{ user.email }}</td>
+          <td @click="navigateToEdit(user.id)">
+            {{ user.email }}
+          </td>
           <td>{{ user.name || '-' }}</td>
           <td>
             <span

@@ -5,15 +5,8 @@ import router from './router';
 import { initializeApi } from '@/api';
 import i18n, { initLocale } from '@/i18n';
 import { PluginRegistry, PlatformSDK } from '@vbwd/view-component';
-import { landing1Plugin } from '../../plugins/landing1';
-import { checkoutPlugin } from '../../plugins/checkout';
-import { stripePaymentPlugin } from '../../plugins/stripe-payment';
-import { paypalPaymentPlugin } from '../../plugins/paypal-payment';
-import { yookassaPaymentPlugin } from '../../plugins/yookassa-payment';
-import { themeSwitcherPlugin } from '../../plugins/theme-switcher';
-import { chatPlugin } from '../../plugins/chat';
-import { taroPlugin } from '../../plugins/taro';
 import type { IPlugin } from '@vbwd/view-component';
+import { getEnabledPlugins } from '@/utils/pluginLoader';
 
 // Initialize API with stored auth token before mounting app
 initializeApi();
@@ -27,52 +20,29 @@ app.use(i18n);
 // Initialize locale from stored preference
 initLocale();
 
-// All available plugins (code is always bundled, routes are conditional)
-const availablePlugins: Record<string, IPlugin> = {
-  landing1: landing1Plugin,
-  checkout: checkoutPlugin,
-  'stripe-payment': stripePaymentPlugin,
-  'paypal-payment': paypalPaymentPlugin,
-  'yookassa-payment': yookassaPaymentPlugin,
-  'theme-switcher': themeSwitcherPlugin,
-  chat: chatPlugin,
-  taro: taroPlugin,
-};
-
-async function fetchPluginRegistry(): Promise<Record<string, { enabled: boolean }>> {
-  try {
-    const response = await fetch('/plugin-registry.json');
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    return (data.plugins || {}) as Record<string, { enabled: boolean }>;
-  } catch (err) {
-    console.warn('[VBWD] Could not fetch plugin registry, using defaults:', err);
-    // Fallback: enable all plugins if registry is unavailable
-    return Object.fromEntries(
-      Object.keys(availablePlugins).map(name => [name, { enabled: true }])
-    );
-  }
-}
-
 // Bootstrap plugins then mount
 (async () => {
   try {
     const registry = new PluginRegistry();
     const sdk = new PlatformSDK(i18n);
 
-    // Fetch plugin status at runtime (not build time)
-    const enabledPlugins = await fetchPluginRegistry();
+    // Get enabled plugins based on plugins.json configuration
+    let plugins: IPlugin[] = [];
+    try {
+      plugins = getEnabledPlugins();
+      console.log(`[VBWD] Using ${plugins.length} enabled plugin(s)`);
+    } catch (error) {
+      console.error('[VBWD] Failed to load plugins, continuing without plugins:', error);
+    }
 
     // Build set of enabled plugin names for nav visibility
     const enabledPluginNames = reactive(new Set<string>(
-      Object.entries(enabledPlugins)
-        .filter(([name, entry]) => entry.enabled && availablePlugins[name])
-        .map(([name]) => name)
+      plugins.map(plugin => plugin.name)
     ));
 
-    // Only register and install plugins that are enabled
-    for (const name of enabledPluginNames) {
-      registry.register(availablePlugins[name]);
+    // Register and install all loaded plugins
+    for (const plugin of plugins) {
+      registry.register(plugin);
     }
 
     await registry.installAll(sdk);

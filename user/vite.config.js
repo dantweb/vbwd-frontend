@@ -13,6 +13,7 @@ export default defineConfig({
     dedupe: ['pinia', 'vue']
   },
   server: {
+    middlewareMode: false,
     proxy: {
       '/api': {
         target: process.env.VITE_BACKEND_URL || 'http://host.docker.internal:5000',

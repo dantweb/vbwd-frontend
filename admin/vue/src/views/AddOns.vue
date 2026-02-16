@@ -184,7 +184,9 @@
               @change="toggleAddon(addon.id)"
             >
           </td>
-          <td @click="navigateToAddon(addon.id)">{{ addon.name }}</td>
+          <td @click="navigateToAddon(addon.id)">
+            {{ addon.name }}
+          </td>
           <td><code>{{ addon.slug }}</code></td>
           <td>{{ formatPrice(addon.price, addon.currency) }}</td>
           <td data-testid="addon-plans">

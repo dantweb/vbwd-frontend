@@ -10,9 +10,10 @@ import {
   PluginRegistry,
   PlatformSDK
 } from '@vbwd/view-component';
-import { analyticsWidgetPlugin } from '@plugins/analytics-widget';
-import pluginsRegistry from '@plugins/plugins.json';
+import type { IPlugin } from '@vbwd/view-component';
+import { getEnabledPlugins, getAdminExtensions } from '@/utils/pluginLoader';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 // Configure auth store with admin-specific settings
 configureAuthStore({
@@ -42,18 +43,38 @@ app.use(i18n);
 const registry = new PluginRegistry();
 const sdk = new PlatformSDK();
 
-registry.register(analyticsWidgetPlugin);
-
-const enabledPlugins = pluginsRegistry.plugins as Record<string, { enabled: boolean }>;
-
 (async () => {
+  // Get enabled plugins based on plugins.json configuration
+  let plugins: IPlugin[] = [];
+  try {
+    plugins = await getEnabledPlugins();
+    console.log(`[Admin] Using ${plugins.length} enabled plugin(s)`);
+  } catch (error) {
+    console.error('[Admin] Failed to load plugins, continuing without plugins:', error);
+  }
+
+  // Register all loaded plugins
+  for (const plugin of plugins) {
+    registry.register(plugin);
+  }
+
+  // Install all registered plugins
   await registry.installAll(sdk);
 
-  // Only activate plugins that are enabled in plugins.json
-  for (const [name, entry] of Object.entries(enabledPlugins)) {
-    if (entry.enabled) {
-      await registry.activate(name);
+  // Activate all loaded plugins
+  for (const plugin of plugins) {
+    await registry.activate(plugin.name);
+  }
+
+  // Register admin extensions from enabled plugins
+  try {
+    const adminExtensions = await getAdminExtensions();
+    for (const [pluginName, extension] of Object.entries(adminExtensions)) {
+      extensionRegistry.register(pluginName, extension);
+      console.log(`[Admin] Registered extension for plugin: ${pluginName}`);
     }
+  } catch (error) {
+    console.error('[Admin] Failed to load admin extensions:', error);
   }
 
   // Inject plugin routes into Vue Router

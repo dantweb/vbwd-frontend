@@ -62,7 +62,7 @@ import { useI18n } from 'vue-i18n';
 import ChatHeader from './ChatHeader.vue';
 import ChatMessage from './ChatMessage.vue';
 import ChatInput from './ChatInput.vue';
-import { sendMessage, getChatConfig, estimateCost as apiEstimateCost } from './api';
+import { sendMessage, getChatConfig } from './api';
 import type { ChatConfig } from './api';
 
 interface DisplayMessage {

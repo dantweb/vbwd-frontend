@@ -24,9 +24,9 @@ describe('SubscriptionStore — User Add-ons', () => {
 
     vi.mocked(api.get).mockResolvedValue({
       addon_subscriptions: [
-        { id: '1', addon_id: 'a1', status: 'active', addon: { name: 'Priority Support', slug: 'priority-support' } },
-        { id: '2', addon_id: 'a2', status: 'cancelled', addon: { name: 'Extra Storage', slug: 'extra-storage' } },
-        { id: '3', addon_id: 'a3', status: 'active', addon: { name: 'API Boost', slug: 'api-boost' } },
+        { id: '1', addon_id: 'a1', status: 'ACTIVE', addon: { name: 'Priority Support', slug: 'priority-support' } },
+        { id: '2', addon_id: 'a2', status: 'CANCELLED', addon: { name: 'Extra Storage', slug: 'extra-storage' } },
+        { id: '3', addon_id: 'a3', status: 'ACTIVE', addon: { name: 'API Boost', slug: 'api-boost' } },
       ]
     });
 
@@ -41,16 +41,16 @@ describe('SubscriptionStore — User Add-ons', () => {
 
     vi.mocked(api.get).mockResolvedValue({
       addon_subscriptions: [
-        { id: '1', addon_id: 'a1', status: 'active' },
-        { id: '2', addon_id: 'a2', status: 'cancelled' },
-        { id: '3', addon_id: 'a3', status: 'active' },
+        { id: '1', addon_id: 'a1', status: 'ACTIVE' },
+        { id: '2', addon_id: 'a2', status: 'CANCELLED' },
+        { id: '3', addon_id: 'a3', status: 'ACTIVE' },
       ]
     });
 
     await store.fetchUserAddons();
 
     expect(store.activeAddons).toHaveLength(2);
-    expect(store.activeAddons.every(a => a.status === 'active')).toBe(true);
+    expect(store.activeAddons.every(a => a.status === 'ACTIVE')).toBe(true);
   });
 
   it('inactiveAddons getter filters expired and cancelled', async () => {
@@ -58,17 +58,17 @@ describe('SubscriptionStore — User Add-ons', () => {
 
     vi.mocked(api.get).mockResolvedValue({
       addon_subscriptions: [
-        { id: '1', addon_id: 'a1', status: 'active' },
-        { id: '2', addon_id: 'a2', status: 'cancelled' },
-        { id: '3', addon_id: 'a3', status: 'expired' },
-        { id: '4', addon_id: 'a4', status: 'pending' },
+        { id: '1', addon_id: 'a1', status: 'ACTIVE' },
+        { id: '2', addon_id: 'a2', status: 'CANCELLED' },
+        { id: '3', addon_id: 'a3', status: 'EXPIRED' },
+        { id: '4', addon_id: 'a4', status: 'PENDING' },
       ]
     });
 
     await store.fetchUserAddons();
 
     expect(store.inactiveAddons).toHaveLength(2);
-    expect(store.inactiveAddons.map(a => a.status).sort()).toEqual(['cancelled', 'expired']);
+    expect(store.inactiveAddons.map(a => a.status).sort()).toEqual(['CANCELLED', 'EXPIRED']);
   });
 
   it('sets error on fetch failure', async () => {

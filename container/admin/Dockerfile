@@ -16,11 +16,14 @@ ARG VITE_PLUGIN_API_SECRET=default-dev-secret-at-least-32-characters-long
 WORKDIR /app
 COPY --from=build-core /app/core /app/core
 
+WORKDIR /app
+# Copy admin plugins FIRST so they're accessible to Vite during build
+COPY admin/plugins/ admin/plugins/
+
 WORKDIR /app/admin/vue
 COPY admin/vue/package*.json ./
 RUN npm install
 COPY admin/vue/ ./
-COPY admin/plugins/ /app/admin/plugins/
 RUN VITE_USER_APP_URL=$VITE_USER_APP_URL VITE_PLUGIN_API_SECRET=$VITE_PLUGIN_API_SECRET npx vite build
 
 # Production stage

@@ -431,7 +431,7 @@ async function loadDashboardData(): Promise<void> {
 }
 
 function formatStatus(status: string): string {
-  return status ? status.charAt(0).toUpperCase() + status.slice(1) : '-';
+  return status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '-';
 }
 
 function formatDate(dateStr: string | null | undefined): string {

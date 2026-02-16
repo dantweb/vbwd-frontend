@@ -217,7 +217,9 @@
               @change="toggleInvoice(invoice.id)"
             >
           </td>
-          <td @click="navigateToInvoice(invoice.id)">{{ invoice.invoice_number }}</td>
+          <td @click="navigateToInvoice(invoice.id)">
+            {{ invoice.invoice_number }}
+          </td>
           <td>{{ invoice.user_email }}</td>
           <td>{{ formatAmount(invoice.amount, invoice.currency) }}</td>
           <td>

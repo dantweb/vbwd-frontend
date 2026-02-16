@@ -1,4 +1,3 @@
-"""Tests for Taro store (Pinia)."""
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useTaroStore } from '../taro';

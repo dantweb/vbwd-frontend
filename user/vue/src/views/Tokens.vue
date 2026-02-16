@@ -146,7 +146,7 @@ async function loadBundles() {
 function addToCart(bundle: TokenBundle) {
   const numPrice = typeof bundle.price === 'string' ? parseFloat(bundle.price) : bundle.price;
   cartStore.addItem({
-    type: 'token_bundle',
+    type: 'TOKEN_BUNDLE',
     id: bundle.id,
     name: `${formatTokenAmount(bundle.token_amount)} Tokens`,
     price: numPrice,

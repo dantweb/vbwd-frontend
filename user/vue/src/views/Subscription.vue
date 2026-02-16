@@ -276,7 +276,7 @@
                     {{ $t('common.pdf') }}
                   </button>
                   <button
-                    v-if="invoice.status === 'pending'"
+                    v-if="invoice.status === 'PENDING'"
                     class="action-btn pay"
                     data-testid="pay-invoice"
                     @click="payInvoice(invoice)"

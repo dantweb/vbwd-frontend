@@ -42,6 +42,22 @@
       "loadMore": "Load More",
       "loading": "Loading history..."
     },
+    "position": {
+      "label": "Position",
+      "past": "Past",
+      "present": "Present",
+      "future": "Future"
+    },
+    "orientation": {
+      "label": "Orientation",
+      "upright": "Upright",
+      "reversed": "Reversed"
+    },
+    "loadingInterpretation": "Loading interpretation...",
+    "interpretation": "Interpretation",
+    "interpretationNotYetGenerated": "Interpretation not yet generated",
+    "cardId": "Card ID",
+    "arcanaId": "Arcana ID",
     "card": {
       "title": "Card Details",
       "arcana": "Arcana",

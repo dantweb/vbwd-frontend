@@ -74,8 +74,8 @@ describe('Dashboard — Add-ons Card', () => {
 
   it('renders addons card', async () => {
     mockApiWithAddons([
-      { id: '1', addon_id: 'a1', status: 'active', addon: { name: 'Priority Support', slug: 'priority-support' } },
-      { id: '2', addon_id: 'a2', status: 'cancelled', addon: { name: 'Extra Storage', slug: 'extra-storage' } },
+      { id: '1', addon_id: 'a1', status: 'ACTIVE', addon: { name: 'Priority Support', slug: 'priority-support' } },
+      { id: '2', addon_id: 'a2', status: 'CANCELLED', addon: { name: 'Extra Storage', slug: 'extra-storage' } },
     ]);
     const wrapper = mountDashboard();
     await flushPromises();
@@ -85,8 +85,8 @@ describe('Dashboard — Add-ons Card', () => {
 
   it('groups active and expired addons', async () => {
     mockApiWithAddons([
-      { id: '1', addon_id: 'a1', status: 'active', addon: { name: 'Priority Support', slug: 'priority-support' } },
-      { id: '2', addon_id: 'a2', status: 'cancelled', addon: { name: 'Extra Storage', slug: 'extra-storage' } },
+      { id: '1', addon_id: 'a1', status: 'ACTIVE', addon: { name: 'Priority Support', slug: 'priority-support' } },
+      { id: '2', addon_id: 'a2', status: 'CANCELLED', addon: { name: 'Extra Storage', slug: 'extra-storage' } },
     ]);
     const wrapper = mountDashboard();
     await flushPromises();
@@ -106,7 +106,7 @@ describe('Dashboard — Add-ons Card', () => {
 
   it('shows addon name and status', async () => {
     mockApiWithAddons([
-      { id: '1', addon_id: 'a1', status: 'active', addon: { name: 'Priority Support', slug: 'priority-support' } },
+      { id: '1', addon_id: 'a1', status: 'ACTIVE', addon: { name: 'Priority Support', slug: 'priority-support' } },
     ]);
     const wrapper = mountDashboard();
     await flushPromises();

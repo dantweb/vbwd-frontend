@@ -68,7 +68,16 @@
             class="card-visual"
             :class="{ reversed: cardData?.orientation === 'REVERSED' }"
           >
+            <!-- Card Image -->
+            <img
+              v-if="cardData?.arcana?.image_url"
+              :src="cardData.arcana.image_url"
+              :alt="cardData.arcana.name"
+              class="card-image"
+            >
+            <!-- Fallback placeholder if no image -->
             <svg
+              v-else
               width="140"
               height="200"
               viewBox="0 0 80 120"
@@ -99,17 +108,17 @@
 
         <!-- Info Section -->
         <div class="info-section">
-          <h2>{{ cardData?.position }}</h2>
+          <h2>{{ cardData?.arcana?.name || cardData?.position }}</h2>
 
           <div class="info-grid">
             <div class="info-item">
-              <span class="info-label">{{ $t('taro.position') }}</span>
+              <span class="info-label">{{ $t('taro.position.label') }}</span>
               <span class="info-value">
                 {{ $t(`taro.position.${cardData?.position.toLowerCase()}`) }}
               </span>
             </div>
             <div class="info-item">
-              <span class="info-label">{{ $t('taro.orientation') }}</span>
+              <span class="info-label">{{ $t('taro.orientation.label') }}</span>
               <span
                 class="info-value"
                 :class="{ 'text-warning': cardData?.orientation === 'REVERSED' }"
@@ -119,7 +128,19 @@
             </div>
           </div>
 
-          <!-- Interpretation -->
+          <!-- Card Meaning -->
+          <div class="meaning-section">
+            <h3>{{ $t('taro.card.meaning') }}</h3>
+            <p class="meaning-text">
+              {{
+                cardData?.orientation === 'REVERSED'
+                  ? cardData?.arcana?.reversed_meaning
+                  : cardData?.arcana?.upright_meaning
+              }}
+            </p>
+          </div>
+
+          <!-- AI Interpretation -->
           <div class="interpretation-section">
             <h3>{{ $t('taro.interpretation') }}</h3>
             <p
@@ -162,7 +183,7 @@ interface Props {
   cardId: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<{
   close: [];
 }>();
@@ -321,6 +342,12 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .info-section h2 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -361,6 +388,29 @@ onMounted(() => {
 
 .info-value.text-warning {
   color: var(--color-warning);
+}
+
+/* Meaning Section */
+.meaning-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.meaning-section h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meaning-text {
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin: 0;
+  font-style: italic;
 }
 
 /* Interpretation Section */

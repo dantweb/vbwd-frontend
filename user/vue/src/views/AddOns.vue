@@ -250,7 +250,7 @@ async function loadAddons() {
 function addToCart(addon: AddOn) {
   const numPrice = typeof addon.price === 'string' ? parseFloat(addon.price) : addon.price;
   cartStore.addItem({
-    type: 'addon',
+    type: 'ADD_ON',
     id: addon.id,
     name: addon.name,
     price: numPrice,
