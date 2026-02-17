@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "placement": "user-menu",
+    "description": "Appearance settings shown in user profile dropdown menu"
+  },
   "tabs": [
     {
       "id": "general",
