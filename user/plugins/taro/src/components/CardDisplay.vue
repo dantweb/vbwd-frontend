@@ -1,77 +1,92 @@
 <template>
   <div
     class="card-display"
-    :class="[`position-${card.position.toLowerCase()}`, `orientation-${card.orientation.toLowerCase()}`]"
+    :class="[
+      `position-${card.position.toLowerCase()}`,
+      `orientation-${card.orientation.toLowerCase()}`,
+      { 'is-closed': !isOpened, 'is-opened': isOpened }
+    ]"
     :title="cardTitle"
     data-testid="card-display"
-    @click="$emit('card-click', card.card_id)"
+    @click="!isOpened && $emit('card-click', card.card_id)"
   >
-    <!-- Card Visual -->
-    <div
-      class="card-visual"
-      :class="{ reversed: card.orientation === 'REVERSED' }"
-    >
-      <div class="card-placeholder">
-        <svg
-          width="80"
-          height="120"
-          viewBox="0 0 80 120"
-          fill="none"
-          stroke="currentColor"
-        >
-          <rect
-            x="2"
-            y="2"
-            width="76"
-            height="116"
-            rx="4"
-            stroke-width="1.5"
-          />
-          <path
-            d="M 40 30 L 50 50 L 30 50 Z"
-            stroke-width="1.5"
-          />
-          <circle
-            cx="40"
-            cy="75"
-            r="15"
-            stroke-width="1.5"
-          />
-        </svg>
-        <div class="position-label">
-          {{ card.position }}
-        </div>
+    <!-- Card Back (Closed State) -->
+    <div v-if="!isOpened" class="card-back">
+      <div class="card-back-visual">
+        <div class="mystical-pattern" />
+        <span class="reveal-hint">{{ $t('oracle.cardClickHint') }}</span>
       </div>
     </div>
 
-    <!-- Card Info -->
-    <div class="card-info">
-      <div class="card-position">
-        {{ $t(`taro.position.${card.position.toLowerCase()}`) }}
-      </div>
+    <!-- Card Front (Opened State) -->
+    <template v-else>
+      <!-- Card Visual -->
       <div
-        class="card-orientation"
+        class="card-visual"
         :class="{ reversed: card.orientation === 'REVERSED' }"
       >
-        {{ $t(`taro.orientation.${card.orientation.toLowerCase()}`) }}
+        <div class="card-placeholder">
+          <svg
+            width="80"
+            height="120"
+            viewBox="0 0 80 120"
+            fill="none"
+            stroke="currentColor"
+          >
+            <rect
+              x="2"
+              y="2"
+              width="76"
+              height="116"
+              rx="4"
+              stroke-width="1.5"
+            />
+            <path
+              d="M 40 30 L 50 50 L 30 50 Z"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="40"
+              cy="75"
+              r="15"
+              stroke-width="1.5"
+            />
+          </svg>
+          <div class="position-label">
+            {{ card.position }}
+          </div>
+        </div>
       </div>
 
-      <!-- Interpretation (if available) -->
-      <div
-        v-if="card.interpretation"
-        class="card-interpretation"
-      >
-        {{ card.interpretation }}
-      </div>
+      <!-- Card Info -->
+      <div class="card-info">
+        <div class="card-position">
+          {{ $t(`taro.position.${card.position.toLowerCase()}`) }}
+        </div>
+        <div
+          class="card-orientation"
+          :class="{ reversed: card.orientation === 'REVERSED' }"
+        >
+          {{ $t(`taro.orientation.${card.orientation.toLowerCase()}`) }}
+        </div>
 
-      <!-- Loading Interpretation -->
-      <div
-        v-else
-        class="interpretation-loading"
-      >
-        <span class="text-secondary">{{ $t('taro.loadingInterpretation') }}</span>
+        <!-- Interpretation (if available) -->
+        <div
+          v-if="card.interpretation"
+          class="card-interpretation"
+        >
+          {{ card.interpretation }}
+        </div>
+
+        <!-- Loading Interpretation -->
+        <div
+          v-else
+          class="interpretation-loading"
+        >
+          <span class="text-secondary">{{ $t('taro.loadingInterpretation') }}</span>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -81,9 +96,13 @@ import { computed } from 'vue';
 
 interface Props {
   card: TaroCard;
+  isOpened?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isOpened: false,
+});
+
 defineEmits<{
   'card-click': [cardId: string];
 }>();
@@ -100,7 +119,6 @@ const cardTitle = computed(() => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  cursor: pointer;
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
@@ -108,10 +126,86 @@ const cardTitle = computed(() => {
   background: var(--color-background);
 }
 
-.card-display:hover {
+/* Closed state: card back, dimmed, clickable */
+.card-display.is-closed {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.card-display.is-closed:hover {
   border-color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.1);
   transform: translateY(-4px);
+  opacity: 0.85;
+}
+
+/* Opened state: card front, full opacity, not clickable */
+.card-display.is-opened {
+  cursor: default;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.card-display.is-opened:hover {
+  border-color: var(--color-border);
+  box-shadow: none;
+  transform: none;
+}
+
+.card-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.card-back-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.mystical-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.reveal-hint {
+  color: var(--color-text-inverted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .card-visual {

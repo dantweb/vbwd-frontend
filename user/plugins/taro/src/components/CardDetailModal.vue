@@ -157,16 +157,21 @@
             </p>
           </div>
 
-          <!-- Metadata -->
-          <div class="metadata">
-            <div class="metadata-item">
-              <span class="metadata-label">{{ $t('taro.cardId') }}</span>
-              <code class="metadata-value">{{ cardData?.card_id }}</code>
-            </div>
-            <div class="metadata-item">
-              <span class="metadata-label">{{ $t('taro.arcanaId') }}</span>
-              <code class="metadata-value">{{ cardData?.arcana_id }}</code>
-            </div>
+          <!-- Metadata (Hidden) -->
+          <div
+            class="metadata"
+            style="display: none;"
+          >
+            <input
+              :value="cardData?.card_id"
+              type="hidden"
+              aria-label="Card ID"
+            >
+            <input
+              :value="cardData?.arcana_id"
+              type="hidden"
+              aria-label="Arcana ID"
+            >
           </div>
         </div>
       </div>

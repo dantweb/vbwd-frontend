@@ -16,6 +16,15 @@ export interface TaroCard {
 }
 
 /**
+ * Represents a message in the Oracle conversation flow
+ */
+export interface ConversationMessage {
+  role: 'oracle' | 'user';
+  content: string;
+  timestamp: string;
+}
+
+/**
  * Represents a complete Taro reading session
  */
 export interface TaroSession {
@@ -75,6 +84,12 @@ interface TaroStoreState {
   // Daily limits
   dailyLimits: DailyLimits | null;
 
+  // Oracle conversation flow
+  openedCards: Set<string>;
+  conversationMessages: ConversationMessage[];
+  oraclePhase: 'idle' | 'asking_mode' | 'asking_situation' | 'reading' | 'done';
+  situationText: string;
+
   // Loading states
   loading: boolean;
   historyLoading: boolean;
@@ -90,6 +105,10 @@ export const useTaroStore = defineStore('taro', {
     sessionHistory: [],
     historyPagination: null,
     dailyLimits: null,
+    openedCards: new Set<string>(),
+    conversationMessages: [],
+    oraclePhase: 'idle',
+    situationText: '',
     loading: false,
     historyLoading: false,
     limitsLoading: false,
@@ -189,6 +208,13 @@ export const useTaroStore = defineStore('taro', {
       if (!this.historyPagination) return false;
       const loaded = (this.historyPagination.offset || 0) + this.sessionHistory.length;
       return loaded < this.historyPagination.total;
+    },
+
+    /**
+     * Check if all 3 cards have been opened
+     */
+    allCardsOpened(): boolean {
+      return this.openedCards.size === 3;
     },
   },
 
@@ -368,6 +394,10 @@ export const useTaroStore = defineStore('taro', {
       this.sessionHistory = [];
       this.historyPagination = null;
       this.dailyLimits = null;
+      this.openedCards = new Set<string>();
+      this.conversationMessages = [];
+      this.oraclePhase = 'idle';
+      this.situationText = '';
       this.loading = false;
       this.historyLoading = false;
       this.limitsLoading = false;
@@ -384,6 +414,172 @@ export const useTaroStore = defineStore('taro', {
       } catch (error) {
         // Initialization error is not critical
         console.warn('Failed to initialize Taro store:', error);
+      }
+    },
+
+    /**
+     * Open a card in the reveal flow
+     */
+    openCard(cardId: string): void {
+      // Add card to opened set (idempotent)
+      this.openedCards.add(cardId);
+
+      // If all 3 cards are now opened, transition to asking_mode
+      if (this.allCardsOpened && this.oraclePhase === 'idle') {
+        this.oraclePhase = 'asking_mode';
+        this.addMessage(
+          'oracle',
+          'The cards have spoken. Do you seek a detailed explanation of each card, or shall we explore how they relate to your situation?'
+        );
+      }
+    },
+
+    /**
+     * Set Oracle phase (state machine)
+     */
+    setOraclePhase(phase: 'idle' | 'asking_mode' | 'asking_situation' | 'reading' | 'done'): void {
+      this.oraclePhase = phase;
+    },
+
+    /**
+     * Add message to conversation
+     */
+    addMessage(role: 'oracle' | 'user', content: string): void {
+      this.conversationMessages.push({
+        role,
+        content,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    /**
+     * Submit user's situation and get contextual Oracle reading
+     */
+    async submitSituation(situationText: string): Promise<void> {
+      // Validate input
+      const trimmed = situationText.trim();
+      if (!trimmed) {
+        throw new Error('Situation text is required');
+      }
+
+      // Count words
+      const wordCount = trimmed.split(/\s+/).length;
+      if (wordCount > 100) {
+        throw new Error(`Situation text must be ≤ 100 words (got ${wordCount})`);
+      }
+
+      if (!this.currentSession) {
+        throw new Error('No active session');
+      }
+
+      // Store situation text
+      this.situationText = trimmed;
+
+      // Add user message to conversation
+      this.addMessage('user', trimmed);
+
+      // Transition to reading phase
+      this.setOraclePhase('reading');
+
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // Call backend endpoint
+        const response = await api.post(
+          `/taro/session/${this.currentSession.session_id}/situation`,
+          { situation_text: trimmed }
+        );
+
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to generate reading');
+        }
+
+        // Add Oracle's response to conversation
+        this.addMessage('oracle', response.interpretation);
+
+        // Transition to done phase
+        this.setOraclePhase('done');
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to generate reading';
+        // Revert phase on error
+        this.setOraclePhase('asking_situation');
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    /**
+     * Ask a follow-up question in the Oracle chat
+     */
+    async askFollowUpQuestion(question: string): Promise<void> {
+      // Validate input
+      const trimmed = question.trim();
+      if (!trimmed) {
+        throw new Error('Question cannot be empty');
+      }
+
+      if (!this.currentSession) {
+        throw new Error('No active session');
+      }
+
+      // Add user question to conversation
+      this.addMessage('user', trimmed);
+
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // Call backend endpoint for follow-up question
+        const response = await api.post(
+          `/taro/session/${this.currentSession.session_id}/follow-up-question`,
+          { question: trimmed }
+        );
+
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to get response');
+        }
+
+        // Add Oracle's response to conversation
+        this.addMessage('oracle', response.answer);
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to process question';
+        // Remove the user message we just added if there was an error
+        if (this.conversationMessages.length > 0) {
+          this.conversationMessages.pop();
+        }
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async askCardExplanation(): Promise<void> {
+      if (!this.currentSession) {
+        throw new Error('No active session');
+      }
+
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // Call backend endpoint for card explanation
+        const response = await api.post(
+          `/taro/session/${this.currentSession.session_id}/card-explanation`
+        );
+
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to get explanation');
+        }
+
+        // Add Oracle's explanation to conversation
+        this.addMessage('oracle', response.interpretation);
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to get card explanation';
+        throw error;
+      } finally {
+        this.loading = false;
       }
     },
   },

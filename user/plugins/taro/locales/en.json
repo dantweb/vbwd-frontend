@@ -14,6 +14,10 @@
     "creatingSession": "Creating session...",
     "sessionExpiring": "Session Expiring Soon",
     "sessionExpiresIn": "Your session will expire in {minutes} minutes",
+    "readingHistory": "Reading Conversation",
+    "assistant": "Tarot Assistant",
+    "you": "You",
+    "awaitingInterpretation": "Generating interpretation...",
     "askFollowUp": "Ask a Follow-up Question",
     "followUpPlaceholder": "Ask a clarifying question about your reading...",
     "followUpType": "Follow-up Type",
@@ -56,6 +60,7 @@
     "loadingInterpretation": "Loading interpretation...",
     "interpretation": "Interpretation",
     "interpretationNotYetGenerated": "Interpretation not yet generated",
+    "cardInterpretations": "Card Interpretations",
     "cardId": "Card ID",
     "arcanaId": "Arcana ID",
     "card": {
@@ -78,5 +83,28 @@
       "interpretationFailed": "Failed to generate interpretation",
       "tryAgain": "Please try again later"
     }
+  },
+  "oracle": {
+    "cardClickHint": "Click to reveal",
+    "cardsRevealed": "The cards have spoken.",
+    "explainMode": "Do you seek a detailed explanation of each card, or shall we explore how they relate to your situation?",
+    "explainButton": "Explain the Cards",
+    "discussButton": "Discuss My Situation",
+    "situationPrompt": "Please describe your situation in a few words (up to 100 words).",
+    "situationLabel": "Your Situation",
+    "words": "words",
+    "reading": "Oracle is reflecting on your cards and situation...",
+    "discussingPhase": "Waiting for your input...",
+    "chatInputPlaceholder": "Ask the Oracle a question about your reading...",
+    "chatHint": "Continue the conversation with follow-up questions (Ctrl+Enter to send)"
+  },
+  "common": {
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "send": "Send",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "error": "Error",
+    "refresh": "Refresh"
   }
 }

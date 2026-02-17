@@ -56,6 +56,7 @@
     "loadingInterpretation": "Interpretation wird geladen...",
     "interpretation": "Interpretation",
     "interpretationNotYetGenerated": "Interpretation noch nicht generiert",
+    "cardInterpretations": "Karteninterpretationen",
     "cardId": "Karten-ID",
     "arcanaId": "Arkana-ID",
     "card": {
@@ -78,5 +79,28 @@
       "interpretationFailed": "Fehler beim Generieren der Interpretation",
       "tryAgain": "Bitte versuchen Sie es später erneut"
     }
+  },
+  "oracle": {
+    "cardClickHint": "Klicken zum Offenbaren",
+    "cardsRevealed": "Die Karten haben gesprochen.",
+    "explainMode": "Möchten Sie eine detaillierte Erklärung jeder Karte, oder sollen wir erkunden, wie sie sich auf Ihre Situation beziehen?",
+    "explainButton": "Karten erklären",
+    "discussButton": "Meine Situation besprechen",
+    "situationPrompt": "Bitte beschreiben Sie Ihre Situation in wenigen Worten (maximal 100 Wörter).",
+    "situationLabel": "Ihre Situation",
+    "words": "Wörter",
+    "reading": "Das Orakel reflektiert über Ihre Karten und Situation...",
+    "discussingPhase": "Warte auf Ihre Eingabe...",
+    "chatInputPlaceholder": "Stellen Sie dem Orakel eine Frage zu Ihrer Lesung...",
+    "chatHint": "Setzen Sie das Gespräch mit Nachfragen fort (Strg+Eingabe zum Senden)"
+  },
+  "common": {
+    "submit": "Absenden",
+    "submitting": "Wird gesendet...",
+    "send": "Senden",
+    "retry": "Erneut versuchen",
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "refresh": "Aktualisieren"
   }
 }

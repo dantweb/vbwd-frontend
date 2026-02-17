@@ -134,7 +134,8 @@
               v-for="card in taroStore.currentSession?.cards"
               :key="card.card_id"
               :card="card"
-              @card-click="selectCard"
+              :is-opened="taroStore.openedCards.has(card.card_id)"
+              @card-click="taroStore.openCard"
             />
           </div>
 
@@ -163,72 +164,123 @@
             </div>
           </div>
 
-          <!-- Follow-Up Section -->
+          <!-- Oracle Dialog Section (appears after cards opened) -->
           <div
-            v-if="taroStore.canAddFollowUp"
-            class="follow-up-section"
-            data-testid="follow-up-section"
+            v-if="taroStore.openedCards.size > 0"
+            class="oracle-section"
           >
-            <h3>{{ $t('taro.askFollowUp') }}</h3>
-            <div class="form-group">
-              <textarea
-                v-model="followUpQuestion"
-                :placeholder="$t('taro.followUpPlaceholder')"
-                class="form-control"
-                rows="3"
-                data-testid="follow-up-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">{{ $t('taro.followUpType') }}</label>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input
-                    v-model="selectedFollowUpType"
-                    type="radio"
-                    value="SAME_CARDS"
-                    data-testid="followup-same-cards"
-                  >
-                  <span>{{ $t('taro.sameCards') }}</span>
-                </label>
-                <label class="radio-option">
-                  <input
-                    v-model="selectedFollowUpType"
-                    type="radio"
-                    value="ADDITIONAL"
-                    data-testid="followup-additional"
-                  >
-                  <span>{{ $t('taro.additionalCard') }}</span>
-                </label>
-                <label class="radio-option">
-                  <input
-                    v-model="selectedFollowUpType"
-                    type="radio"
-                    value="NEW_SPREAD"
-                    data-testid="followup-new-spread"
-                  >
-                  <span>{{ $t('taro.newSpread') }}</span>
-                </label>
+            <!-- Conversation Messages -->
+            <div class="conversation-box">
+              <div
+                v-for="(msg, idx) in taroStore.conversationMessages"
+                :key="idx"
+                :class="['conversation-message', `${msg.role}-message`]"
+              >
+                <div class="message-role">
+                  {{ msg.role === 'oracle' ? $t('taro.assistant') : $t('taro.you') }}
+                </div>
+                <div class="message-content">
+                  {{ msg.content }}
+                </div>
               </div>
             </div>
 
-            <button
-              :disabled="taroStore.loading || !followUpQuestion.trim()"
-              class="btn btn-primary"
-              data-testid="submit-follow-up-btn"
-              @click="submitFollowUp"
+            <!-- Oracle Phase: asking_mode -->
+            <div
+              v-if="taroStore.oraclePhase === 'asking_mode'"
+              class="oracle-dialog"
             >
-              {{ taroStore.loading ? $t('common.submitting') : $t('taro.submitFollowUp') }}
-            </button>
-          </div>
+              <div class="dialog-buttons">
+                <button
+                  class="btn btn-primary"
+                  @click="askCardExplanation"
+                >
+                  {{ $t('oracle.explainButton') }}
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  @click="taroStore.setOraclePhase('asking_situation')"
+                >
+                  {{ $t('oracle.discussButton') }}
+                </button>
+              </div>
+            </div>
 
-          <!-- Follow-ups Exhausted -->
-          <div
-            v-else
-            class="info-message"
-          >
-            <p>{{ $t('taro.maxFollowUpsReached') }}</p>
+            <!-- Oracle Phase: asking_situation -->
+            <div
+              v-if="taroStore.oraclePhase === 'asking_situation'"
+              class="oracle-dialog"
+            >
+              <div class="form-group">
+                <label class="form-label">{{ $t('oracle.situationLabel') }}</label>
+                <textarea
+                  v-model="situationText"
+                  :placeholder="$t('oracle.situationPrompt')"
+                  class="form-control"
+                  rows="4"
+                  maxlength="500"
+                  data-testid="situation-input"
+                />
+                <div class="word-counter">
+                  {{ situationWordCount }} / 100 {{ $t('oracle.words') }}
+                </div>
+              </div>
+
+              <button
+                :disabled="taroStore.loading || situationWordCount === 0 || situationWordCount > 100"
+                class="btn btn-primary"
+                data-testid="submit-situation-btn"
+                @click="submitSituation"
+              >
+                {{ taroStore.loading ? $t('common.submitting') : $t('common.submit') }}
+              </button>
+            </div>
+
+            <!-- Oracle Phase: reading -->
+            <div
+              v-if="taroStore.oraclePhase === 'reading'"
+              class="oracle-dialog loading"
+            >
+              <div class="spinner-small" />
+              <p>{{ $t('oracle.reading') }}</p>
+            </div>
+
+            <!-- Oracle Phase: done - Chat continues below -->
+            <div
+              v-if="taroStore.oraclePhase === 'done'"
+              class="oracle-dialog"
+            >
+              <!-- Messages are displayed above in conversation-box -->
+            </div>
+
+            <!-- Chat Input - Ask More Questions -->
+            <div
+              v-if="taroStore.oraclePhase === 'done'"
+              class="chat-continue-section"
+            >
+              <div class="form-group">
+                <textarea
+                  v-model="followUpQuestion"
+                  :placeholder="$t('oracle.chatInputPlaceholder')"
+                  class="form-control"
+                  rows="2"
+                  data-testid="chat-input"
+                  @keyup.enter.ctrl="submitFollowUpQuestion"
+                />
+                <div class="chat-hint">
+                  {{ $t('oracle.chatHint') }}
+                </div>
+              </div>
+
+              <button
+                :disabled="taroStore.loading || !followUpQuestion.trim()"
+                class="btn btn-primary"
+                data-testid="submit-chat-btn"
+                @click="submitFollowUpQuestion"
+              >
+                {{ taroStore.loading ? $t('common.submitting') : $t('common.send') }}
+              </button>
+            </div>
           </div>
 
           <!-- Close Session Button -->
@@ -340,16 +392,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useTaroStore } from '@/stores';
 import CardDisplay from './components/CardDisplay.vue';
 import SessionHistory from './components/SessionHistory.vue';
 import CardDetailModal from './components/CardDetailModal.vue';
 
 const taroStore = useTaroStore();
-const followUpQuestion = ref('');
-const selectedFollowUpType = ref<'SAME_CARDS' | 'ADDITIONAL' | 'NEW_SPREAD'>('SAME_CARDS');
 const selectedCardId = ref<string | null>(null);
+const situationText = ref('');
+const followUpQuestion = ref('');
+
+const situationWordCount = computed(() => {
+  return situationText.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+});
 
 onMounted(async () => {
   // Initialize store if needed
@@ -365,26 +421,6 @@ const createNewSession = async () => {
     await taroStore.fetchDailyLimits();
   } catch (error) {
     console.error('Failed to create session:', error);
-  }
-};
-
-const submitFollowUp = async () => {
-  if (!followUpQuestion.value.trim()) {
-    return;
-  }
-
-  try {
-    await taroStore.addFollowUp(
-      followUpQuestion.value,
-      selectedFollowUpType.value
-    );
-    // Reset form
-    followUpQuestion.value = '';
-    selectedFollowUpType.value = 'SAME_CARDS';
-    // Refresh limits to get updated session state
-    await taroStore.fetchDailyLimits();
-  } catch (error) {
-    console.error('Failed to submit follow-up:', error);
   }
 };
 
@@ -415,6 +451,41 @@ const refreshLimits = async () => {
 const retryOperation = async () => {
   taroStore.error = null;
   await taroStore.initialize();
+};
+
+const submitSituation = async () => {
+  try {
+    await taroStore.submitSituation(situationText.value);
+    // Reset form
+    situationText.value = '';
+  } catch (error) {
+    console.error('Failed to submit situation:', error);
+  }
+};
+
+const submitFollowUpQuestion = async () => {
+  if (!followUpQuestion.value.trim()) {
+    return;
+  }
+
+  try {
+    await taroStore.askFollowUpQuestion(followUpQuestion.value);
+    // Reset form
+    followUpQuestion.value = '';
+  } catch (error) {
+    console.error('Failed to submit question:', error);
+  }
+};
+
+const askCardExplanation = async () => {
+  try {
+    taroStore.setOraclePhase('reading');
+    await taroStore.askCardExplanation();
+    taroStore.setOraclePhase('done');
+  } catch (error) {
+    console.error('Failed to get card explanation:', error);
+    taroStore.setOraclePhase('asking_mode');
+  }
 };
 </script>
 
@@ -575,6 +646,76 @@ const retryOperation = async () => {
 
 .info-row .value.text-warning {
   color: var(--color-warning);
+}
+
+/* Conversation Section */
+.conversation-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.conversation-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.conversation-box {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-md);
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.conversation-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.llm-message {
+  background: var(--color-background);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--color-info, var(--color-primary));
+}
+
+.user-message {
+  background: var(--color-background);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--color-success, var(--color-primary));
+  align-self: flex-end;
+  max-width: 80%;
+}
+
+.message-role {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.message-content {
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.message-content p {
+  margin: 0;
+}
+
+.message-placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 /* Follow-up Section */
@@ -814,6 +955,192 @@ const retryOperation = async () => {
   color: var(--color-text-primary);
 }
 
+/* Oracle Dialog Section */
+.oracle-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.oracle-section .conversation-box {
+  margin-bottom: var(--spacing-md);
+}
+
+.oracle-section .conversation-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.oracle-message {
+  background: var(--color-primary-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--color-primary);
+}
+
+.user-message {
+  background: var(--color-background-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--color-text-secondary);
+  text-align: right;
+}
+
+.message-role {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.message-content {
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.oracle-dialog {
+  background: var(--color-background-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.oracle-dialog.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+.spinner-small {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.dialog-buttons .btn {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Chat Continue Section */
+.chat-continue-section {
+  background: var(--color-background-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.chat-continue-section .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.chat-continue-section .form-control {
+  resize: vertical;
+  font-family: inherit;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.chat-continue-section .form-control:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.chat-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.chat-continue-section .btn {
+  align-self: flex-start;
+  min-width: 120px;
+}
+
+.word-counter {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+  text-align: right;
+}
+
+.word-counter.warning {
+  color: var(--color-warning);
+}
+
+/* Card Interpretations Section (before Oracle) */
+.card-interpretations-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card-interpretations-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.card-interpretations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.card-interpretation-item {
+  background: var(--color-background-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.interpretation-position {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: 0.5px;
+}
+
+.interpretation-content {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.interpretation-content .placeholder {
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .taro-header h1 {
@@ -830,6 +1157,18 @@ const retryOperation = async () => {
 
   .card {
     padding: var(--spacing-md);
+  }
+
+  .card-interpretations {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-buttons {
+    flex-direction: column;
+  }
+
+  .dialog-buttons .btn {
+    width: 100%;
   }
 }
 </style>

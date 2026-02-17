@@ -547,7 +547,7 @@ test.describe('Taro Plugin - Cards Grid Rendering (TDD)', () => {
 
     if (await activeSession.isVisible().catch(() => false)) {
       const cards = page.locator('[data-testid="card-display"]');
-      const positions = [];
+      const positions: string[] = [];
 
       const cardCount = await cards.count();
       if (cardCount === 3) {
@@ -635,6 +635,239 @@ test.describe('Taro Plugin - Close Session', () => {
       await expect(createCard).toBeVisible({ timeout: 5000 }).catch(() => {
         // Might not appear immediately depending on implementation
       });
+    }
+  });
+});
+
+test.describe('Taro Plugin - Oracle Conversation Flow (Card Reveal)', () => {
+  test('should show cards in closed state initially', async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+
+    // Create a session if needed
+    const createBtn = page.locator('[data-testid="create-session-btn"]');
+    const isCreateVisible = await createBtn.isVisible().catch(() => false);
+
+    if (isCreateVisible && !(await createBtn.isDisabled())) {
+      await createBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+    if (await activeSession.isVisible({ timeout: 10000 }).catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+      const count = await cards.count();
+      expect(count).toBe(3);
+
+      // Cards should have is-closed class initially
+      for (let i = 0; i < count; i++) {
+        const card = cards.nth(i);
+        const classList = await card.getAttribute('class');
+        expect(classList).toContain('is-closed');
+      }
+    }
+  });
+
+  test('should reveal card when clicked', async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+
+    // Create a session if needed
+    const createBtn = page.locator('[data-testid="create-session-btn"]');
+    const isCreateVisible = await createBtn.isVisible().catch(() => false);
+
+    if (isCreateVisible && !(await createBtn.isDisabled())) {
+      await createBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+    if (await activeSession.isVisible({ timeout: 10000 }).catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+      const firstCard = cards.first();
+
+      // Click to reveal
+      await firstCard.click();
+      await page.waitForTimeout(300); // Animation time
+
+      // Card should now have is-opened class
+      const classList = await firstCard.getAttribute('class');
+      expect(classList).toContain('is-opened');
+      expect(classList).not.toContain('is-closed');
+    }
+  });
+
+  test('should show Oracle dialog after all 3 cards are opened', async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+
+    // Create a session if needed
+    const createBtn = page.locator('[data-testid="create-session-btn"]');
+    const isCreateVisible = await createBtn.isVisible().catch(() => false);
+
+    if (isCreateVisible && !(await createBtn.isDisabled())) {
+      await createBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+    if (await activeSession.isVisible({ timeout: 10000 }).catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+      const count = await cards.count();
+
+      // Open all cards
+      for (let i = 0; i < count && i < 3; i++) {
+        const card = cards.nth(i);
+        await card.click();
+        await page.waitForTimeout(300);
+      }
+
+      // Oracle section should appear after all cards opened
+      const oracleSection = activeSession.locator('.oracle-section');
+      const isVisible = await oracleSection.isVisible({ timeout: 5000 }).catch(() => false);
+      expect(isVisible).toBeTruthy();
+    }
+  });
+
+  test('should transition through Oracle phases correctly', async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+
+    // Create a session if needed
+    const createBtn = page.locator('[data-testid="create-session-btn"]');
+    const isCreateVisible = await createBtn.isVisible().catch(() => false);
+
+    if (isCreateVisible && !(await createBtn.isDisabled())) {
+      await createBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+    if (await activeSession.isVisible({ timeout: 10000 }).catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+
+      // Open all 3 cards
+      for (let i = 0; i < 3; i++) {
+        await cards.nth(i).click();
+        await page.waitForTimeout(300);
+      }
+
+      // Check Oracle dialog appears
+      const oracleDialog = activeSession.locator('.oracle-dialog').first();
+      const isVisible = await oracleDialog.isVisible({ timeout: 5000 }).catch(() => false);
+      expect(isVisible).toBeTruthy();
+
+      // Should have "Discuss My Situation" button in asking_mode phase
+      const discussBtn = oracleDialog.locator('button:has-text("Discuss")').first();
+      const hasBtnVisible = await discussBtn.isVisible({ timeout: 2000 }).catch(() => false);
+      expect(hasBtnVisible).toBeTruthy();
+    }
+  });
+
+  test('should show situation input when entering asking_situation phase', async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+
+    // Create a session if needed
+    const createBtn = page.locator('[data-testid="create-session-btn"]');
+    const isCreateVisible = await createBtn.isVisible().catch(() => false);
+
+    if (isCreateVisible && !(await createBtn.isDisabled())) {
+      await createBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+    if (await activeSession.isVisible({ timeout: 10000 }).catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+
+      // Open all 3 cards
+      for (let i = 0; i < 3; i++) {
+        await cards.nth(i).click();
+        await page.waitForTimeout(300);
+      }
+
+      // Click "Discuss My Situation" button
+      const discussBtn = activeSession.locator('button:has-text("Discuss")').first();
+      const isBtnVisible = await discussBtn.isVisible({ timeout: 2000 }).catch(() => false);
+
+      if (isBtnVisible) {
+        await discussBtn.click();
+        await page.waitForTimeout(300);
+
+        // Situation textarea should appear
+        const situationInput = activeSession.locator('[data-testid="situation-input"]');
+        const isInputVisible = await situationInput.isVisible({ timeout: 2000 }).catch(() => false);
+        expect(isInputVisible).toBeTruthy();
+
+        // Word counter should be visible
+        const wordCounter = activeSession.locator('.word-counter');
+        const isCounterVisible = await wordCounter.isVisible({ timeout: 1000 }).catch(() => false);
+        expect(isCounterVisible).toBeTruthy();
+      }
+    }
+  });
+
+  test('should validate situation text word count', async ({ page }) => {
+    await loginAsTestUser(page);
+    await page.goto('/dashboard/taro');
+    await page.waitForLoadState('networkidle');
+
+    // Create a session if needed
+    const createBtn = page.locator('[data-testid="create-session-btn"]');
+    const isCreateVisible = await createBtn.isVisible().catch(() => false);
+
+    if (isCreateVisible && !(await createBtn.isDisabled())) {
+      await createBtn.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    const activeSession = page.locator('[data-testid="active-session-card"]');
+    if (await activeSession.isVisible({ timeout: 10000 }).catch(() => false)) {
+      const cards = activeSession.locator('[data-testid="card-display"]');
+
+      // Open all 3 cards
+      for (let i = 0; i < 3; i++) {
+        await cards.nth(i).click();
+        await page.waitForTimeout(300);
+      }
+
+      // Click "Discuss My Situation"
+      const discussBtn = activeSession.locator('button:has-text("Discuss")').first();
+      const isBtnVisible = await discussBtn.isVisible({ timeout: 2000 }).catch(() => false);
+
+      if (isBtnVisible) {
+        await discussBtn.click();
+        await page.waitForTimeout(300);
+
+        const situationInput = activeSession.locator('[data-testid="situation-input"]');
+        const submitBtn = activeSession.locator('[data-testid="submit-situation-btn"]');
+
+        if (await situationInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+          // Submit button should be disabled initially (empty input)
+          let isDisabled = await submitBtn.isDisabled();
+          expect(isDisabled).toBeTruthy();
+
+          // Fill with valid text (< 100 words)
+          const validText = 'I am facing a career decision and would like guidance';
+          await situationInput.fill(validText);
+          await page.waitForTimeout(200);
+
+          // Button should now be enabled
+          isDisabled = await submitBtn.isDisabled();
+          expect(isDisabled).toBeFalsy();
+
+          // Word counter should show correct count
+          const wordCounter = activeSession.locator('.word-counter');
+          const text = await wordCounter.textContent();
+          expect(text).toContain('9');
+        }
+      }
     }
   });
 });
