@@ -1,4 +1,4 @@
-2<template>
+<template>
   <div
     :class="['formatted-message', { 'has-links': formatted.hasLinks }]"
     v-html="formatted.html"
