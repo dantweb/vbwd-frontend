@@ -11,6 +11,11 @@ export const themeSwitcherPlugin: IPlugin = {
   version: '1.0.0',
   description: 'Dashboard color theme selector with preset themes',
   _active: false,
+  metadata: {
+    placement: 'user-menu',
+    displayName: 'Appearance',
+    icon: 'palette'
+  },
 
   install(sdk: IPlatformSDK) {
     sdk.addRoute({

@@ -5,6 +5,21 @@ import { defineStore } from 'pinia';
 import { api } from '@/api';
 
 /**
+ * Represents a single Arcana card (card definition with image and meanings)
+ */
+export interface Arcana {
+  id: string;
+  number?: number;
+  name: string;
+  suit?: string;
+  rank?: string;
+  arcana_type: 'MAJOR_ARCANA' | 'MINOR_ARCANA';
+  upright_meaning: string;
+  reversed_meaning: string;
+  image_url: string;
+}
+
+/**
  * Represents a single card in a spread
  */
 export interface TaroCard {
@@ -12,6 +27,8 @@ export interface TaroCard {
   position: 'PAST' | 'PRESENT' | 'FUTURE' | 'ADDITIONAL';
   orientation: 'UPRIGHT' | 'REVERSED';
   arcana_id: string;
+  arcana?: Arcana;
+  ai_interpretation?: string;
   interpretation?: string;
 }
 
@@ -234,6 +251,11 @@ export const useTaroStore = defineStore('taro', {
         }
 
         this.currentSession = response.session;
+
+        // Clear previous session's conversation history and state
+        // (Per requirements: conversation is kept only during active session)
+        this.clearSessionState();
+
         return response.session;
       } catch (error) {
         this.error = (error as Error).message || 'Failed to create session';
@@ -363,10 +385,24 @@ export const useTaroStore = defineStore('taro', {
     },
 
     /**
-     * Close the current session
+     * Close the current session and clear all conversation history
+     * (Per requirements: conversation history is deleted when session ends)
      */
     closeSession(): void {
       this.currentSession = null;
+      this.clearSessionState();
+    },
+
+    /**
+     * Clear session-specific state (conversation, opened cards, oracle phase)
+     * Called when starting a new session or closing current session
+     * Ensures no evidence or logs remain from previous session
+     */
+    clearSessionState(): void {
+      this.openedCards.clear();
+      this.conversationMessages = [];
+      this.oraclePhase = 'idle';
+      this.situationText = '';
     },
 
     /**
@@ -411,9 +447,29 @@ export const useTaroStore = defineStore('taro', {
       try {
         // Fetch initial limits and check for active session
         await this.fetchDailyLimits();
+        // Check if current session has expired and clear state if needed
+        this.checkSessionExpiration();
       } catch (error) {
         // Initialization error is not critical
         console.warn('Failed to initialize Taro store:', error);
+      }
+    },
+
+    /**
+     * Check if session has expired and clear conversation history
+     * (Per requirements: no evidence/logs remain after session expiration)
+     */
+    checkSessionExpiration(): void {
+      if (!this.currentSession) return;
+
+      // Check if session has expired based on status or time
+      const isExpired =
+        this.currentSession.status === 'EXPIRED' ||
+        this.sessionTimeRemaining <= 0;
+
+      if (isExpired) {
+        // Clear conversation history and state when session expires
+        this.clearSessionState();
       }
     },
 

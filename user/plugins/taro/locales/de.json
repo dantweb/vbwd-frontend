@@ -1,4 +1,7 @@
 {
+  "nav": {
+    "taro": "Tarot"
+  },
   "taro": {
     "title": "Tarot-Kartenlesung",
     "subtitle": "Erhalten Sie KI-gestützte Tarot-Interpretationen und Einblicke",

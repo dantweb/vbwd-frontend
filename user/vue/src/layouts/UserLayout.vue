@@ -1,75 +1,136 @@
 <template>
   <div class="user-layout">
-    <aside class="sidebar">
-      <div class="logo">
+    <!-- Mobile Header with Burger Menu (Tablet & Mobile only) -->
+    <header class="mobile-header">
+      <button
+        class="burger-menu"
+        :class="{ active: showMobileMenu }"
+        @click="toggleMobileMenu"
+        data-testid="burger-menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="logo-mobile">
         <h2>VBWD</h2>
       </div>
-      <nav class="nav-menu">
-        <router-link
-          to="/dashboard"
-          class="nav-item"
-        >
-          {{ $t('nav.dashboard') }}
-        </router-link>
-        <router-link
-          to="/dashboard/taro"
-          class="nav-item"
-        >
-          {{ $t('nav.taro') }}
-        </router-link>
-        <router-link
-          to="/dashboard/profile"
-          class="nav-item"
-        >
-          {{ $t('nav.profile') }}
-        </router-link>
-        <router-link
-          to="/dashboard/subscription"
-          class="nav-item"
-        >
-          {{ $t('nav.subscription') }}
-        </router-link>
-        <router-link
-          to="/dashboard/invoices"
-          class="nav-item"
-        >
-          {{ $t('nav.invoices') }}
-        </router-link>
-        <router-link
-          to="/dashboard/plans"
-          class="nav-item"
-        >
-          {{ $t('nav.plans') }}
-        </router-link>
-        <router-link
-          to="/dashboard/tokens"
-          class="nav-item"
-        >
-          {{ $t('nav.tokens') }}
-        </router-link>
-        <router-link
-          to="/dashboard/add-ons"
-          class="nav-item"
-        >
-          {{ $t('nav.addons') }}
-        </router-link>
-        <router-link
-          v-if="enabledPlugins.has('theme-switcher')"
-          to="/dashboard/appearance"
-          class="nav-item"
-          data-testid="nav-appearance"
-        >
-          {{ $t('nav.appearance') }}
-        </router-link>
-        <router-link
-          v-if="enabledPlugins.has('chat')"
-          to="/dashboard/chat"
-          class="nav-item"
-          data-testid="nav-chat"
-        >
-          {{ $t('nav.chat') }}
-        </router-link>
-      </nav>
+      <div class="header-spacer" />
+    </header>
+
+    <!-- Sidebar (Desktop and Mobile Expanded) -->
+    <aside
+      class="sidebar"
+      :class="{ 'sidebar-mobile-open': showMobileMenu }"
+      @click.self="closeMobileMenu"
+    >
+      <div class="sidebar-content">
+        <!-- Logo (Desktop only) -->
+        <div class="logo">
+          <h2>VBWD</h2>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="nav-menu">
+          <!-- Dashboard -->
+          <router-link
+            to="/dashboard"
+            class="nav-item"
+            @click="closeMobileMenu"
+          >
+            {{ $t('nav.dashboard') }}
+          </router-link>
+
+          <!-- Taro Plugin -->
+          <router-link
+            to="/dashboard/taro"
+            class="nav-item"
+            @click="closeMobileMenu"
+          >
+            {{ $t('nav.taro') }}
+          </router-link>
+
+          <!-- Store (Plans, Tokens, Add-Ons) -->
+          <div class="nav-group">
+            <button
+              class="nav-item nav-group-toggle"
+              :class="{ active: expandedGroups.store }"
+              @click="toggleGroup('store')"
+            >
+              {{ $t('nav.store') }}
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div v-if="expandedGroups.store" class="nav-subgroup">
+              <router-link
+                to="/dashboard/plans"
+                class="nav-subitem"
+                @click="closeMobileMenu"
+              >
+                {{ $t('nav.plans') }}
+              </router-link>
+              <router-link
+                to="/dashboard/tokens"
+                class="nav-subitem"
+                @click="closeMobileMenu"
+              >
+                {{ $t('nav.tokens') }}
+              </router-link>
+              <router-link
+                to="/dashboard/add-ons"
+                class="nav-subitem"
+                @click="closeMobileMenu"
+              >
+                {{ $t('nav.addons') }}
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Subscription (with Invoices sub-item) -->
+          <div class="nav-group">
+            <button
+              class="nav-item nav-group-toggle"
+              :class="{ active: expandedGroups.subscription }"
+              @click="toggleGroup('subscription')"
+            >
+              {{ $t('nav.subscription') }}
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div v-if="expandedGroups.subscription" class="nav-subgroup">
+              <router-link
+                to="/dashboard/subscription"
+                class="nav-subitem"
+                @click="closeMobileMenu"
+              >
+                {{ $t('nav.subscription') }}
+              </router-link>
+              <router-link
+                to="/dashboard/subscription/invoices"
+                class="nav-subitem"
+                @click="closeMobileMenu"
+              >
+                {{ $t('nav.invoices') }}
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Chat Plugin (if enabled) -->
+          <router-link
+            v-if="enabledPlugins.has('chat')"
+            to="/dashboard/chat"
+            class="nav-item"
+            data-testid="nav-chat"
+            @click="closeMobileMenu"
+          >
+            {{ $t('nav.chat') }}
+          </router-link>
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer: Cart + User Menu -->
       <div class="sidebar-footer">
         <!-- Cart Icon -->
         <div class="cart-wrapper">
@@ -86,16 +147,8 @@
               stroke="currentColor"
               stroke-width="2"
             >
-              <circle
-                cx="9"
-                cy="21"
-                r="1"
-              />
-              <circle
-                cx="20"
-                cy="21"
-                r="1"
-              />
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             <span
@@ -106,6 +159,7 @@
               {{ cartItemCount }}
             </span>
           </button>
+
           <!-- Cart Dropdown -->
           <div
             v-if="showCart"
@@ -173,18 +227,43 @@
             </div>
           </div>
         </div>
-        <!-- User Menu -->
+
+        <!-- User Menu (Profile, Appearance, Logout) -->
         <div
           class="user-menu"
           data-testid="user-menu"
-          @click="toggleUserMenu"
         >
-          <span>{{ userEmail }}</span>
+          <button
+            class="user-menu-btn"
+            @click="toggleUserMenu"
+          >
+            <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+            <span class="user-email">{{ userEmail }}</span>
+          </button>
+
           <div
             v-if="showUserMenu"
             class="user-dropdown"
           >
+            <router-link
+              to="/dashboard/profile"
+              class="user-dropdown-item"
+              @click="closeUserMenu"
+            >
+              {{ $t('nav.profile') }}
+            </router-link>
             <button
+              v-if="enabledPlugins.has('theme-switcher')"
+              class="user-dropdown-item appearance-btn"
+              @click="openAppearance"
+              data-testid="appearance-menu-item"
+            >
+              {{ $t('nav.appearance') }}
+            </button>
+            <button
+              class="user-dropdown-item logout-btn"
               data-testid="logout-button"
               @click="logout"
             >
@@ -194,6 +273,15 @@
         </div>
       </div>
     </aside>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+      v-if="showMobileMenu"
+      class="mobile-overlay"
+      @click="closeMobileMenu"
+    />
+
+    <!-- Main Content -->
     <main class="main-content">
       <slot />
     </main>
@@ -207,14 +295,12 @@ import { useCartStore } from '@vbwd/view-component';
 import { storeToRefs } from 'pinia';
 
 const enabledPlugins = inject<Set<string>>('enabledPlugins', new Set());
-
 const router = useRouter();
 
-// Use cart store directly — pinia deduplication in vite.config.js ensures single instance
+// Cart store
 const cartStoreRaw = useCartStore();
 const { items: cartItems, itemCount: cartItemCount, total: cartTotal, isEmpty: cartIsEmpty } = storeToRefs(cartStoreRaw);
 
-// Proxy object for template convenience (actions + reactive state)
 const cartStore = {
   get items() { return cartItems.value; },
   get total() { return cartTotal.value; },
@@ -222,8 +308,14 @@ const cartStore = {
   removeItem: (id: string) => cartStoreRaw.removeItem(id),
 };
 
-const showUserMenu = ref(false);
+// Menu states
+const showMobileMenu = ref(false);
 const showCart = ref(false);
+const showUserMenu = ref(false);
+const expandedGroups = ref({
+  store: false,
+  subscription: false,
+});
 
 const userEmail = computed(() => {
   const user = localStorage.getItem('user');
@@ -237,9 +329,16 @@ const userEmail = computed(() => {
   return 'User';
 });
 
-function toggleUserMenu() {
-  showUserMenu.value = !showUserMenu.value;
-  showCart.value = false;
+function toggleMobileMenu() {
+  showMobileMenu.value = !showMobileMenu.value;
+}
+
+function closeMobileMenu() {
+  showMobileMenu.value = false;
+}
+
+function toggleGroup(groupName: 'store' | 'subscription') {
+  expandedGroups.value[groupName] = !expandedGroups.value[groupName];
 }
 
 function toggleCart() {
@@ -247,14 +346,27 @@ function toggleCart() {
   showUserMenu.value = false;
 }
 
+function toggleUserMenu() {
+  showUserMenu.value = !showUserMenu.value;
+  showCart.value = false;
+}
+
+function closeUserMenu() {
+  showUserMenu.value = false;
+  closeMobileMenu();
+}
+
+function openAppearance() {
+  closeUserMenu();
+  router.push('/dashboard/appearance');
+}
+
 function goToCheckout() {
   showCart.value = false;
-  // Navigate to checkout with cart items
   const planItems = cartItems.value.filter(i => i.type === 'PLAN');
   if (planItems.length > 0) {
     router.push({ name: 'checkout', params: { planSlug: planItems[0].id } });
   } else {
-    // Just tokens/add-ons, go to a generic checkout
     router.push('/dashboard/checkout/cart');
   }
 }
@@ -272,7 +384,6 @@ function logout() {
   router.push('/login');
 }
 
-// Close dropdowns on click outside
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement;
   if (!target.closest('.cart-wrapper')) {
@@ -298,6 +409,69 @@ onUnmounted(() => {
   min-height: 100vh;
 }
 
+/* Mobile Header (hidden on desktop, visible on tablet/mobile) */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--vbwd-sidebar-bg, #2c3e50);
+  color: white;
+  z-index: 999;
+  align-items: center;
+  padding: 0 20px;
+  gap: 15px;
+}
+
+.burger-menu {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+}
+
+.burger-menu span {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.burger-menu.active span:nth-child(1) {
+  transform: translateY(9px) rotate(45deg);
+}
+
+.burger-menu.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger-menu.active span:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg);
+}
+
+.logo-mobile {
+  flex: 1;
+}
+
+.logo-mobile h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: white;
+}
+
+.header-spacer {
+  width: 40px;
+}
+
+/* Desktop Sidebar */
 .sidebar {
   width: 250px;
   background-color: var(--vbwd-sidebar-bg, #2c3e50);
@@ -306,6 +480,14 @@ onUnmounted(() => {
   flex-direction: column;
   position: fixed;
   height: 100vh;
+  z-index: 1000;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
@@ -329,6 +511,12 @@ onUnmounted(() => {
   color: var(--vbwd-sidebar-text, rgba(255, 255, 255, 0.8));
   text-decoration: none;
   transition: all 0.2s;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.95rem;
 }
 
 .nav-item:hover,
@@ -337,44 +525,55 @@ onUnmounted(() => {
   color: white;
 }
 
-.user-menu {
-  padding: 15px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  position: relative;
+.nav-group {
+  margin: 0;
 }
 
-.user-dropdown {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  background-color: #34495e;
-  padding: 10px;
+.nav-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.user-dropdown button {
-  width: 100%;
-  padding: 10px;
-  background-color: #e74c3c;
+.nav-group-toggle .chevron {
+  transition: transform 0.2s;
+  margin-left: auto;
+}
+
+.nav-group-toggle.active .chevron {
+  transform: rotate(180deg);
+}
+
+.nav-subgroup {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 0;
+}
+
+.nav-subitem {
+  display: block;
+  padding: 10px 20px 10px 40px;
+  color: var(--vbwd-sidebar-text, rgba(255, 255, 255, 0.7));
+  text-decoration: none;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.nav-subitem:hover,
+.nav-subitem.router-link-active {
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
 }
 
-.user-dropdown button:hover {
-  background-color: #c0392b;
-}
-
+/* Sidebar Footer */
 .sidebar-footer {
   margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .cart-wrapper {
   position: relative;
   padding: 10px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .cart-btn {
@@ -389,6 +588,7 @@ onUnmounted(() => {
   cursor: pointer;
   width: 100%;
   transition: background-color 0.2s;
+  position: relative;
 }
 
 .cart-btn:hover {
@@ -404,6 +604,9 @@ onUnmounted(() => {
   border-radius: 10px;
   min-width: 18px;
   text-align: center;
+  position: absolute;
+  top: -5px;
+  right: 0;
 }
 
 .cart-dropdown {
@@ -548,11 +751,177 @@ onUnmounted(() => {
   background: var(--vbwd-color-primary-hover, #2980b9);
 }
 
+/* User Menu */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  color: var(--vbwd-sidebar-text, rgba(255, 255, 255, 0.8));
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.user-menu-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.user-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.user-email {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+}
+
+.user-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background-color: #34495e;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  z-index: 100;
+}
+
+.user-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 5px;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: left;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.user-dropdown-item:last-child {
+  margin-bottom: 0;
+}
+
+.user-dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.logout-btn {
+  background-color: #e74c3c !important;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b !important;
+}
+
+/* Main Content */
 .main-content {
   flex: 1;
   margin-left: 250px;
   padding: 30px;
   background-color: var(--vbwd-page-bg, #f5f5f5);
   min-height: 100vh;
+}
+
+/* Mobile Menu Overlay */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Tablet Breakpoint (768px - 1024px) */
+@media (max-width: 1024px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .burger-menu {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    height: calc(100vh - 60px);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar-mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-overlay {
+    display: block;
+  }
+
+  .logo {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+    margin-top: 60px;
+  }
+}
+
+/* Mobile Breakpoint (< 768px) */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .nav-menu {
+    padding: 15px 0;
+  }
+
+  .nav-item,
+  .nav-subitem {
+    padding: 10px 20px;
+  }
+
+  .nav-subitem {
+    padding: 8px 20px 8px 40px;
+  }
+
+  .cart-btn {
+    padding: 10px;
+    justify-content: center;
+  }
+
+  .user-menu-btn {
+    padding: 12px 20px;
+  }
 }
 </style>

@@ -8,7 +8,7 @@
     ]"
     :title="cardTitle"
     data-testid="card-display"
-    @click="!isOpened && $emit('card-click', card.card_id)"
+    @click="handleCardClick"
   >
     <!-- Card Back (Closed State) -->
     <div v-if="!isOpened" class="card-back">
@@ -25,7 +25,18 @@
         class="card-visual"
         :class="{ reversed: card.orientation === 'REVERSED' }"
       >
-        <div class="card-placeholder">
+        <!-- Card Image (if available) -->
+        <div v-if="hasCardImage" class="card-image-container">
+          <img
+            :src="cardImageUrl"
+            :alt="cardImageAlt"
+            class="card-image"
+            :title="cardImageAlt"
+          />
+        </div>
+
+        <!-- Placeholder (fallback if no image) -->
+        <div v-else class="card-placeholder">
           <svg
             width="80"
             height="120"
@@ -72,10 +83,10 @@
 
         <!-- Interpretation (if available) -->
         <div
-          v-if="card.interpretation"
+          v-if="cardInterpretation"
           class="card-interpretation"
         >
-          {{ card.interpretation }}
+          {{ cardInterpretation }}
         </div>
 
         <!-- Loading Interpretation -->
@@ -103,15 +114,70 @@ const props = withDefaults(defineProps<Props>(), {
   isOpened: false,
 });
 
-defineEmits<{
+const emit = defineEmits<{
   'card-click': [cardId: string];
+  'card-fullscreen': [cardId: string];
 }>();
+
+/**
+ * Handle card click - open if closed, show fullscreen if already opened
+ */
+function handleCardClick() {
+  if (!props.isOpened) {
+    emit('card-click', props.card.card_id);
+  } else {
+    emit('card-fullscreen', props.card.card_id);
+  }
+}
 
 const cardTitle = computed(() => {
   const position = `taro.position.${props.card.position.toLowerCase()}`;
   const orientation = `taro.orientation.${props.card.orientation.toLowerCase()}`;
   return `${position} - ${orientation}`;
 });
+
+/**
+ * Check if card has an image available from the arcana data
+ */
+const hasCardImage = computed(() => {
+  return props.card.arcana?.image_url && isValidImageUrl(props.card.arcana.image_url);
+});
+
+/**
+ * Get the card image URL (supports SVG, PNG, JPEG, and future formats)
+ */
+const cardImageUrl = computed(() => {
+  return props.card.arcana?.image_url || '';
+});
+
+/**
+ * Get alt text for the card image
+ */
+const cardImageAlt = computed(() => {
+  if (props.card.arcana?.name) {
+    return `${props.card.arcana.name} (${props.card.position} - ${props.card.orientation})`;
+  }
+  return `${props.card.position} - ${props.card.orientation}`;
+});
+
+/**
+ * Get card interpretation (supports both ai_interpretation and interpretation fields)
+ */
+const cardInterpretation = computed(() => {
+  return props.card.ai_interpretation || props.card.interpretation;
+});
+
+/**
+ * Check if URL is a valid image URL
+ */
+function isValidImageUrl(url: string): boolean {
+  if (!url) return false;
+  // Accept HTTP/HTTPS URLs and relative paths
+  return url.startsWith('http://') ||
+         url.startsWith('https://') ||
+         url.startsWith('/') ||
+         url.startsWith('./');
+}
 </script>
 
 <style scoped>
@@ -139,17 +205,17 @@ const cardTitle = computed(() => {
   opacity: 0.85;
 }
 
-/* Opened state: card front, full opacity, not clickable */
+/* Opened state: card front, full opacity, clickable to view fullscreen */
 .card-display.is-opened {
-  cursor: default;
+  cursor: pointer;
   opacity: 1;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .card-display.is-opened:hover {
-  border-color: var(--color-border);
-  box-shadow: none;
-  transform: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.05);
+  transform: translateY(-2px);
 }
 
 .card-back {
@@ -221,6 +287,23 @@ const cardTitle = computed(() => {
 
 .card-visual.reversed {
   transform: rotate(180deg);
+}
+
+.card-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--spacing-xs);
+}
+
+.card-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--border-radius-sm);
+  background: var(--color-background);
 }
 
 .card-placeholder {

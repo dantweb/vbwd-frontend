@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="taro-container"
-    data-testid="taro-dashboard"
-  >
+  <div class="taro-container" data-testid="taro-dashboard">
     <!-- Page Header -->
     <div class="taro-header">
       <h1>{{ $t('taro.title') }}</h1>
@@ -136,6 +133,7 @@
               :card="card"
               :is-opened="taroStore.openedCards.has(card.card_id)"
               @card-click="taroStore.openCard"
+              @card-fullscreen="showCardFullscreen"
             />
           </div>
 
@@ -180,7 +178,7 @@
                   {{ msg.role === 'oracle' ? $t('taro.assistant') : $t('taro.you') }}
                 </div>
                 <div class="message-content">
-                  {{ msg.content }}
+                  <FormattedMessage :content="msg.content" />
                 </div>
               </div>
             </div>
@@ -373,20 +371,14 @@
         </div>
       </div>
 
-      <!-- Session History -->
-      <SessionHistory
-        :sessions="taroStore.sessionHistory"
-        :loading="taroStore.historyLoading"
-        :has-more="taroStore.hasMoreHistory"
-        @load-more="loadMoreHistory"
-      />
     </div>
 
     <!-- Selected Card Detail Modal -->
     <CardDetailModal
       v-if="selectedCardId"
       :card-id="selectedCardId"
-      @close="selectedCardId = null"
+      :fullscreen="selectedCardFullscreen"
+      @close="closeCardModal"
     />
   </div>
 </template>
@@ -395,11 +387,12 @@
 import { ref, onMounted, computed } from 'vue';
 import { useTaroStore } from '@/stores';
 import CardDisplay from './components/CardDisplay.vue';
-import SessionHistory from './components/SessionHistory.vue';
 import CardDetailModal from './components/CardDetailModal.vue';
+import FormattedMessage from './components/FormattedMessage.vue';
 
 const taroStore = useTaroStore();
 const selectedCardId = ref<string | null>(null);
+const selectedCardFullscreen = ref(false);
 const situationText = ref('');
 const followUpQuestion = ref('');
 
@@ -430,15 +423,19 @@ const closeCurrentSession = () => {
 
 const selectCard = (cardId: string) => {
   selectedCardId.value = cardId;
+  selectedCardFullscreen.value = false;
 };
 
-const loadMoreHistory = async () => {
-  try {
-    await taroStore.loadMoreHistory();
-  } catch (error) {
-    console.error('Failed to load more history:', error);
-  }
+const showCardFullscreen = (cardId: string) => {
+  selectedCardId.value = cardId;
+  selectedCardFullscreen.value = true;
 };
+
+const closeCardModal = () => {
+  selectedCardId.value = null;
+  selectedCardFullscreen.value = false;
+};
+
 
 const refreshLimits = async () => {
   try {
@@ -973,8 +970,8 @@ const askCardExplanation = async () => {
 }
 
 .oracle-message {
-  background: var(--color-primary-light);
-  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-info-light);
+  padding: var(--spacing-md);
   border-radius: var(--border-radius-sm);
   border-left: 4px solid var(--color-primary);
 }
@@ -998,6 +995,8 @@ const askCardExplanation = async () => {
 .message-content {
   color: var(--color-text-primary);
   line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .oracle-dialog {

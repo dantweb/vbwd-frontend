@@ -1,10 +1,11 @@
 <template>
   <div
     class="modal-overlay"
+    :class="{ 'fullscreen-mode': props.fullscreen }"
     data-testid="card-detail-modal"
     @click.self="$emit('close')"
   >
-    <div class="modal-content">
+    <div class="modal-content" :class="{ 'fullscreen-mode': props.fullscreen }">
       <button
         class="modal-close"
         :title="$t('common.close')"
@@ -57,9 +58,53 @@
         </button>
       </div>
 
-      <!-- Card Details -->
+      <!-- Card Details (Fullscreen Mode) -->
       <div
-        v-else
+        v-if="props.fullscreen && cardData"
+        class="card-details fullscreen"
+      >
+        <div class="card-visual large">
+          <!-- Card Image -->
+          <img
+            v-if="cardData?.arcana?.image_url"
+            :src="cardData.arcana.image_url"
+            :alt="cardData.arcana.name"
+            class="card-image"
+          >
+          <!-- Fallback placeholder if no image -->
+          <svg
+            v-else
+            width="100"
+            height="150"
+            viewBox="0 0 80 120"
+            fill="none"
+            stroke="currentColor"
+          >
+            <rect
+              x="2"
+              y="2"
+              width="76"
+              height="116"
+              rx="4"
+              stroke-width="1.5"
+            />
+            <path
+              d="M 40 30 L 50 50 L 30 50 Z"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="40"
+              cy="75"
+              r="15"
+              stroke-width="1.5"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card Details (Normal Mode) -->
+      <div
+        v-else-if="!props.fullscreen && cardData"
         class="card-details"
       >
         <!-- Visual Section -->
@@ -180,15 +225,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import type { TaroCard } from '@/stores';
 import { useTaroStore } from '@/stores';
 
 interface Props {
   cardId: string;
+  fullscreen?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  fullscreen: false
+});
+
 defineEmits<{
   close: [];
 }>();
@@ -238,6 +287,11 @@ onMounted(() => {
   padding: var(--spacing-md);
 }
 
+.modal-overlay.fullscreen-mode {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: var(--spacing-lg);
+}
+
 .modal-content {
   background: var(--color-background-secondary);
   border-radius: var(--border-radius);
@@ -251,6 +305,20 @@ onMounted(() => {
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
+}
+
+.modal-content.fullscreen-mode {
+  background: transparent;
+  box-shadow: none;
+  max-width: 100%;
+  max-height: 90vh;
+  width: 100%;
+  height: 90vh;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+  overflow: hidden;
 }
 
 .modal-close {
@@ -271,6 +339,20 @@ onMounted(() => {
 
 .modal-close:hover {
   color: var(--color-text-primary);
+}
+
+.modal-content.fullscreen-mode .modal-close {
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  padding: 12px;
+}
+
+.modal-content.fullscreen-mode .modal-close:hover {
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
 }
 
 /* Loading State */
@@ -339,7 +421,20 @@ onMounted(() => {
   color: var(--color-primary);
 }
 
+.card-visual.large {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: inherit;
+}
+
 .card-visual.reversed {
+  transform: rotate(180deg);
+}
+
+.card-visual.large.reversed {
   transform: rotate(180deg);
 }
 
@@ -350,6 +445,12 @@ onMounted(() => {
 .card-image {
   width: 100%;
   height: 100%;
+  object-fit: contain;
+}
+
+.card-visual.large .card-image {
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
 
@@ -499,6 +600,17 @@ onMounted(() => {
   background-color: var(--color-primary-dark);
 }
 
+/* Card Details Fullscreen */
+.card-details.fullscreen {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  gap: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .modal-content {
@@ -513,6 +625,17 @@ onMounted(() => {
   .modal-close {
     top: var(--spacing-xs);
     right: var(--spacing-xs);
+  }
+
+  .modal-content.fullscreen-mode {
+    max-height: 95vh;
+    height: 95vh;
+  }
+
+  .modal-content.fullscreen-mode .modal-close {
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    padding: 10px;
   }
 }
 </style>

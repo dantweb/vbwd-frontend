@@ -136,32 +136,80 @@ onMounted(() => {
 
 <style scoped>
 .user-taro-section {
-  background: #fff8f0;
-  border-left: 4px solid #9b59b6;
+  background: linear-gradient(135deg, #f0e6ff 0%, #f8f9fa 100%);
+  border-left: 4px solid #8b5cf6;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.user-taro-section h3 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-item label {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-item span {
+  font-size: 0.95rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.info-item strong {
+  color: #8b5cf6;
+  font-size: 1.2rem;
 }
 
 .taro-actions {
   margin-top: 15px;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .action-btn {
   padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .action-btn.secondary {
-  background: #95a5a6;
-  color: white;
+  background: #e9d5ff;
+  color: #6d28d9;
+  border-color: #c4b5fd;
 }
 
 .action-btn.secondary:hover:not(:disabled) {
-  background: #7f8c8d;
+  background: #d8b4fe;
+  border-color: #a78bfa;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
 }
 
 .action-btn:disabled {
@@ -172,20 +220,24 @@ onMounted(() => {
 .success-message {
   margin-top: 15px;
   padding: 12px 15px;
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 4px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #dcfce7;
+  border-left: 4px solid #22c55e;
+  border-radius: 6px;
   font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .error-message {
   margin-top: 15px;
   padding: 12px 15px;
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
+  background: #fef2f2;
+  color: #7f1d1d;
+  border: 1px solid #fee2e2;
+  border-left: 4px solid #ef4444;
+  border-radius: 6px;
   font-size: 0.95rem;
+  font-weight: 500;
 }
 </style>

@@ -37,7 +37,7 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/dashboard/invoices',
+    path: '/dashboard/subscription/invoices',
     name: 'invoices',
     component: () => import('../views/Invoices.vue'),
     meta: { requiresAuth: true }
@@ -97,13 +97,13 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/dashboard/invoices/:invoiceId',
+    path: '/dashboard/subscription/invoices/:invoiceId',
     name: 'invoice-detail',
     component: () => import('../views/InvoiceDetail.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/dashboard/invoices/:invoiceId/pay',
+    path: '/dashboard/subscription/invoices/:invoiceId/pay',
     name: 'invoice-pay',
     component: () => import('../views/InvoicePay.vue'),
     meta: { requiresAuth: true }
