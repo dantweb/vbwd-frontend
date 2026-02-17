@@ -327,7 +327,7 @@ function sortBy(field: string): void {
 }
 
 function viewInvoice(invoice: Invoice): void {
-  router.push(`/dashboard/invoices/${invoice.id}`);
+  router.push(`/dashboard/subscription/invoices/${invoice.id}`);
 }
 
 async function downloadInvoice(invoiceId: string): Promise<void> {
@@ -344,7 +344,7 @@ async function downloadInvoice(invoiceId: string): Promise<void> {
 }
 
 function payInvoice(invoice: Invoice): void {
-  router.push(`/dashboard/invoices/${invoice.id}/pay`);
+  router.push(`/dashboard/subscription/invoices/${invoice.id}/pay`);
 }
 
 function showSuccess(message: string): void {

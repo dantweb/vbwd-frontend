@@ -519,7 +519,8 @@ async function loadData(): Promise<void> {
       subscriptionStore.fetchSubscription().catch(() => null),
       invoicesStore.fetchInvoices().catch(() => null),
       fetchTokenBalance(),
-      fetchUsageStats(),
+      // TODO: fetchUsageStats() - endpoint /api/v1/user/usage does not exist yet
+      // fetchUsageStats(),
     ]);
   } catch (err) {
     error.value = (err as Error).message || t('subscription.errors.failedToLoad');
@@ -594,12 +595,12 @@ async function downloadInvoice(invoiceId: string): Promise<void> {
 
 function payInvoice(invoice: Invoice): void {
   // Navigate to invoice payment page
-  router.push(`/dashboard/invoices/${invoice.id}/pay`);
+  router.push(`/dashboard/subscription/invoices/${invoice.id}/pay`);
 }
 
 function goToPurchaseTokens(): void {
-  // Navigate to plans page where users can select token bundles during checkout
-  router.push('/dashboard/plans');
+  // Navigate to tokens page where users can purchase token bundles
+  router.push('/dashboard/tokens');
 }
 
 function showSuccess(message: string): void {

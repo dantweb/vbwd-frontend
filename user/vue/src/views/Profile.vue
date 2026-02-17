@@ -199,6 +199,29 @@
         </form>
       </div>
 
+      <!-- Preferences Card -->
+      <div class="card">
+        <h2>{{ $t('profile.preferences') }}</h2>
+        <div class="form-group">
+          <label for="language">{{ $t('profile.language') }}</label>
+          <select
+            id="language"
+            v-model="formData.language"
+            data-testid="language-select"
+            class="form-select"
+            @change="onLanguageChange"
+          >
+            <option
+              v-for="lang in availableLanguages"
+              :key="lang.code"
+              :value="lang.code"
+            >
+              {{ lang.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
       <!-- Change Password Card -->
       <div class="card">
         <h2>{{ $t('profile.changePassword.title') }}</h2>
@@ -269,8 +292,9 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useProfileStore } from '../stores/profile';
 import { api } from '../api';
+import { setLocale, type LocaleCode } from '../i18n';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const profileStore = useProfileStore();
 
 const loading = ref(true);
@@ -281,7 +305,12 @@ interface Country {
   code: string;
   name: string;
 }
+interface Language {
+  code: string;
+  name: string;
+}
 const countries = ref<Country[]>([]);
+const availableLanguages = ref<Language[]>([]);
 const changingPassword = ref(false);
 const successMessage = ref('');
 const passwordError = ref('');
@@ -297,6 +326,7 @@ interface FormData {
   city: string;
   postal_code: string;
   country: string;
+  language: LocaleCode;
 }
 
 const formData = reactive<FormData>({
@@ -310,6 +340,7 @@ const formData = reactive<FormData>({
   city: '',
   postal_code: '',
   country: '',
+  language: 'en',
 });
 
 const passwordData = reactive({
@@ -332,6 +363,25 @@ async function fetchTokenBalance(): Promise<void> {
     tokenBalance.value = response.balance || 0;
   } catch {
     tokenBalance.value = 0;
+  }
+}
+
+async function fetchLanguages(): Promise<void> {
+  try {
+    const response = await api.get('/config/languages') as { languages: Language[] };
+    availableLanguages.value = response.languages;
+  } catch {
+    // Fallback to all available languages
+    availableLanguages.value = [
+      { code: 'en', name: 'English' },
+      { code: 'de', name: 'Deutsch' },
+      { code: 'ru', name: 'Русский' },
+      { code: 'th', name: 'ไทย' },
+      { code: 'zh', name: '中文' },
+      { code: 'es', name: 'Español' },
+      { code: 'fr', name: 'Français' },
+      { code: 'ja', name: '日本語' },
+    ];
   }
 }
 
@@ -393,11 +443,20 @@ async function loadProfile(): Promise<void> {
       formData.postal_code = response.details.postal_code || '';
       formData.country = response.details.country || '';
     }
+
+    // Set the language dropdown to show the current app locale
+    formData.language = locale.value as LocaleCode;
   } catch (err) {
     error.value = (err as Error).message || t('profile.errors.failedToLoad');
   } finally {
     loading.value = false;
   }
+}
+
+function onLanguageChange(): void {
+  // Update UI language immediately
+  setLocale(formData.language);
+  locale.value = formData.language;
 }
 
 async function handleUpdateProfile(): Promise<void> {
@@ -417,6 +476,9 @@ async function handleUpdateProfile(): Promise<void> {
       postal_code: formData.postal_code,
       country: formData.country,
     });
+
+    // Language preference is saved via onLanguageChange (immediate)
+    // Backend stores language in browser localStorage, no persistence endpoint needed yet
 
     // Refresh profile store
     await profileStore.fetchProfile();
@@ -475,6 +537,7 @@ function formatNumber(num: number): string {
 }
 
 onMounted(() => {
+  fetchLanguages();
   loadProfile();
 });
 </script>
@@ -635,6 +698,24 @@ h1 {
 
 .form-group input::placeholder {
   color: #aaa;
+}
+
+.form-group select,
+.form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--vbwd-border-color, #ddd);
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  background-color: white;
+  cursor: pointer;
+}
+
+.form-group select:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--vbwd-color-primary, #3498db);
 }
 
 .field-error {

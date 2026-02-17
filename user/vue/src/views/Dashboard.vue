@@ -281,7 +281,7 @@
           <router-link
             v-for="invoice in recentInvoices"
             :key="invoice.id"
-            :to="`/dashboard/invoices/${invoice.id}`"
+            :to="`/dashboard/subscription/invoices/${invoice.id}`"
             class="invoice-item invoice-item-link"
             data-testid="invoice-item"
           >
@@ -307,7 +307,7 @@
           <p>{{ $t('dashboard.invoicesCard.noInvoices') }}</p>
         </div>
         <router-link
-          to="/dashboard/invoices"
+          to="/dashboard/subscription/invoices"
           class="card-link"
         >
           {{ $t('dashboard.invoicesCard.viewAllInvoices') }} →
@@ -337,7 +337,7 @@
             {{ $t('dashboard.quickActions.browsePlans') }}
           </router-link>
           <router-link
-            to="/dashboard/invoices"
+            to="/dashboard/subscription/invoices"
             class="action-btn"
           >
             {{ $t('dashboard.quickActions.viewInvoices') }}

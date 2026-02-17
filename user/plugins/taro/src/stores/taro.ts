@@ -3,6 +3,7 @@
  */
 import { defineStore } from 'pinia';
 import { api } from '@/api';
+import { getLocale } from '@/i18n';
 
 /**
  * Represents a single Arcana card (card definition with image and meanings)
@@ -541,10 +542,13 @@ export const useTaroStore = defineStore('taro', {
       this.error = null;
 
       try {
-        // Call backend endpoint
+        // Call backend endpoint with current language
         const response = await api.post(
           `/taro/session/${this.currentSession.session_id}/situation`,
-          { situation_text: trimmed }
+          {
+            situation_text: trimmed,
+            language: getLocale()
+          }
         );
 
         if (!response.success) {
@@ -587,10 +591,13 @@ export const useTaroStore = defineStore('taro', {
       this.error = null;
 
       try {
-        // Call backend endpoint for follow-up question
+        // Call backend endpoint for follow-up question with current language
         const response = await api.post(
           `/taro/session/${this.currentSession.session_id}/follow-up-question`,
-          { question: trimmed }
+          {
+            question: trimmed,
+            language: getLocale()
+          }
         );
 
         if (!response.success) {
@@ -620,9 +627,10 @@ export const useTaroStore = defineStore('taro', {
       this.error = null;
 
       try {
-        // Call backend endpoint for card explanation
+        // Call backend endpoint for card explanation with current language
         const response = await api.post(
-          `/taro/session/${this.currentSession.session_id}/card-explanation`
+          `/taro/session/${this.currentSession.session_id}/card-explanation`,
+          { language: getLocale() }
         );
 
         if (!response.success) {

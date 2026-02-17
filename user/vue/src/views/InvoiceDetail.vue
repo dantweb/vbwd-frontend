@@ -144,7 +144,7 @@
           </router-link>
           <router-link
             v-else-if="invoice.status === 'pending' && invoice.payment_method !== 'invoice'"
-            :to="`/dashboard/invoices/${invoice.id}/pay`"
+            :to="`/dashboard/subscription/invoices/${invoice.id}/pay`"
             class="btn primary"
           >
             {{ $t('invoices.detail.payNow') }}

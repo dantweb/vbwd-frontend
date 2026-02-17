@@ -1,14 +1,20 @@
 /**
  * Vue i18n configuration for user app
- * Active languages: EN and DE only
+ * Active languages: EN, DE, ES, FR, JA, RU, TH, ZH
  */
 import { createI18n } from 'vue-i18n';
 import en from './locales/en.json';
 import de from './locales/de.json';
+import es from './locales/es.json';
+import fr from './locales/fr.json';
+import ja from './locales/ja.json';
+import ru from './locales/ru.json';
+import th from './locales/th.json';
+import zh from './locales/zh.json';
 
-export type LocaleCode = 'en' | 'de';
+export type LocaleCode = 'en' | 'de' | 'es' | 'fr' | 'ja' | 'ru' | 'th' | 'zh';
 
-export const availableLocales: LocaleCode[] = ['en', 'de'];
+export const availableLocales: LocaleCode[] = ['en', 'de', 'es', 'fr', 'ja', 'ru', 'th', 'zh'];
 
 export const i18n = createI18n({
   legacy: false,
@@ -17,6 +23,12 @@ export const i18n = createI18n({
   messages: {
     en,
     de,
+    es,
+    fr,
+    ja,
+    ru,
+    th,
+    zh,
   },
 });
 
