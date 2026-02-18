@@ -3,7 +3,7 @@
  */
 import { defineStore } from 'pinia';
 import { api } from '@/api';
-import { getLocale } from '@/i18n';
+import { getLocale, i18n } from '@/i18n';
 
 /**
  * Represents a single Arcana card (card definition with image and meanings)
@@ -484,10 +484,13 @@ export const useTaroStore = defineStore('taro', {
       // If all 3 cards are now opened, transition to asking_mode
       if (this.allCardsOpened && this.oraclePhase === 'idle') {
         this.oraclePhase = 'asking_mode';
-        this.addMessage(
-          'oracle',
-          'The cards have spoken. Do you seek a detailed explanation of each card, or shall we explore how they relate to your situation?'
-        );
+
+        // Add localized Oracle message using global i18n instance
+        const cardsRevealed = i18n.global.t('oracle.cardsRevealed');
+        const explainMode = i18n.global.t('oracle.explainMode');
+        const oracleMessage = `${cardsRevealed} ${explainMode}`;
+
+        this.addMessage('oracle', oracleMessage);
       }
     },
 

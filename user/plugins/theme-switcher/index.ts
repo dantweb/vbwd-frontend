@@ -3,6 +3,12 @@ import { themePresets } from './presets';
 import { applyTheme } from './apply-theme';
 import en from './locales/en.json';
 import de from './locales/de.json';
+import es from './locales/es.json';
+import fr from './locales/fr.json';
+import ja from './locales/ja.json';
+import ru from './locales/ru.json';
+import th from './locales/th.json';
+import zh from './locales/zh.json';
 
 const STORAGE_KEY = 'vbwd_theme';
 
@@ -27,6 +33,12 @@ export const themeSwitcherPlugin: IPlugin = {
 
     sdk.addTranslations('en', en);
     sdk.addTranslations('de', de);
+    sdk.addTranslations('es', es);
+    sdk.addTranslations('fr', fr);
+    sdk.addTranslations('ja', ja);
+    sdk.addTranslations('ru', ru);
+    sdk.addTranslations('th', th);
+    sdk.addTranslations('zh', zh);
   },
 
   activate() {
