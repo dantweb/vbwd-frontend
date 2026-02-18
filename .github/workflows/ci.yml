@@ -99,7 +99,7 @@ jobs:
     needs: [core]
     defaults:
       run:
-        working-directory: user/vue
+        working-directory: user
 
     steps:
       - name: Checkout code
@@ -110,7 +110,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: user/vue/package-lock.json
+          cache-dependency-path: |
+            user/package-lock.json
+            user/server/package-lock.json
 
       - name: Install core dependencies
         working-directory: core
@@ -121,19 +123,24 @@ jobs:
         run: npm run build --if-present
 
       - name: Install user dependencies
+        working-directory: user
         run: npm ci
 
       - name: Run ESLint
+        working-directory: user/vue
         run: npm run lint --if-present
 
       - name: Run TypeScript check
+        working-directory: user/vue
         run: npx vue-tsc --noEmit --if-present
         continue-on-error: true
 
       - name: Build
+        working-directory: user/vue
         run: npm run build
 
       - name: Run unit tests
+        working-directory: user/vue
         run: npx vitest run tests/unit/ --reporter=verbose --if-present
         continue-on-error: true
 
