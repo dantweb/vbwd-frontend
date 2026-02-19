@@ -49,11 +49,6 @@
       <p>{{ $t('oracle.reading') }}</p>
     </div>
 
-    <!-- Oracle Phase: done - Chat continues -->
-    <div v-if="phase === 'done'" class="oracle-dialog">
-      <!-- Messages displayed above in ConversationBox -->
-    </div>
-
     <!-- Chat Input - Ask More Questions -->
     <div v-if="phase === 'done'" class="chat-continue-section">
       <div class="form-group">
